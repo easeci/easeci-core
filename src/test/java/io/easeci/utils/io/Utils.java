@@ -1,5 +1,7 @@
 package io.easeci.utils.io;
 
+import java.nio.file.Path;
+
 public class Utils {
 
     public static String ymlContent() {
@@ -25,5 +27,9 @@ public class Utils {
 
     public static String ymlRow() {
         return "row: appended";
+    }
+
+    public static Path saveSampleFile(Path path) {
+        return FileUtils.fileSave(path.toString(), ymlContent(), false);
     }
 }
