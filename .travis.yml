@@ -4,7 +4,9 @@ install: true
 os:
   - linux
 
-jdk: oraclejdk11
+jdk:
+  - openjdk11
+  - oraclejdk11
 
 script:
   - ./gradlew build --info
