@@ -16,6 +16,18 @@ public class Utils {
         "  autopublishing: False\n";
     }
 
+    public static String ymlInvalidContent() {
+        return "main:\n" +
+        "   paths:\n" +
+        "   temp: /tmp/ease\n" +
+        "    home: /usr/local/ease\n" +
+        "\n" +
+        "output:\n" +
+        "  queue:\n" +
+        "    max-size: 100\n" +
+        "  autopublishing: False\n";
+    }
+
     public static String ymlContentUpdated() {
         return "main:\n" +
         "\n" +
