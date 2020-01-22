@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DirUtilsTest {
     private final static String DIR_PATH = "/tmp/test_dir",
-                      CANNOT_ACCESS_PATH = "/opt/test_dir",
+                      CANNOT_ACCESS_PATH = "/root/test_dir",
                       RECURSIVE_DIR_PATH = DIR_PATH + "/child_dir",
                         COPY_TARGET_PATH = "/tmp/copy/dirs",
                        NOT_EXISTING_PATH = "/tmp/not/existing/path";
