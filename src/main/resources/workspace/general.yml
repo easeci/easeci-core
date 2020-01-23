@@ -1,0 +1,19 @@
+main:
+  mount:
+    copy: true
+  paths:
+    home: /tmp/easeci/workspace/easeci
+    temp: /tmp/ease
+output:
+  autopublishing: false
+  queue:
+    max-size: 100
+  consumer:
+    max-size: 15
+
+# Global settings of EaseRunner, if in the Pipeline it is not specified parameters,
+# default will be taken
+runner:
+  default:
+    output-method: terminal
+    logs-persister: None
