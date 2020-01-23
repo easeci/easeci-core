@@ -37,6 +37,9 @@ dependencies {
     implementation 'commons-io:commons-io:2.6'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    implementation  'org.javatuples:javatuples:1.2'
+
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
