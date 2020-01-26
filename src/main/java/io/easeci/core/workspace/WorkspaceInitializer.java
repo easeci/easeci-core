@@ -2,6 +2,7 @@ package io.easeci.core.workspace;
 
 import org.javatuples.Pair;
 
+import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
 
@@ -11,7 +12,7 @@ import java.nio.file.Path;
  * Workspace is main place where are storage files required to
  * working application. These file are for example: pipelines, configuration files, logs etc.
  * */
-public interface WorkspaceInitializer {
+public interface WorkspaceInitializer extends Workspace {
 
     /**
      *  Initializes workspace in indicated path.
@@ -19,7 +20,7 @@ public interface WorkspaceInitializer {
      * @return Path where resources was initialized
      * @throws AccessDeniedException when
      * */
-    Path initializeMainWorkspace(Path path) throws AccessDeniedException;
+    Path initializeMainWorkspace(Path path) throws IOException;
 
     /**
      * Checks if workspace is initialized correctly.
