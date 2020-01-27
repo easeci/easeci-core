@@ -7,6 +7,7 @@ server:
 # where .jar file with EaseCI is placed.
 path:
   run:
+    filename: .run.yml
     linux:
       - /opt
       - /tmp

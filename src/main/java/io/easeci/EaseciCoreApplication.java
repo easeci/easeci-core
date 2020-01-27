@@ -13,14 +13,15 @@ import java.util.Optional;
 public class EaseciCoreApplication {
     private static Workspace workspace;
 
-    public static void prepare(String[] args) {
-        Python.initializeInterpreter();
+    public static void bootstrap(String[] args) {
+//        Python.initializeInterpreter();
         EaseciCoreApplication.workspace = new StandardWorkspaceInitializer();
-        workspace.init(args.length > 0 ? Optional.of(Path.of(args[0])) : Optional.empty());
+        Path workspacePath = workspace.init(args.length > 0 ? Optional.of(Path.of(args[0])) : Optional.empty());
+        workspace.validate(workspacePath);
     }
 
     public static void main(String[] args) {
-        prepare(args);
+        bootstrap(args);
         SpringApplication.run(EaseciCoreApplication.class, args);
     }
 

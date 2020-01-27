@@ -13,6 +13,7 @@ import java.nio.file.Path;
  * Proxy class between abstract interface and concrete implementations.
  * Defines one template method to create workspace and some useful utils
  * methods helpful in workspace creation.
+ *
  * */
 abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer {
 
@@ -20,7 +21,7 @@ abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer {
     public Path initializeMainWorkspace(Path path) throws IOException {
         validatePath(path);
         Path workspace = copyConfig(path);
-        return createRunYml(workspace);
+        return createRunYml(workspace, path);
     }
 
     @Override
@@ -41,11 +42,12 @@ abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer {
      * in your local operating system. If EaseCI core workspace just exists in
      * your OS, you can put '.run.yml' file to directory with .jar archive with
      * EaseCI Core application.
-     * @param path represents path where resources was created and this path
+     * @param path represents path where .run.yml file will be created
+     * @param workspaceLocation represents path where resources was created and this path
      *             should be placed in .run.yml file.
      * @return Path where .run.yml file was created.
      * */
-    abstract Path createRunYml(Path path);
+    abstract Path createRunYml(Path path,  Path workspaceLocation);
 
     /**
      * Validate path passed to method as argument. Checks is EaseCI is able to
