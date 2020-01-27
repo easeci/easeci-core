@@ -9,7 +9,7 @@ import java.util.Optional;
  * @author Karol Meksuła
  * 2020-01-26
  * */
-public interface Workspace {
+public interface Workspace extends DataIntegrityValidator<Boolean> {
 
     /**
      * Initialize workspace. If EaseCI workspace does not exists
