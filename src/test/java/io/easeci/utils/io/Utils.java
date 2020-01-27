@@ -1,6 +1,8 @@
 package io.easeci.utils.io;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Utils {
 
@@ -43,5 +45,24 @@ public class Utils {
 
     public static Path saveSampleFile(Path path) {
         return FileUtils.fileSave(path.toString(), ymlContent(), false);
+    }
+
+    public static Map<String, Object> mapContent() {
+        return new HashMap<>() {{
+            put("main", new HashMap<String, Object>() {{
+                put("paths", new HashMap<String, Object>() {{
+                    put("temp", "/tmp/ease");
+                    put("home", "/usr/local/ease");
+                }});
+            }});
+            put("output", new HashMap<String, Object>() {{
+                put("paths", new HashMap<String, Object>() {{
+                    put("queue", new HashMap<String, Object>() {{
+                        put("max-size", 200);
+                    }});
+                    put("autopublishing", "False");
+                }});
+            }});
+        }};
     }
 }

@@ -3,6 +3,7 @@ package io.easeci.utils.io
 import groovy.util.logging.Slf4j
 import org.yaml.snakeyaml.Yaml
 
+import java.nio.file.Files
 import java.nio.file.Path
 
 /**
@@ -72,6 +73,23 @@ class YamlUtils {
         return List.of(refArr)
     }
 
+    /**
+     * Parse Map.class object and save content as Yaml format file.
+     * @param path is a representation of file's path where Yaml should be saved
+     * @param properties must be a Map.class instance. Holds all values required
+     *        in Yaml file. All values in map will be parsed and saved to file.
+     * @return Path that indicates where Yaml file was saved
+     * @exception RuntimeException when some IO error occurred while File is saving.
+     * */
+    static Path ymlCreate(Path path, Map<String, Object> properties) {
+        try {
+            Files.createFile(path)
+            return Files.writeString(path, YAML.dumpAsMap(properties))
+        } catch (IOException e) {
+            throw new RuntimeException("Could not save yaml file to location: " + path.toString())
+        }
+    }
+
     static class YamlException extends RuntimeException {
         private String message
 
@@ -85,6 +103,9 @@ class YamlUtils {
         }
     }
 
+    /**
+     * Inner static class, simple representation of one key and one value.
+     * */
     static class YmlField<T> {
         String referenceKey
         T value

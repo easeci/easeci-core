@@ -77,6 +77,30 @@ class YamlUtilsTest {
         assertThrows(YamlUtils.YamlException.class, () -> YamlUtils.ymlGet(path, "not.existing.path"));
     }
 
+    @Test
+    @DisplayName("Should parse Map.class and save as yaml file with success")
+    void yamlSaveSuccessTest() {
+        final Map<String, Object> MAP_PROPERTIES = Utils.mapContent();
+        Path path = Path.of(FILE_PATH);
+
+        Path savedFilePath = YamlUtils.ymlCreate(path, MAP_PROPERTIES);
+
+        Map<?, ?> savedMap = YamlUtils.ymlLoad(savedFilePath);
+
+        assertAll(() -> assertEquals(MAP_PROPERTIES.size(), savedMap.size()),
+                  () -> assertEquals(MAP_PROPERTIES.toString().length(), savedMap.toString().length()),
+                  () -> assertEquals(MAP_PROPERTIES.toString().getBytes().length, savedMap.toString().getBytes().length));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when trying to save not recognized object as yaml format")
+    void yamlSaveFailureTest() {
+        final Map<String, Object> MAP_PROPERTIES = Utils.mapContent();
+        Path path = Path.of(UNRECOGNIZED_PATH);
+
+        assertThrows(RuntimeException.class, () -> YamlUtils.ymlCreate(path, MAP_PROPERTIES));
+    }
+
     @AfterEach
     void cleanup() {
         try {
