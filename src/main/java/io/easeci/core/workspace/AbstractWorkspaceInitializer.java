@@ -35,7 +35,7 @@ abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer {
      * @param path represents path where resources will be created
      * @return path where resources was just created
      * */
-    abstract Path copyConfig(Path path);
+    abstract Path copyConfig(Path path) throws IOException;
 
     /**
      * Creates '.run.yml' file. This file is required to store path to workspace
