@@ -4,6 +4,8 @@ import io.easeci.utils.io.YamlUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,22 +25,22 @@ import static java.util.Objects.isNull;
  * */
 
 @Slf4j
-public class StandardWorkspaceInitializer extends AbstractWorkspaceInitializer {
+public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
     public final static String BOOTSTRAP_FILENAME = ".run.yml";
+    private final List<String> FILE_NAMES = List.of("general.yml");
 
     /**
      * This implementation is able to copy files from resources
      * to workspace with nested-parent directories. If you put
      * file in resources/workspace/nested/directory/file.txt,
      * so add simply new String "nested/directory/file.txt" to
-     * List<String> FILE_NAMES in code bellow.
+     * List<String> FILE_NAMES in class-level field.
      * Watch out for slashes!
      * */
     @SneakyThrows
     @Override
     Path copyConfig(Path mainWorkspacePath) {
         final String RESOURCES_PATH = "workspace/";
-        final List<String> FILE_NAMES = List.of("general.yml");
         final String TARGET_PATH = mainWorkspacePath.toString().concat("/");
 
         for (String filename : FILE_NAMES) {
@@ -85,21 +87,38 @@ public class StandardWorkspaceInitializer extends AbstractWorkspaceInitializer {
         return runFile.orElseGet(() -> {
             log.info("Cannot find .run.yml file, so such file will created now");
             path.ifPresentOrElse(workspacePath -> {
-                createRunYml(currentDir(), workspacePath);
+                createRunYml(bootstrapFilePath(), workspacePath);
                 copyConfig(workspacePath);
-            }, () -> log.info("Something went wrong and Optional<Path> is empty!"));
+            }, () -> {
+                Path workspacePath = Path.of(currentDir().toString().concat("/workspace"));
+                log.error("Optional<Path> is empty! You did not provide path in argument of .jar runtime.\n" +
+                        "Now EaseCI will create workspace in current directory: {}", workspacePath.toString());
+                try {
+                    Files.createDirectory(workspacePath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                createRunYml(Paths.get(currentDir().toString()
+                        .concat("/")
+                        .concat(BOOTSTRAP_FILENAME)), workspacePath);
+                copyConfig(workspacePath);
+            });
             return init(path);
         });
     }
 
-    private Path currentDir() {
+    private Path bootstrapFilePath() {
         return Path.of(System.getProperty("user.dir")
                 .concat("/")
                 .concat(BOOTSTRAP_FILENAME));
     }
 
+    private Path currentDir() {
+        return Path.of(System.getProperty("user.dir"));
+    }
+
     private Optional<Path> findRunYml() {
-        Path filePath = currentDir();
+        Path filePath = bootstrapFilePath();
         if (Files.exists(filePath)) {
             return Optional.of(filePath);
         }
@@ -107,7 +126,12 @@ public class StandardWorkspaceInitializer extends AbstractWorkspaceInitializer {
     }
 
     @Override
-    public Boolean validate(Path dataLocation) {
+    public Triplet<Boolean, Path, Set<String>> scan(Path workspacePath) throws IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public Pair<Boolean, Set<File>> fix(Path workspacePath) {
         return null;
     }
 }
