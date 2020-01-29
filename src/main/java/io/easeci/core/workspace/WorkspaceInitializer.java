@@ -1,35 +1,23 @@
 package io.easeci.core.workspace;
 
-import org.javatuples.Pair;
-
-import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
- * WorkspaceInitializer is object that initialize,
- * create and check integrity of currently existing workspace.
- * Workspace is main place where are storage files required to
- * working application. These file are for example: pipelines, configuration files, logs etc.
+ * Functional interface that defines way, how workspace should be
+ * initialized on application startup.
+ * @author Karol Meksuła
+ * 2020-01-26
  * */
-public interface WorkspaceInitializer extends Workspace {
+public interface WorkspaceInitializer {
 
     /**
-     *  Initializes workspace in indicated path.
-     * @param path is Path where resources should be initialized
-     * @return Path where resources was initialized
-     * @throws AccessDeniedException when
+     * Initialize workspace. If EaseCI workspace does not exists
+     * then create this one in specified location in Path in argument.
+     * @param path is Optional object that defines where workspace should
+     *             be created. If workspace exists right now, path will be
+     *             ignored.
+     * @return Path where workspace was just initialized.
      * */
-    Path initializeMainWorkspace(Path path) throws IOException;
-
-    /**
-     * Checks if workspace is initialized correctly.
-     * @return Pair<Boolean, Path> if workspace is correctly detected
-     *         returns True as first object
-     *         returns Path if first logic argument is True
-     * @throws IllegalStateException when something went wrong:
-     *         - process with specified PID has no privileges to read indicated directory
-     *         - specified Path is malformed, or not exists
-     * */
-    Pair<Boolean, Path> checkMainWorkspace(Path path) throws IllegalStateException;
+    Path init(Optional<Path> path);
 }

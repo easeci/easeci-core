@@ -1,7 +1,5 @@
 package io.easeci.core.workspace;
 
-import org.javatuples.Pair;
-
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -15,19 +13,7 @@ import java.nio.file.Path;
  * methods helpful in workspace creation.
  *
  * */
-abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer {
-
-    @Override
-    public Path initializeMainWorkspace(Path path) throws IOException {
-        validatePath(path);
-        Path workspace = copyConfig(path);
-        return createRunYml(workspace, path);
-    }
-
-    @Override
-    public Pair<Boolean, Path> checkMainWorkspace(Path path) {
-        return null;
-    }
+abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer, WorkspaceGuard {
 
     /**
      * Simply copy predefined, basic and default configuration to specified

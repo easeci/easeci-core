@@ -13,9 +13,9 @@ public interface DataIntegrityValidator<T> {
     /**
      * Validate integration and consistence of data placed in some
      * path at your local or remote storage.
-     * @param dataLocation is Path object that indicates where
+     * @param workspacePath is Path object that indicates where
      *                     resources intended for checking are placed.
      * @return T with a result of data integrity checking process.
      * */
-    T validate(Path dataLocation);
+    T validate(Path workspacePath);
 }
