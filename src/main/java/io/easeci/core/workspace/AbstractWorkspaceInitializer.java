@@ -1,10 +1,7 @@
 package io.easeci.core.workspace;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
+import java.nio.file.*;
 
 /**
  * Abstract implementation of WorkspaceInitializer.
@@ -43,14 +40,14 @@ abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer, Wor
      *          because process has no permission to IO operation or specified
      *          location just not exists.
      * */
-    private void validatePath(Path path) throws IOException {
+    void validatePath(Path path) throws IOException {
         if (!Files.exists(path)) {
             Files.createDirectories(path);
         }
         if (!Files.isDirectory(path)) {
             throw new NotDirectoryException(path.toString() + " is not directory! Cannot create workspace!");
         }
-        Path trialFile = Files.createFile(path);
+        Path trialFile = Files.createFile(Paths.get(path.toString().concat("/.trial")));
         if (!Files.exists(trialFile)) {
             throw new AccessDeniedException("Cannot create file in location: " + path.toString());
         }

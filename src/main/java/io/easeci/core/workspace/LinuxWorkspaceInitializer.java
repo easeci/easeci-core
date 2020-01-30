@@ -14,8 +14,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 /**
  * Standard, default implementation of WorkspaceInitializer interface.
@@ -26,8 +28,19 @@ import static java.util.Objects.isNull;
 
 @Slf4j
 public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
+    private static LinuxWorkspaceInitializer linuxWorkspaceInitializer;
+
     public final static String BOOTSTRAP_FILENAME = ".run.yml";
     private final List<String> FILE_NAMES = List.of("general.yml");
+
+    private LinuxWorkspaceInitializer() {}
+
+    public static LinuxWorkspaceInitializer getInstance() {
+        if (isNull(linuxWorkspaceInitializer)) {
+            linuxWorkspaceInitializer = new LinuxWorkspaceInitializer();
+        }
+        return linuxWorkspaceInitializer;
+    }
 
     /**
      * This implementation is able to copy files from resources
@@ -40,14 +53,18 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
     @SneakyThrows
     @Override
     Path copyConfig(Path mainWorkspacePath) {
+        return copyFiles(mainWorkspacePath).getValue0();
+    }
+
+    @SneakyThrows
+    private Pair<Path, Set<String>> copyFiles(Path mainWorkspacePath) {
         final String RESOURCES_PATH = "workspace/";
         final String TARGET_PATH = mainWorkspacePath.toString().concat("/");
+        Set<String> filenames = new HashSet<>(Set.of());
 
         for (String filename : FILE_NAMES) {
             if (filename.contains("/")) {
-                String[] parts = filename.split("/");
-                parts = Arrays.copyOf(parts, parts.length - 1);
-                String parentDirectory = String.join("/", parts);
+                String parentDirectory = removePath(filename, 1);
                 Files.createDirectories(Paths.get(TARGET_PATH.concat(parentDirectory)));
             }
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(RESOURCES_PATH.concat(filename));
@@ -64,9 +81,10 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
                 log.error("Could not copy file: {}", from);
                 break;
             }
+            filenames.add(to.toString());
             log.info("Copied correctly file: {} to {}", from, to);
         }
-        return mainWorkspacePath;
+        return Pair.with(mainWorkspacePath, filenames);
     }
 
     @Override
@@ -87,6 +105,11 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
         return runFile.orElseGet(() -> {
             log.info("Cannot find .run.yml file, so such file will created now");
             path.ifPresentOrElse(workspacePath -> {
+                try {
+                    super.validatePath(workspacePath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 createRunYml(bootstrapFilePath(), workspacePath);
                 copyConfig(workspacePath);
             }, () -> {
@@ -117,6 +140,16 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
         return Path.of(System.getProperty("user.dir"));
     }
 
+    private Path removePath(Path path, int elements) {
+        String[] parts = path.toString().split("/");
+        return Paths.get(String.join("/", Arrays.copyOf(parts, parts.length - elements)));
+    }
+
+    private String removePath(String path, int elements) {
+        String[] parts = path.split("/");
+        return String.join("/", Arrays.copyOf(parts, parts.length - elements));
+    }
+
     private Optional<Path> findRunYml() {
         Path filePath = bootstrapFilePath();
         if (Files.exists(filePath)) {
@@ -127,11 +160,60 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
 
     @Override
     public Triplet<Boolean, Path, Set<String>> scan(Path workspacePath) throws IllegalStateException {
-        return null;
+        log.info("==> Scanning for filesystem integration in workspace of EaseCI");
+        final Path RUN_FILE_PATH = locateBootstrapFile();
+        String workspaceLocation = workspaceLocation();
+
+        Set<String> filesNotFound = FILE_NAMES.stream()
+                .map(filename -> workspaceLocation.concat("/").concat(filename))
+                .peek(filenamePath -> log.info("====> Looking for a file: {}", filenamePath))
+                .filter(filenamePath -> !Files.exists(Paths.get(filenamePath)))
+                .peek(filenamePath -> log.error("====> Could't find file with path {}", filenamePath))
+                .collect(Collectors.toSet());
+
+        Boolean result = filesNotFound.isEmpty();
+        log.info("==>Scanning finished. Is workspace valid - {}", result.toString());
+        return Triplet.with(result, RUN_FILE_PATH, filesNotFound);
     }
 
     @Override
     public Pair<Boolean, Set<File>> fix(Path workspacePath) {
-        return null;
+        Path workspacePathFromYml = Paths.get(workspaceLocation());
+        log.info("==> Started to fixing integration of files in EaseCI workspace detected here: {}", workspacePathFromYml);
+
+        if (!Files.isDirectory(workspacePathFromYml)) {
+            log.info("===> Workspace directory [{}] not exists.\n" +
+                    "Whole workspace initialize process starting...", workspacePathFromYml);
+            try {
+                Files.deleteIfExists(locateBootstrapFile());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.init(Optional.of(workspacePathFromYml));
+            Triplet<Boolean, Path, Set<String>> scanResult = this.scan(workspacePathFromYml);
+            if (scanResult.getValue0()) {
+                log.info("====> Successfully recreated workspace content and placed whole files here: {}", scanResult.getValue1().toString());
+            } else {
+                log.error("! ===> Something went wrong and workspace recreation could not end with success");
+            }
+            return Pair.with(scanResult.getValue0(), scanResult.getValue2()
+                    .stream()
+                    .map(File::new)
+                    .collect(Collectors.toSet()));
+        }
+        Pair<Path, Set<String>> copyResult = copyFiles(workspacePathFromYml);
+        return Pair.with(nonNull(copyResult.getValue0()),
+                copyResult.getValue1().stream()
+                        .map(File::new)
+                        .collect(Collectors.toSet()));
+    }
+
+    private Path locateBootstrapFile() {
+        return Paths.get(currentDir().toString().concat("/").concat(BOOTSTRAP_FILENAME));
+    }
+
+    private String workspaceLocation() {
+        Path runfile = locateBootstrapFile();
+        return (String) YamlUtils.ymlGet(runfile, "easeci.workspace.path").getValue();
     }
 }
