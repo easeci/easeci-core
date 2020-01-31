@@ -12,6 +12,7 @@ public interface Bootstrapper {
     /**
      * Handle .jar execution arguments and starting to bootstrapping
      * process of application context.
+     * @param args is the same arguments as you got in main() method.
      * */
     void bootstrap(String[] args);
 }
