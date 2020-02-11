@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/easeci/easeci-core-java.svg?branch=master)](https://travis-ci.org/easeci/easeci-core-java)
+
 Ease CI core
 ================
 
