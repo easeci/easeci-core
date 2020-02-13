@@ -20,7 +20,7 @@ public interface EventConsumer extends Consumer {
      *          Returns 'true' if subscribe was ends with success.
      *          Returns 'false' if subscribe was failed.
      * */
-    public boolean subscribe(Topic topic);
+    boolean subscribe(Topic topic);
 
     /**
      * Removes subscription of current Topic.
@@ -28,5 +28,5 @@ public interface EventConsumer extends Consumer {
      *          Returns 'true' if unsubscribe was ends with success.
      *          Returns 'false' if unsubscribe was failed.
      * */
-    public boolean unsubscribe();
+    boolean unsubscribe();
 }

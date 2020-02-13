@@ -20,5 +20,5 @@ public interface Consumer {
      * @throws ConsumeException when some critical error occured and
      *          Consumer was not able to process event in defined way.
      * */
-    public boolean consume(Event event) throws ConsumeException;
+    boolean consume(Event event) throws ConsumeException;
 }

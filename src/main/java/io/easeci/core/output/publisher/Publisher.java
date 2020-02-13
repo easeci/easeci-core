@@ -21,5 +21,5 @@ public interface Publisher {
      * @throws PublishException when some critical error occurred and cannot
      * publish Event to specified Topic.
      * */
-    public boolean publish(Event event) throws PublishException;
+    boolean publish(Event event) throws PublishException;
 }
