@@ -30,7 +30,6 @@ import static java.util.Objects.nonNull;
 public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
     private static LinuxWorkspaceInitializer linuxWorkspaceInitializer;
 
-    public final static String BOOTSTRAP_FILENAME = ".run.yml";
     private final List<String> FILE_NAMES = List.of("general.yml");
 
     private LinuxWorkspaceInitializer() {}

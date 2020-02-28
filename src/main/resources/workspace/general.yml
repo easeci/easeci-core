@@ -17,3 +17,7 @@ runner:
   default:
     output-method: terminal
     logs-persister: None
+
+log:
+  logfilePath:
+  logSavingStrategy: EACH

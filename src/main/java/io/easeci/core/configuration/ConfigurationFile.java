@@ -1,4 +1,10 @@
 package io.easeci.core.configuration;
 
-public interface ConfigurationFile {
+import lombok.Getter;
+
+import java.nio.file.Path;
+
+@Getter
+public abstract class ConfigurationFile {
+    private Path configFileLocalization;
 }

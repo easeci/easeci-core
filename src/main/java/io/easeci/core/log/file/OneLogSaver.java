@@ -1,23 +1,18 @@
 package io.easeci.core.log.file;
 
-import io.easeci.core.log.LogSavingStrategy;
+import io.easeci.core.output.Event;
 
-import java.nio.file.Path;
+import java.util.Queue;
 import java.util.function.Predicate;
 
 public class OneLogSaver extends LogSaver {
 
-    public OneLogSaver(Predicate<LogSavingStrategy> predicate) {
-        super(predicate);
+    public OneLogSaver(Queue<Event> eventQueue, Predicate<Queue<Event>> queuePredicate, Predicate<Event> eventPredicate) {
+        super(eventQueue, queuePredicate, eventPredicate);
     }
 
     @Override
-    public LogSavingStrategy getStrategy() {
-        return null;
-    }
-
-    @Override
-    public Path save() {
+    public Predicate getStrategy() {
         return null;
     }
 }

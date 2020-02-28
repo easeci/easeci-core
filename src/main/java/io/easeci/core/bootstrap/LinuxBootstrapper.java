@@ -1,5 +1,7 @@
 package io.easeci.core.bootstrap;
 
+import io.easeci.core.log.ApplicationLevelLog;
+import io.easeci.core.log.LogManager;
 import io.easeci.core.workspace.LinuxWorkspaceInitializer;
 import io.easeci.core.workspace.WorkspaceGuard;
 import io.easeci.core.workspace.WorkspaceInitializer;
@@ -33,5 +35,6 @@ public class LinuxBootstrapper implements Bootstrapper {
         if (!scanResult.getValue0()) {
             workspaceGuard.fix(scanResult.getValue1());
         }
+        LogManager logManager = ApplicationLevelLog.getInstance();
     }
 }
