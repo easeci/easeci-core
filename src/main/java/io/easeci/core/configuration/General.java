@@ -1,4 +1,4 @@
 package io.easeci.core.configuration;
 
-public class General implements ConfigurationFile {
+public class General extends ConfigurationFile {
 }

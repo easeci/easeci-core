@@ -21,7 +21,8 @@ public abstract class LogSaver {
 
     public Path save() {
 //        Zapisuj jeśli podany w konstruktorze, predefiniowany warunek jest spełniony dla danego eventu
-        queuePredicate.test();
-        eventPredicate.test();
+//        queuePredicate.test();
+//        eventPredicate.test();
+        return null;
     }
 }

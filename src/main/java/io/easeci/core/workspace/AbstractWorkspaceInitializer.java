@@ -11,6 +11,7 @@ import java.nio.file.*;
  *
  * */
 abstract class AbstractWorkspaceInitializer implements WorkspaceInitializer, WorkspaceGuard {
+    public final static String BOOTSTRAP_FILENAME = ".run.yml";
 
     /**
      * Simply copy predefined, basic and default configuration to specified
