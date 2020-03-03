@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Event {
+    private EventMeta eventMeta;
     private String content;
 
     @Getter

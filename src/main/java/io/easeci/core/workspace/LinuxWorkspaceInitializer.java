@@ -171,7 +171,7 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
                 .collect(Collectors.toSet());
 
         Boolean result = filesNotFound.isEmpty();
-        log.info("==>Scanning finished. Is workspace valid - {}", result.toString());
+        log.info("==> Scanning finished. Is workspace valid - {}", result.toString());
         return Triplet.with(result, RUN_FILE_PATH, filesNotFound);
     }
 
