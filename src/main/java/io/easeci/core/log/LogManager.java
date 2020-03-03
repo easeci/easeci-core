@@ -20,12 +20,17 @@ public interface LogManager {
     void handle(Event event);
 
     /**
-     * Should init file where EaseCI will save all produced log's content
+     * Initialises file where EaseCI will save all produced log's content
      * */
     Path initLogFile();
 
     /**
-     * Should refresh log file, for example when new day just has arrived
+     * Refresh log file, for example when new day just has arrived
      * */
     Path refreshLogFile();
+
+    /**
+     * Shutting down gracefully this LogManager instance
+     * */
+    Path shutdownLogManager();
 }
