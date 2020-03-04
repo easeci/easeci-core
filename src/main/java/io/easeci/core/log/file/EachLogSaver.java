@@ -8,6 +8,12 @@ import java.util.function.Predicate;
 
 import static java.util.Objects.isNull;
 
+/**
+ * LogSaver implementation that perform saving logs per
+ * each event occurrence.
+ * @author Karol Meksuła
+ * 2020-03-03
+ * */
 public class EachLogSaver extends LogSaver {
 
     public EachLogSaver(Queue<Event> eventQueue, Path logfile) {
@@ -28,7 +34,15 @@ public class EachLogSaver extends LogSaver {
     @Override
     public Path save() {
         Event event = eventQueue.poll();
+        if (isNull(event)) {
+            return logfile;
+        }
         byte[] eventAsBytes = unmarshal(event);
         return standardWrite(eventAsBytes);
+    }
+
+    @Override
+    public Runnable onShutdown() {
+        return this::save;
     }
 }

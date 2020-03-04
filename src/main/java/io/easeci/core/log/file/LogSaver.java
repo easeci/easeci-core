@@ -2,11 +2,14 @@ package io.easeci.core.log.file;
 
 import io.easeci.core.output.Event;
 import io.easeci.utils.io.FileUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Queue;
+import java.util.*;
 import java.util.function.Predicate;
+
+import static java.util.Objects.nonNull;
 
 /**
  * Main base class that is responsible for implementation of saving logs
@@ -19,6 +22,7 @@ import java.util.function.Predicate;
  * @author Karol Meksuła
  * 2020-03-03
  * */
+@Slf4j
 public abstract class LogSaver {
     Predicate<Queue<Event>> queuePredicate;
     Queue<Event> eventQueue;
@@ -45,6 +49,12 @@ public abstract class LogSaver {
     public abstract Path save();
 
     /**
+     * Defines the way the class should react after the destruction
+     * of the object's completion.
+     * */
+    public abstract Runnable onShutdown();
+
+    /**
      * Default saving method that could be use in save() method implementation.
      * Simple saving unmarshalled event to pointed file.
      * @param eventAsBytes is byte representation of Event.class object that should
@@ -53,6 +63,23 @@ public abstract class LogSaver {
      * */
     Path standardWrite(byte[] eventAsBytes) {
         return FileUtils.fileSave(logfile.toString(), new String(eventAsBytes, StandardCharsets.UTF_8), true);
+    }
+
+    Path batchWrite(List<byte[]> unmarshaledEvents) {
+        byte[] eventAsBytes = new ArrayList<>(new ArrayList<>(unmarshaledEvents.stream()
+                .map(Arrays::asList)
+                .reduce((first, next) -> {
+                    ArrayList<byte[]> mergedList = new ArrayList<>(first);
+                    mergedList.addAll(new ArrayList<>(next));
+                    return mergedList;
+                }).orElseGet(() -> Collections.singletonList(new byte[]{}))))
+                .get(0);
+        if (nonNull(eventAsBytes) && eventAsBytes.length > 0) {
+            return standardWrite(eventAsBytes);
+        } else {
+            log.info("Logs was not saved because events are null or events not contained in method argument");
+            return logfile;
+        }
     }
 
     /**
@@ -71,7 +98,7 @@ public abstract class LogSaver {
                 .concat(meta.getTitle())
                 .concat("\n~")
                 .concat(content)
-                .concat("\n")
+                .concat("\n\n")
                 .getBytes();
     }
 }

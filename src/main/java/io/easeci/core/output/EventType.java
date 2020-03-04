@@ -10,5 +10,6 @@ public enum EventType {
     RUNTIME,
     PIPELINE,
     ERROR,
-    SPECIAL
+    SPECIAL,
+    API
 }
