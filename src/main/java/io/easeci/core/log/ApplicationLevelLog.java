@@ -35,16 +35,18 @@ public class ApplicationLevelLog implements LogManager {
         this.currentLogfile = initLogFile();
         this.eventQueue = new ConcurrentLinkedQueue<>();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() ->
-                this.handle(Event.builder()
-                        .eventMeta(Event.EventMeta.builder()
-                        .eventType(EventType.RUNTIME)
-                        .title("Bye bye")
-                        .publishTimestamp(LocalDateTime.now())
-                        .publishedBy(SYSTEM.name())
-                        .build())
-                .content("EaseCI system is shutting down gracefully, bye!")
-                .build())));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            this.handle(Event.builder()
+                    .eventMeta(Event.EventMeta.builder()
+                            .eventType(EventType.RUNTIME)
+                            .title("Bye bye")
+                            .publishTimestamp(LocalDateTime.now())
+                            .publishedBy(SYSTEM.name())
+                            .build())
+                    .content("EaseCI system is shutting down gracefully, bye!")
+                    .build());
+            shutdownLogManager();
+        }));
     }
 
     public static ApplicationLevelLog getInstance() {
@@ -56,6 +58,7 @@ public class ApplicationLevelLog implements LogManager {
                         .trim()
                         .toUpperCase());
             } catch (Throwable throwable) {
+                throwable.printStackTrace();
                 savingStrategy = LogSavingStrategy.getDefault();
             }
             ApplicationLevelLog.applicationLevelLog.logSaver = LogSaverFactory.factorize(savingStrategy, applicationLevelLog.eventQueue, applicationLevelLog.currentLogfile);
@@ -92,7 +95,8 @@ public class ApplicationLevelLog implements LogManager {
     public Path shutdownLogManager() {
         if (this.logDaemon != null) {
             this.logDaemon.cancel();
-            saveRemainingOnQueue();
+            logSaver.onShutdown()
+                    .run();
         }
         return this.currentLogfile;
     }
@@ -101,19 +105,15 @@ public class ApplicationLevelLog implements LogManager {
         if (this.logDaemon != null) {
             return this.logDaemon;
         } else {
-            Timer timer = new Timer();
+            Timer timer = new Timer(true);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     initLogFile();
-                    log.info("====> Started scheduler to follow log management");
                 }
-            }, 5000);
+            }, 5000, 5000);
+            log.info("====> Started scheduler to follow log management");
             return timer;
         }
-    }
-
-    private void saveRemainingOnQueue() {
-//        TODO wróć tutaj jak zaimplementujesz LogSaver
     }
 }

@@ -8,7 +8,7 @@ package io.easeci.core.log;
 public enum LogSavingStrategy {
     EACH,
     BATCH,
-    ONE;
+    TIME;
 
     public static LogSavingStrategy getDefault() {
         return LogSavingStrategy.EACH;

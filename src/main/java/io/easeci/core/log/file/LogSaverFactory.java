@@ -6,6 +6,9 @@ import io.easeci.core.output.Event;
 import java.nio.file.Path;
 import java.util.Queue;
 
+import static io.easeci.core.log.file.TimeLogSaver.DEFAULT_TIME_DELAY;
+import static io.easeci.core.workspace.WorkspaceUtils.retrieveFromGeneral;
+import static io.easeci.core.workspace.WorkspaceUtils.retrieveFromGeneralInt;
 import static java.util.Objects.isNull;
 
 /**
@@ -18,8 +21,15 @@ public class LogSaverFactory {
 
     public static LogSaver factorize(LogSavingStrategy strategy, Queue<Event> eventQueue, Path logfile) {
         valid(strategy, eventQueue);
-        if (strategy.equals(LogSavingStrategy.ONE)) {
-
+        if (strategy.equals(LogSavingStrategy.TIME)) {
+            long batchTimeDelay;
+            try {
+                batchTimeDelay = retrieveFromGeneralInt("log.delay");
+            } catch (Throwable throwable) {
+                batchTimeDelay = DEFAULT_TIME_DELAY;
+                throwable.printStackTrace();
+            }
+            return new TimeLogSaver(eventQueue, logfile, batchTimeDelay);
         }
         if (strategy.equals(LogSavingStrategy.BATCH)) {
 
