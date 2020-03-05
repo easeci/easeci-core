@@ -36,6 +36,7 @@ dependencies {
     implementation 'org.python:jython:2.7.2b2'
     implementation 'com.google.guava:guava:28.1-jre'
     implementation 'commons-io:commons-io:2.6'
+    implementation 'org.apache.commons:commons-lang3:3.9'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 

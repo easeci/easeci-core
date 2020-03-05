@@ -10,12 +10,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/log")
 class LogController {
-    private LogManager logManager = ApplicationLevelLog.getInstance();
+    private LogManager logManager;
+
+    @PostConstruct
+    void postConstruct() {
+        this.logManager = ApplicationLevelLog.getInstance();
+    }
 
     @PostMapping
     void addEvent(@RequestBody EventRequest request) {
