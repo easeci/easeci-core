@@ -1,14 +1,17 @@
 package io.easeci.core.log.file;
 
+import com.google.common.collect.ObjectArrays;
 import io.easeci.core.output.Event;
 import io.easeci.utils.io.FileUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 /**
@@ -62,18 +65,30 @@ public abstract class LogSaver {
      * @return Path to file in local storage where logs was recently saved.
      * */
     Path standardWrite(byte[] eventAsBytes) {
+        if (isNull(eventAsBytes)) {
+            log.error("Nothing was saved to logfile because method argument byte[] is null");
+            return logfile;
+        }
         return FileUtils.fileSave(logfile.toString(), new String(eventAsBytes, StandardCharsets.UTF_8), true);
     }
 
+    /**
+     * One of default methods that could be use in save() method implementation too.
+     * Saves unmarshalled events batch to pointed file at one time.
+     * @param unmarshaledEvents is a List representation of Event.class object that should
+     *                          be unmarshalled to bytes before.
+     * @return Path to file in local storage where logs was recently saved.
+     * */
     Path batchWrite(List<byte[]> unmarshaledEvents) {
-        byte[] eventAsBytes = new ArrayList<>(new ArrayList<>(unmarshaledEvents.stream()
-                .map(Arrays::asList)
-                .reduce((first, next) -> {
-                    ArrayList<byte[]> mergedList = new ArrayList<>(first);
-                    mergedList.addAll(new ArrayList<>(next));
-                    return mergedList;
-                }).orElseGet(() -> Collections.singletonList(new byte[]{}))))
-                .get(0);
+        if (isNull(unmarshaledEvents)) {
+            log.error("Nothing was saved to logfile because method argument List<byte[]> is null");
+            return logfile;
+        }
+        byte[] eventAsBytes = ArrayUtils.toPrimitive(unmarshaledEvents.stream()
+                .map(ArrayUtils::toObject)
+                .reduce((first, next) -> ObjectArrays.concat(first, next, Byte.class))
+                .orElseGet(() -> new Byte[] {}));
+
         if (nonNull(eventAsBytes) && eventAsBytes.length > 0) {
             return standardWrite(eventAsBytes);
         } else {
@@ -89,7 +104,11 @@ public abstract class LogSaver {
      * @return array of bytes that are representation of Event.class
      * */
     static byte[] unmarshal(Event event) {
-        String content = event.getContent();
+        if (isNull(event) || isNull(event.getEventMeta())) {
+            log.error("Cannot process event, because of null pointer occurred");
+            return new byte[] {};
+        }
+        String content = Optional.ofNullable(event.getContent()).orElse("");
         Event.EventMeta meta = event.getEventMeta();
         return "[".concat(meta.getPublishTimestamp().toString())
                 .concat(", " + meta.getEventType().name() + "] by ")

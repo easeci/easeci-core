@@ -1,7 +1,6 @@
 package io.easeci.core.log.file;
 
 import io.easeci.core.output.Event;
-import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -13,7 +12,6 @@ import java.util.function.Predicate;
  * @author Karol Meksuła
  * 2020-03-04
  * */
-@Slf4j
 public class TimeLogSaver extends LogSaver {
     final static long DEFAULT_TIME_DELAY = 60000;
     private Timer timer;
@@ -42,12 +40,10 @@ public class TimeLogSaver extends LogSaver {
 
     @Override
     public Runnable onShutdown() {
-        log.info("Saving rest of logs gathered on queue");
         return this::saveBatch;
     }
 
     private Path saveBatch() {
-        log.info("Batch saving logs, on queue {} elements now", eventQueue.size());
         Event event = eventQueue.poll();
         List<byte[]> unmarshaledEvents = new ArrayList<>(Collections.emptyList());
         while (event != null) {
