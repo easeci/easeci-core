@@ -8,7 +8,9 @@ import java.util.function.Predicate;
 
 /**
  * LogSaver implementation that perform saving logs
- * at concrete moment in time.
+ * at concrete moment in time that should be expressed
+ * in milliseconds passing by constructor.
+ * When variable is not passed default value is assign to DEFAULT_TIME_DELAY variable.
  * @author Karol Meksuła
  * 2020-03-04
  * */
@@ -33,6 +35,11 @@ public class TimeLogSaver extends LogSaver {
         return eventQueue -> !eventQueue.isEmpty();
     }
 
+    /**
+     * This method is invoking each time when new event occurs.
+     * We do not want to save in each time, so we need to wait
+     * to collect some bunch of events and then save these.
+     * */
     @Override
     public Path save() {
         return logfile;

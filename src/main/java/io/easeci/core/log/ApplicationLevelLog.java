@@ -6,6 +6,7 @@ import io.easeci.core.output.Event;
 import io.easeci.core.output.EventType;
 import io.easeci.utils.io.DirUtils;
 import io.easeci.utils.io.FileUtils;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
@@ -23,12 +24,14 @@ import static java.util.Objects.isNull;
 
 @Slf4j
 public class ApplicationLevelLog implements LogManager {
-    private static final String LOGFILE_PREFIX = "easeci-logs-",
+    public static final String LOGFILE_PREFIX = "easeci-logs-",
                                 LOG_DIRECTORY = "/log/";
     private static ApplicationLevelLog applicationLevelLog;
     private Queue<Event> eventQueue;
     private LogSaver logSaver;
     private Timer logDaemon;
+
+    @Getter
     private Path currentLogfile;
 
     private ApplicationLevelLog() {
