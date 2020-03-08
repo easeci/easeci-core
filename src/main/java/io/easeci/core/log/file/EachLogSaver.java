@@ -43,6 +43,10 @@ public class EachLogSaver extends LogSaver {
 
     @Override
     public Runnable onShutdown() {
-        return this::save;
+        return () -> {
+            while (queuePredicate.test(eventQueue)) {
+                this.save();
+            }
+        };
     }
 }
