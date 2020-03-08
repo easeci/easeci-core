@@ -4,6 +4,7 @@ import io.easeci.core.log.file.LogSaver;
 import io.easeci.core.log.file.LogSaverFactory;
 import io.easeci.core.output.Event;
 import io.easeci.core.output.EventType;
+import io.easeci.core.workspace.WorkspaceUtils;
 import io.easeci.utils.io.DirUtils;
 import io.easeci.utils.io.FileUtils;
 import lombok.Getter;
@@ -18,8 +19,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static io.easeci.core.log.Publishers.SYSTEM;
-import static io.easeci.core.workspace.WorkspaceUtils.getWorkspaceLocation;
-import static io.easeci.core.workspace.WorkspaceUtils.retrieveFromGeneral;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -57,7 +56,7 @@ public class ApplicationLevelLog implements LogManager {
             ApplicationLevelLog.applicationLevelLog = new ApplicationLevelLog();
             LogSavingStrategy savingStrategy;
             try {
-                savingStrategy = LogSavingStrategy.valueOf(retrieveFromGeneral("log.logSavingStrategy")
+                savingStrategy = LogSavingStrategy.valueOf(WorkspaceUtils.retrieveFromGeneral("log.logSavingStrategy")
                         .trim()
                         .toUpperCase());
             } catch (Throwable throwable) {
@@ -77,7 +76,7 @@ public class ApplicationLevelLog implements LogManager {
 
     @Override
     public Path initLogFile() {
-        String workspaceLocation = getWorkspaceLocation();
+        String workspaceLocation = WorkspaceUtils.getWorkspaceLocation();
         String logDirLocation = workspaceLocation.concat(LOG_DIRECTORY);
         if (!DirUtils.isDirectoryExists(logDirLocation)) {
             DirUtils.directoryCreate(logDirLocation);

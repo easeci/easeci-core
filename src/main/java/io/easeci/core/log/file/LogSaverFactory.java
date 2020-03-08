@@ -2,13 +2,12 @@ package io.easeci.core.log.file;
 
 import io.easeci.core.log.LogSavingStrategy;
 import io.easeci.core.output.Event;
+import io.easeci.core.workspace.WorkspaceUtils;
 
 import java.nio.file.Path;
 import java.util.Queue;
 
 import static io.easeci.core.log.file.TimeLogSaver.DEFAULT_TIME_DELAY;
-import static io.easeci.core.workspace.WorkspaceUtils.retrieveFromGeneral;
-import static io.easeci.core.workspace.WorkspaceUtils.retrieveFromGeneralInt;
 import static java.util.Objects.isNull;
 
 /**
@@ -24,7 +23,7 @@ public class LogSaverFactory {
         if (strategy.equals(LogSavingStrategy.TIME)) {
             long batchTimeDelay;
             try {
-                batchTimeDelay = retrieveFromGeneralInt("log.delay");
+                batchTimeDelay = WorkspaceUtils.retrieveFromGeneralInt("log.delay");
             } catch (Throwable throwable) {
                 batchTimeDelay = DEFAULT_TIME_DELAY;
                 throwable.printStackTrace();
