@@ -3,6 +3,7 @@ package io.easeci.core.log;
 import io.easeci.core.log.file.EventUtils;
 import io.easeci.core.output.Event;
 import io.easeci.core.workspace.LinuxWorkspaceInitializer;
+import io.easeci.core.workspace.LocationUtils;
 import io.easeci.utils.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static io.easeci.core.workspace.WorkspaceUtils.getWorkspaceLocation;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ApplicationLevelLogTest {
@@ -55,7 +55,7 @@ class ApplicationLevelLogTest {
 
         Path path = applicationLevelLog.initLogFile();
 
-        String workspaceLocation = getWorkspaceLocation();
+        String workspaceLocation = LocationUtils.getWorkspaceLocation();
 
         assertTrue(path.toString().contains(workspaceLocation));
 
