@@ -1,1 +1,2 @@
 rootProject.name = 'easeci-core'
+include 'extension-api'
