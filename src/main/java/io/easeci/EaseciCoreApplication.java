@@ -12,5 +12,4 @@ public class EaseciCoreApplication {
 
         SpringApplication.run(EaseciCoreApplication.class, args);
     }
-
 }
