@@ -40,4 +40,9 @@ public class LocationUtils {
         }
         return result;
     }
+
+    public static Path getPluginsYmlLocation() {
+        return Paths.get(getWorkspaceLocation()
+                .concat("/plugins.yml"));
+    }
 }

@@ -30,7 +30,7 @@ import static java.util.Objects.nonNull;
 public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
     private static LinuxWorkspaceInitializer linuxWorkspaceInitializer;
 
-    private final List<String> FILE_NAMES = List.of("general.yml");
+    private final List<String> FILE_NAMES = List.of("general.yml", "plugins.yml");
 
     private LinuxWorkspaceInitializer() {}
 
