@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -161,7 +162,7 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
     public Triplet<Boolean, Path, Set<String>> scan(Path workspacePath) throws IllegalStateException {
         log.info("==> Scanning for filesystem integration in workspace of EaseCI");
         final Path RUN_FILE_PATH = locateBootstrapFile();
-        String workspaceLocation = workspaceLocation();
+        String workspaceLocation = getWorkspaceLocation();
 
         Set<String> filesNotFound = FILE_NAMES.stream()
                 .map(filename -> workspaceLocation.concat("/").concat(filename))
@@ -177,7 +178,7 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
 
     @Override
     public Pair<Boolean, Set<File>> fix(Path workspacePath) {
-        Path workspacePathFromYml = Paths.get(workspaceLocation());
+        Path workspacePathFromYml = Paths.get(getWorkspaceLocation());
         log.info("==> Started to fixing integration of files in EaseCI workspace detected here: {}", workspacePathFromYml);
 
         if (!Files.isDirectory(workspacePathFromYml)) {
@@ -209,10 +210,5 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
 
     private Path locateBootstrapFile() {
         return Paths.get(currentDir().toString().concat("/").concat(BOOTSTRAP_FILENAME));
-    }
-
-    private String workspaceLocation() {
-        Path runfile = locateBootstrapFile();
-        return (String) YamlUtils.ymlGet(runfile, "easeci.workspace.path").getValue();
     }
 }
