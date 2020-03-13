@@ -5,12 +5,14 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
+import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -29,17 +31,30 @@ public class ExtensionsManager {
         return extensionsManager;
     }
 
-    public void parsePluginFile() {
+    public Set<Plugin> parsePluginFile() {
         log.info("====> Plugin file parse started");
         Path pluginsYmlLocation = getPluginsYmlLocation();
 
-        List<LinkedHashMap> pluginList = (List<LinkedHashMap>) YamlUtils.ymlGet(pluginsYmlLocation, "plugins").getValue();
+        ExtensionInfrastructureInit extensionInfrastructureInit = new ExtensionInfrastructureInit();
 
-        this.pluginSet = pluginList.stream()
+//        List<LinkedHashMap> pluginList = (List<LinkedHashMap>) YamlUtils.ymlGet(pluginsYmlLocation, "plugins").getValue();
+        List<LinkedHashMap> pluginList = List.of();
+
+        return pluginList.stream()
                 .map(hashMap -> Plugin.of((String) hashMap.get("name"), (String) hashMap.get("version")))
                 .peek(plugin -> log.info("=====> {}", plugin.toString()))
                 .collect(Collectors.toSet());
     }
+
+//    public Set<> searchForPlugin() {
+//        final String PLUGIN_DIR = "plugins";
+//        List<Path> localizations = List.of(
+//                Paths.get(System.getProperty("user.dir").concat(PLUGIN_DIR)),
+//                Paths.get(getWorkspaceLocation().concat(PLUGIN_DIR))
+//        );
+//
+//
+//    }
 
     /*
     * Algorytm ładowania pluginu:
