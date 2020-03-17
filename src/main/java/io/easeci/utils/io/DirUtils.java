@@ -6,9 +6,7 @@ import org.springframework.util.FileSystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 
 /**
  * This static utilities methods are custom wrapper for IO operations.
@@ -31,6 +29,10 @@ public class DirUtils {
     public static Path directoryCreate(String path) {
         try {
             return Files.createDirectories(Path.of(path));
+        }
+        catch (FileAlreadyExistsException e) {
+            log.info("Directory just exists: {}", path);
+            return Paths.get(path);
         } catch (IOException e) {
             log.error("Cannot create directory, probably runtime has no privileges to create directory," +
                     "or root dir not exists");

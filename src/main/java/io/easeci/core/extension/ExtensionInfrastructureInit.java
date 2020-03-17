@@ -4,14 +4,12 @@ import io.easeci.utils.io.DirUtils;
 import io.easeci.utils.io.FileUtils;
 import io.easeci.utils.io.YamlUtils;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,34 +17,36 @@ import java.util.stream.Collectors;
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 
+@Slf4j
 class ExtensionInfrastructureInit implements InfrastructureInit {
     private String current = System.getProperty("user.dir");
     private String workspace = getWorkspaceLocation();
-    private Map<String, String> locations;
+    private Map<String, String> locations = new LinkedHashMap<>() {{
+        put("<current>", current);
+        put("<workspace>", workspace);
+    }};
 
     @Getter
-    private List<Path> pluginDirectories;
+    private List<Path> pluginDirectories = new ArrayList<>(1);
 
-    ExtensionInfrastructureInit() {
-        this.locations = new LinkedHashMap<>() {{
-           put("<current>", current);
-           put("<workspace>", workspace);
-        }};
-
+    @Override
+    public void loadInfrastructure() throws Exception {
+        if (!FileUtils.isExist(getPluginsYmlLocation().toString())) {
+            throw new Exception("Cannot load infrastructure because plugins file not exists. " +
+                    "It seems to look like prepareInfrastructure() method was not invoked. Please do this first of.");
+        }
         this.pluginDirectories = ((List<String>) YamlUtils.ymlGet(getPluginsYmlLocation(), "plugins.localisations")
                 .getValue())
                 .stream()
                 .map(pathFromProperty -> {
                     Pattern pattern = Pattern.compile("\\<[a-zA-Z0-9.\\-_]+\\>");
                     Matcher matcher = pattern.matcher(pathFromProperty);
-                    String prepared = null;
                     while (matcher.find()) {
                         String group = matcher.group();
-                        prepared = pathFromProperty.replace(group, locations.get(group));
+                        pathFromProperty = pathFromProperty.replace(group, Optional.ofNullable(locations.get(group)).orElse(group));
                     }
-                    return prepared;
+                    return pathFromProperty;
                 })
-                .filter(Objects::nonNull)
                 .map(stringPath -> Paths.get(stringPath))
                 .collect(Collectors.toList());
     }
@@ -54,10 +54,14 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
     @Override
     public boolean isInitialized() {
         Path pluginYml = getPluginsYmlLocation();
+        if (!FileUtils.isExist(pluginYml.toString())) {
+            return false;
+        }
+
         List<Path> allRequiredPaths = this.pluginDirectories;
         allRequiredPaths.add(pluginYml);
 
-        for (Path path : pluginYml) {
+        for (Path path : allRequiredPaths) {
             if (!Files.exists(path)) {
                 return false;
             }
@@ -66,18 +70,27 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
     }
 
     @Override
-    public void prepareInfrastructure() {
+    public void prepareInfrastructure() throws Exception {
         if (isInitialized()) {
+            log.info("===> Infrastructure for plugin management is already correctly initialized");
             return;
         }
-        this.pluginDirectories.forEach(path -> DirUtils.directoryCreate(path.toString()));
-        createPluginYml(Paths.get(getWorkspaceLocation()));
+        Path pluginsYmlLocation = getPluginsYmlLocation();
+        if (!FileUtils.isExist(pluginsYmlLocation.toString())) {
+            createPluginYml(getPluginsYmlLocation(), List.of("<current>/plugins", "<workspace>/plugins"));
+        }
+        this.loadInfrastructure();
+        this.pluginDirectories.forEach(path -> {
+            if (!DirUtils.isDirectoryExists(path.toString())) {
+                DirUtils.directoryCreate(path.toString());
+            }
+        });
     }
 
-    private Path createPluginYml(Path targetPath) {
+    Path createPluginYml(Path targetPath, List<String> paths) {
         return YamlUtils.ymlCreate(targetPath, new LinkedHashMap<>() {{
             put("plugins", new LinkedHashMap<>() {{
-                put("localisations", List.of("<current>/plugins", "<workspace>/plugins"));
+                put("localisations", paths);
             }});
         }});
     }
