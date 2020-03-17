@@ -3,8 +3,10 @@ package io.easeci.utils.io
 import groovy.util.logging.Slf4j
 import org.yaml.snakeyaml.Yaml
 
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * This static utilities methods are custom wrapper for basic, common and useful
@@ -85,6 +87,9 @@ class YamlUtils {
         try {
             Files.createFile(path)
             return Files.writeString(path, YAML.dumpAsMap(properties))
+        } catch (FileAlreadyExistsException e) {
+            log.info("File just exists: {}", path)
+            return path
         } catch (IOException e) {
             throw new RuntimeException("Could not save yaml file to location: " + path.toString())
         }

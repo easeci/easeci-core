@@ -3,10 +3,7 @@ package io.easeci.utils.io;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 
 /**
  * This static utilities methods are custom wrapper for IO operations.
@@ -52,6 +49,9 @@ public class FileUtils {
         if (!exists) {
             try {
                 return Files.write(Path.of(path), content.getBytes(), StandardOpenOption.CREATE_NEW);
+            } catch (FileAlreadyExistsException e) {
+                log.info("File just exists: {}", path);
+                return Paths.get(path);
             } catch (IOException e) {
                 throw new RuntimeException("Directory not exist or you cannot permission to write files here: " + path);
             }

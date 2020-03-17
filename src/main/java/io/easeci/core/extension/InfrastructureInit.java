@@ -9,6 +9,12 @@ package io.easeci.core.extension;
 public interface InfrastructureInit {
 
     /**
+     * Reloads/loads/refreshes infrastructure data. Simply defines way
+     * how to provide new data abouts paths to location etc.
+     * */
+    void loadInfrastructure() throws Exception;
+
+    /**
      * Returns status of extensions infrastructure.
      * @return boolean that inform client method about plugin
      *          management system initializing status.
@@ -23,5 +29,5 @@ public interface InfrastructureInit {
      * One method that triggers initializing of plugins/extensions
      * structure required to correct build this point of application.
      * */
-    void prepareInfrastructure();
+    void prepareInfrastructure() throws Exception;
 }
