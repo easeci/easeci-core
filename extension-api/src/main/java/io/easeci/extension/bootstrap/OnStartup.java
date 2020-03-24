@@ -1,4 +1,7 @@
 package io.easeci.extension.bootstrap;
 
-public interface OnStartup {
+import io.easeci.extension.Extensible;
+
+public interface OnStartup extends Extensible {
+    void action();
 }
