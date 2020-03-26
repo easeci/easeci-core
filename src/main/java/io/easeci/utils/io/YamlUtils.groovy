@@ -67,6 +67,22 @@ class YamlUtils {
         throw new YamlException(KEY_NOT_EXIST)
     }
 
+    static YmlField<?> ymlGet(def ymlMap, String refs) {
+        final def KEY_NOT_EXIST = 'Could not find any value for key: ' + refs
+        for (String key : extractKeys(refs)) {
+            if (ymlMap == null) {
+                throw new YamlException(KEY_NOT_EXIST)
+            }
+            ymlMap = ymlMap.get(key)
+        }
+        if (!ymlMap.getClass() instanceof String) {
+            throw new YamlException('Cannot return value, because it is not String value!')
+        }
+        return new YmlField<String>(refs, ymlMap)
+
+        throw new YamlException(KEY_NOT_EXIST)
+    }
+
     private static List<String> extractKeys(String refs) {
         if (refs == null) {
             return Collections.emptyList()
