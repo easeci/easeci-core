@@ -57,8 +57,7 @@ class DefaultPluginLoader implements PluginLoader {
                 .collect(Collectors.toSet());
     }
 
-    @Override
-    public ExtensionManifest read(Plugin plugin) {
+    ExtensionManifest read(Plugin plugin) {
         try {
             JarFile jarFile = new JarFile(plugin.getJarArchive().getJarPath().toFile());
             Manifest manifest = jarFile.getManifest();
@@ -73,16 +72,14 @@ class DefaultPluginLoader implements PluginLoader {
         throw new ExtensionManifestException("ExtensionManifest is not correctly initialized for plugin:\n" + plugin.toString());
     }
 
-    @Override
-    public Object instantiate(Plugin plugin) {
+    Object instantiate(Plugin plugin) {
         return new ReflectiveFactory.ReflectiveFactoryBuilder<>()
                 .classReference(plugin.getJarArchive().getExtensionManifest().getEntryClassProperty())
                 .build()
                 .instantiate();
     }
 
-    @Override
-    public void insert(Plugin plugin, Object instance) {
+    void insert(Plugin plugin, Object instance) {
         this.pluginContainer.add(plugin.getJarArchive().getExtensionManifest().getImplementsProperty(), instance);
     }
 }
