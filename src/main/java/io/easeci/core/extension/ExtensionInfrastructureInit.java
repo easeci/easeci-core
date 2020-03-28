@@ -87,6 +87,7 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
         });
     }
 
+//    TODO change this, not create but copy from resources
     Path createPluginYml(Path targetPath, List<String> paths) {
         return YamlUtils.ymlCreate(targetPath, new LinkedHashMap<>() {{
             put("plugins", new LinkedHashMap<>() {{
