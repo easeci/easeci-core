@@ -3,6 +3,8 @@ package io.easeci.core.extension;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import static java.util.Objects.isNull;
+
 /**
  * Prepare helps with reflection mechanism,
  * object from jar file dynamically attached to
@@ -11,7 +13,7 @@ import java.lang.reflect.InvocationTargetException;
  * will be returned. ReflectiveFactory have to build helps
  * with ReflectiveFactoryBuilder class.
  * */
-public class ReflectiveFactory<T> {
+class ReflectiveFactory<T> {
     private Class[] argsTypes;
     private Object[] args;
     private String classReference;
@@ -46,27 +48,36 @@ public class ReflectiveFactory<T> {
         throw new RuntimeException();
     }
 
-    public static class ReflectiveFactoryBuilder<T> {
+    static class ReflectiveFactoryBuilder<T> {
         private Class[] argsTypes;
         private Object[] args;
         private String classReference;
 
-        public ReflectiveFactoryBuilder<T> argsTypes(Class[] argsTypes) {
+        ReflectiveFactoryBuilder<T> argsTypes(Class[] argsTypes) {
             this.argsTypes = argsTypes;
             return this;
         }
 
-        public ReflectiveFactoryBuilder<T> args(Object[] args) {
+        ReflectiveFactoryBuilder<T> args(Object[] args) {
             this.args = args;
             return this;
         }
 
-        public ReflectiveFactoryBuilder<T> classReference(String classReference) {
+        ReflectiveFactoryBuilder<T> classReference(String classReference) {
             this.classReference = classReference;
             return this;
         }
 
-        public ReflectiveFactory<T> build() {
+        ReflectiveFactory<T> build() {
+            if (isNull(classReference) || classReference.isEmpty()) {
+                throw new IllegalStateException("classReference field indicates the class that should be created. It cannot be null or empty!");
+            }
+            if (isNull(argsTypes)) {
+                this.argsTypes = new Class[] {};
+            }
+            if (isNull(args)) {
+                this.args = new Object[] {};
+            }
             return new ReflectiveFactory<>(argsTypes, args, classReference);
         }
     }

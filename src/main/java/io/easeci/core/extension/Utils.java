@@ -1,5 +1,8 @@
 package io.easeci.core.extension;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.stream.Collectors;
 /**
  * Utils space for io.easeci.core.extension package.
  * */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class Utils {
     private final static String SEPARATOR = "-",
                                 SLASH = "/",
