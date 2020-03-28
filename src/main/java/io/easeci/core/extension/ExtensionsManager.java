@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
-import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 import static java.util.Objects.isNull;
 
 @Slf4j

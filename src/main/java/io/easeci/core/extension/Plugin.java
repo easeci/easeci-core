@@ -2,11 +2,13 @@ package io.easeci.core.extension;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.net.URL;
 import java.nio.file.Path;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -21,7 +23,7 @@ import static java.util.Optional.ofNullable;
 
 @Getter
 @AllArgsConstructor
-public class Plugin {
+class Plugin {
     private String name;
     private String version;
     private JarArchive jarArchive;
@@ -46,6 +48,21 @@ public class Plugin {
         return new Plugin(plugin.name, plugin.version, jarArchive);
     }
 
+    boolean isLoadable() {
+        return nonNull(this.name)
+                && nonNull(this.version)
+                && nonNull(this.jarArchive)
+                && nonNull(this.jarArchive.fileName)
+                && nonNull(this.jarArchive.jarPath)
+                && nonNull(this.jarArchive.jarUrl);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Plugin next = (Plugin) obj;
+        return this.name.equals(next.name) && this.version.equals(next.version);
+    }
+
     @Override
     public String toString() {
         return "~ Plugin '".concat(name)
@@ -62,6 +79,9 @@ public class Plugin {
         private boolean isStoredLocally;
         private URL jarUrl;
         private Path jarPath;
+
+        @Setter
+        private ExtensionManifest extensionManifest;
 
         private JarArchive() {}
 

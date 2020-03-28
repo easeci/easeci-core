@@ -55,7 +55,7 @@ class DefaultPluginResolver implements PluginResolver {
         URL jarFileUrl = toUrl(jarFilePath);
         boolean isExists = isJarExists(jarFilePath);
 
-        return Plugin.JarArchive.of(pluginFileName, isExists, jarFileUrl, jarFilePath);
+        return Plugin.JarArchive.of(pluginFileName, isExists, jarFileUrl, jarFilePath, null);
     }
 
     private URL toUrl(Path jarFilePath) {

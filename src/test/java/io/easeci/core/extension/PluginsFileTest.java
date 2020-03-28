@@ -14,7 +14,9 @@ class PluginsFileTest {
 
     @BeforeAll
     static void setup() {
-        LinuxBootstrapper.getInstance().bootstrap(new String[]{});
+        try {
+            LinuxBootstrapper.getInstance().bootstrap(new String[]{});
+        } catch (RuntimeException e) {}
     }
 
     @Test

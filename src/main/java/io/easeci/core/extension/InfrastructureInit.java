@@ -9,7 +9,7 @@ import java.util.List;
  * @author Karol Meksuła
  * 2020-03-12
  * */
-public interface InfrastructureInit {
+interface InfrastructureInit {
 
     /**
      * @return method should return all directories where plugins could be stored

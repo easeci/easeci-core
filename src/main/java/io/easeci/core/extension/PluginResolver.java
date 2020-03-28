@@ -10,7 +10,7 @@ import java.util.Set;
  * @author Karol Meksuła
  * 2020-03-21
  * */
-public interface PluginResolver {
+interface PluginResolver {
 
     /**
      * Simply parse plugins.yml file and resolve all dependencies
