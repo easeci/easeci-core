@@ -97,7 +97,7 @@ class ExtensionInfrastructureInitTest {
         List<String> pathsToCreation = List.of("1", "2", "3");
         Path pluginsYmlLocation = getPluginsYmlLocation();
         FileUtils.fileDelete(pluginsYmlLocation.toString());
-        extensionInfrastructureInit.createPluginYml(pluginsYmlLocation, pathsToCreation);
+        extensionInfrastructureInit.createMinimalisticPluginYml(pluginsYmlLocation, pathsToCreation);
 
         extensionInfrastructureInit.loadInfrastructure();
 
@@ -123,7 +123,7 @@ class ExtensionInfrastructureInitTest {
         List<String> pathsToCreation = List.of("<unrecognized>/plugins");
         Path pluginsYmlLocation = getPluginsYmlLocation();
         FileUtils.fileDelete(pluginsYmlLocation.toString());
-        extensionInfrastructureInit.createPluginYml(pluginsYmlLocation, pathsToCreation);
+        extensionInfrastructureInit.createMinimalisticPluginYml(pluginsYmlLocation, pathsToCreation);
 
         extensionInfrastructureInit.loadInfrastructure();
 

@@ -16,4 +16,9 @@ public class WelcomeLogo implements OnStartup {
                         "\n";
         System.out.println(LOGO);
     }
+
+    @Override
+    public String about() {
+        return null;
+    }
 }

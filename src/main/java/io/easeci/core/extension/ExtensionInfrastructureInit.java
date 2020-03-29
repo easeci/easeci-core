@@ -77,7 +77,7 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
         }
         Path pluginsYmlLocation = getPluginsYmlLocation();
         if (!FileUtils.isExist(pluginsYmlLocation.toString())) {
-            createPluginYml(getPluginsYmlLocation(), List.of("<current>/plugins", "<workspace>/plugins"));
+            createMinimalisticPluginYml(getPluginsYmlLocation(), List.of("<current>/plugins", "<workspace>/plugins"));
         }
         this.loadInfrastructure();
         this.pluginDirectories.forEach(path -> {
@@ -87,8 +87,7 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
         });
     }
 
-//    TODO change this, not create but copy from resources
-    Path createPluginYml(Path targetPath, List<String> paths) {
+    Path createMinimalisticPluginYml(Path targetPath, List<String> paths) {
         return YamlUtils.ymlCreate(targetPath, new LinkedHashMap<>() {{
             put("plugins", new LinkedHashMap<>() {{
                 put("localisations", paths);

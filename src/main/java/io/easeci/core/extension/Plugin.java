@@ -57,6 +57,13 @@ class Plugin {
                 && nonNull(this.jarArchive.jarUrl);
     }
 
+    boolean isDownloadable() {
+        return nonNull(this.name)
+                && !this.name.isEmpty()
+                && nonNull(this.version)
+                && !this.version.isEmpty();
+    }
+
     @Override
     public boolean equals(Object obj) {
         Plugin next = (Plugin) obj;

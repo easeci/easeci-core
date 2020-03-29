@@ -22,4 +22,16 @@ interface PluginLoader {
      *          for some reason.
      * */
     Set<Plugin> loadPlugins(Set<Plugin> pluginSet);
+
+    /**
+     * Main method of this interface.
+     * This should loads plugin in custom way.
+     * @param plugin is a plugin representation, provided read from some source.
+     *                  Plugins will be loaded or if it was not loaded correctly,
+     *                  one should be returned.
+     * @return Plugin that should be plugin representation
+     *          that was NOT correctly loaded and NOT placed in classpath
+     *          for some reason.
+     * */
+    Plugin loadPlugin(Plugin plugin);
 }
