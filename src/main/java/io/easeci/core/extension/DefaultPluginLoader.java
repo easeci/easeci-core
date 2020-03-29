@@ -33,28 +33,42 @@ class DefaultPluginLoader implements PluginLoader {
     public Set<Plugin> loadPlugins(Set<Plugin> pluginSet) {
         return pluginSet.stream()
                 .filter(Plugin::isLoadable)
-                .map(plugin -> {
-                    try {
-                        URLClassLoader urlClassLoader = new URLClassLoader(new URL[0]);
-                        Method addUrlMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-                        addUrlMethod.setAccessible(true);
-                        addUrlMethod.invoke(urlClassLoader, plugin.getJarArchive().getJarUrl());
-                        ExtensionManifest extensionManifest = read(plugin);
-                        plugin.getJarArchive().setExtensionManifest(extensionManifest);
-                        return plugin;
-                    } catch (NoSuchMethodException e) {
-                        log.error("NoSuchMethodException occurred: {}", e.getMessage());
-                    } catch (IllegalAccessException e) {
-                        log.error("IllegalAccessException occurred: {}", e.getMessage());
-                    } catch (InvocationTargetException e) {
-                        log.error("InvocationTargetException occurred: {}", e.getMessage());
-                    }
-                    return plugin;
-                }).peek(plugin -> {
+                .map(this::addToClasspath)
+                .peek(plugin -> {
                     Object instance = instantiate(plugin);
                     this.insert(plugin, instance);
                 })
                 .collect(Collectors.toSet());
+    }
+
+    private Plugin addToClasspath(Plugin plugin) {
+        try {
+            URLClassLoader urlClassLoader = new URLClassLoader(new URL[0]);
+            Method addUrlMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+            addUrlMethod.setAccessible(true);
+            addUrlMethod.invoke(urlClassLoader, plugin.getJarArchive().getJarUrl());
+            ExtensionManifest extensionManifest = read(plugin);
+            plugin.getJarArchive().setExtensionManifest(extensionManifest);
+            return plugin;
+        } catch (NoSuchMethodException e) {
+            log.error("NoSuchMethodException occurred: {}", e.getMessage());
+        } catch (IllegalAccessException e) {
+            log.error("IllegalAccessException occurred: {}", e.getMessage());
+        } catch (InvocationTargetException e) {
+            log.error("InvocationTargetException occurred: {}", e.getMessage());
+        }
+        return plugin;
+    }
+
+    @Override
+    public Plugin loadPlugin(Plugin plugin) {
+        if (!plugin.isLoadable()) {
+            log.error("===> Plugin {} is not loadable! Basic information required for plugin load was not provided.", plugin);
+        }
+        Plugin pluginAdded = addToClasspath(plugin);
+        Object instance = instantiate(pluginAdded);
+        this.insert(plugin, instance);
+        return pluginAdded;
     }
 
     ExtensionManifest read(Plugin plugin) {

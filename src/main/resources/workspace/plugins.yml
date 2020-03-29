@@ -1,0 +1,14 @@
+plugins:
+  local:
+    localisations:
+      - <current>/plugins
+      - <workspace>/plugins
+    download: true
+  registry:
+    timeout: 1000
+    url: http://localhost:8080
+
+extensions:
+  - plugin:
+      name: welcome-logo
+      version: 0.0.1
