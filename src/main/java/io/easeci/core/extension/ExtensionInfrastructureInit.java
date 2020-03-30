@@ -35,7 +35,7 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
             throw new Exception("Cannot load infrastructure because plugins file not exists. " +
                     "It seems to look like prepareInfrastructure() method was not invoked. Please do this first of.");
         }
-        this.pluginDirectories = ((List<String>) YamlUtils.ymlGet(getPluginsYmlLocation(), "plugins.localisations")
+        this.pluginDirectories = ((List<String>) YamlUtils.ymlGet(getPluginsYmlLocation(), "plugins.local.localisations")
                 .getValue())
                 .stream()
                 .map(pathFromProperty -> {
@@ -59,6 +59,9 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
         }
 
         List<Path> allRequiredPaths = this.pluginDirectories;
+        if (allRequiredPaths.isEmpty()) {
+            return false;
+        }
         allRequiredPaths.add(pluginYml);
 
         for (Path path : allRequiredPaths) {
@@ -75,6 +78,7 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
             log.info("===> Infrastructure for plugin management is already correctly initialized");
             return;
         }
+        log.info("===> Infrastructure for plugin management not exist or is malformed, started to prepare infrastructure");
         Path pluginsYmlLocation = getPluginsYmlLocation();
         if (!FileUtils.isExist(pluginsYmlLocation.toString())) {
             createMinimalisticPluginYml(getPluginsYmlLocation(), List.of("<current>/plugins", "<workspace>/plugins"));
@@ -85,12 +89,15 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
                 DirUtils.directoryCreate(path.toString());
             }
         });
+        this.prepareInfrastructure();
     }
 
     Path createMinimalisticPluginYml(Path targetPath, List<String> paths) {
         return YamlUtils.ymlCreate(targetPath, new LinkedHashMap<>() {{
             put("plugins", new LinkedHashMap<>() {{
-                put("localisations", paths);
+                put("local", new LinkedHashMap<>() {{
+                    put("localisations", paths);
+                }});
             }});
         }});
     }

@@ -79,8 +79,6 @@ class YamlUtils {
             throw new YamlException('Cannot return value, because it is not String value!')
         }
         return new YmlField<String>(refs, ymlMap)
-
-        throw new YamlException(KEY_NOT_EXIST)
     }
 
     private static List<String> extractKeys(String refs) {

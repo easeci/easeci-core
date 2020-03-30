@@ -1,5 +1,6 @@
 package io.easeci.core.bootstrap;
 
+import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.log.ApplicationLevelLog;
 import io.easeci.core.log.LogManager;
 import io.easeci.core.output.Event;
@@ -21,6 +22,7 @@ public class LinuxBootstrapper implements Bootstrapper {
     private static Bootstrapper bootstrapper;
     private static WorkspaceInitializer workspaceInitializer;
     private LogManager logManager;
+    private ExtensionSystem extensionSystem;
 
     private LinuxBootstrapper() {}
 
@@ -50,5 +52,7 @@ public class LinuxBootstrapper implements Bootstrapper {
                         .build())
                 .content("EaseCI core server correctly started.")
                 .build());
+        this.extensionSystem = ExtensionSystem.getInstance();
+        this.extensionSystem.start();
     }
 }

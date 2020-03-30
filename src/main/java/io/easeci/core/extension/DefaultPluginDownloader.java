@@ -14,7 +14,6 @@ class DefaultPluginDownloader extends PluginDownloader {
         this.registryUrl = registryUrl;
         this.targetPath = targetPath;
         this.timeoutMilliseconds = timeoutMilliseconds;
-        throw new IllegalStateException("DefaultPluginDownloader is not implemented yet");
     }
 
     @Override
