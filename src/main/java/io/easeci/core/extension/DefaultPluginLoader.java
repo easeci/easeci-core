@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.extension.bootstrap.OnStartup;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +36,9 @@ class DefaultPluginLoader implements PluginLoader {
                 .filter(Plugin::isLoadable)
                 .map(this::addToClasspath)
                 .peek(plugin -> {
-                    Object instance = instantiate(plugin);
+                    Object instance = this.instantiate(plugin);
                     this.insert(plugin, instance);
-                })
+                }).filter(plugin -> !plugin.getJarArchive().isStoredLocally())
                 .collect(Collectors.toSet());
     }
 
@@ -90,7 +91,7 @@ class DefaultPluginLoader implements PluginLoader {
         return new ReflectiveFactory.ReflectiveFactoryBuilder<>()
                 .classReference(plugin.getJarArchive().getExtensionManifest().getEntryClassProperty())
                 .build()
-                .instantiate();
+                .instantiate(plugin.getJarArchive());
     }
 
     void insert(Plugin plugin, Object instance) {

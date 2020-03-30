@@ -1,7 +1,8 @@
 package io.easeci.core.extension;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 import static java.util.Objects.isNull;
 
@@ -28,12 +29,12 @@ class ReflectiveFactory<T> {
      * Creates an object using the reflection mechanism.
      * @return object of type declared in class level.
      * */
-    public T instantiate() {
+    @SuppressWarnings("unchecked")
+    T instantiate(Plugin.JarArchive jarArchive) {
         try {
-            Class classDef = Class.forName(classReference);
-            Constructor<T> constructor = classDef.getConstructor(argsTypes);
-            T instance = constructor.newInstance();
-            return instance;
+            URLClassLoader classLoader = new URLClassLoader(new URL[]{jarArchive.getJarUrl()}, Thread.currentThread().getContextClassLoader());
+            Class<?> myClass = Class.forName(jarArchive.getExtensionManifest().getEntryClassProperty(), true, classLoader);
+            return (T) myClass.getConstructor(new Class[]{}).newInstance(new Object[]{});
         } catch (ClassNotFoundException exception) {
             exception.printStackTrace();
         } catch (NoSuchMethodException exception) {
