@@ -82,6 +82,7 @@ class Plugin {
     @Getter
     @AllArgsConstructor(staticName = "of")
     public static class JarArchive {
+        private final static String DASH = "-";
         private String fileName;
         private boolean isStoredLocally;
         private URL jarUrl;
@@ -98,9 +99,9 @@ class Plugin {
 
         @Override
         public String toString() {
-            return "~ Jar file named: ".concat(fileName)
+            return "~ Jar file named: ".concat(ofNullable(fileName).orElse(DASH))
                     .concat(", localised here: ")
-                    .concat(ofNullable(jarPath).orElse(Path.of("-")).toString())
+                    .concat(ofNullable(jarPath).orElse(Path.of(DASH)).toString())
                     .concat(", is exists: " + isStoredLocally);
         }
     }

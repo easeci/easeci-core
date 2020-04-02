@@ -60,7 +60,6 @@ class DefaultPluginResolver implements PluginResolver {
 
     private URL toUrl(Path jarFilePath) {
         if (isNull(jarFilePath)) {
-            log.error("Path to jar file is null, cannot determine URL");
             return null;
         }
         try {
@@ -73,7 +72,6 @@ class DefaultPluginResolver implements PluginResolver {
 
     private boolean isJarExists(Path jarFilePath) {
         if (isNull(jarFilePath)) {
-            log.error("Path to jar file is null, cannot check if exists");
             return false;
         }
         return Files.exists(jarFilePath);

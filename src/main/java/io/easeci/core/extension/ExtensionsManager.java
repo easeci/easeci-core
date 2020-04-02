@@ -81,7 +81,7 @@ class ExtensionsManager {
     private String getReport(Set<Plugin> resolve) {
         return resolve.stream()
                 .map(Plugin::toString)
-                .collect(Collectors.joining());
+                .collect(Collectors.joining("\n"));
     }
 
     private boolean isDownloadProcessEnabled() {
