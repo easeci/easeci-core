@@ -1,6 +1,6 @@
 package io.easeci.core.extension;
 
-import io.easeci.extension.bootstrap.OnStartup;
+import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -31,18 +32,22 @@ class DefaultPluginLoader implements PluginLoader {
     }
 
     @Override
-    public Set<Plugin> loadPlugins(Set<Plugin> pluginSet) {
-        return pluginSet.stream()
+    public Set<Plugin> loadPlugins(Set<Plugin> pluginSetInput) {
+        Set<Plugin> pluginSetOutput = pluginSetInput.stream()
                 .filter(Plugin::isLoadable)
                 .map(this::addToClasspath)
                 .peek(plugin -> {
                     Object instance = this.instantiate(plugin);
                     this.insert(plugin, instance);
-                }).filter(plugin -> !plugin.getJarArchive().isStoredLocally())
-                .collect(Collectors.toSet());
+                }).collect(Collectors.toSet());
+        return new HashSet<>(Sets.difference(pluginSetInput, pluginSetOutput));
     }
 
     private Plugin addToClasspath(Plugin plugin) {
+        if (!plugin.isLoadable()) {
+            log.info("===> Plugin {}, v{} is missing on local storage", plugin.getName(), plugin.getVersion());
+            return plugin;
+        }
         try {
             URLClassLoader urlClassLoader = new URLClassLoader(new URL[0]);
             Method addUrlMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
@@ -64,7 +69,7 @@ class DefaultPluginLoader implements PluginLoader {
     @Override
     public Plugin loadPlugin(Plugin plugin) {
         if (!plugin.isLoadable()) {
-            log.error("===> Plugin {} is not loadable! Basic information required for plugin load was not provided.", plugin);
+            log.error("===> {} is not loadable! Basic information required for plugin load was not provided.", plugin);
         }
         Plugin pluginAdded = addToClasspath(plugin);
         Object instance = instantiate(pluginAdded);

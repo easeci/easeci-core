@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -23,7 +25,8 @@ public class ExtensionSystem {
         this.extensionsManager.enableExtensions();
     }
 
-    public Object get(String interfaceName) {
-        return extensionsManager.getPluginContainer().get(interfaceName);
+    public <T> Optional<T> get(String interfaceName, Class<T> type) {
+        T specific = extensionsManager.getPluginContainer().getSpecific(interfaceName, type);
+        return Optional.ofNullable(specific);
     }
 }
