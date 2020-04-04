@@ -23,7 +23,7 @@ import static java.util.Optional.ofNullable;
 
 @Getter
 @AllArgsConstructor
-class Plugin {
+public class Plugin {
     private String name;
     private String version;
     private JarArchive jarArchive;
@@ -68,6 +68,11 @@ class Plugin {
     public boolean equals(Object obj) {
         Plugin next = (Plugin) obj;
         return this.name.equals(next.name) && this.version.equals(next.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode() + this.version.hashCode();
     }
 
     @Override

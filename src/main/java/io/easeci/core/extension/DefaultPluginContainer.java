@@ -3,6 +3,7 @@ package io.easeci.core.extension;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import static java.util.Objects.isNull;
@@ -10,19 +11,24 @@ import static java.util.Optional.ofNullable;
 
 @Slf4j
 class DefaultPluginContainer implements PluginContainer {
-    private Map<String, List<Object>> container;
+    private Map<String, List<Instance>> container;
 
     DefaultPluginContainer() {
-        this.container = new LinkedHashMap<>();
+        this.container = new ConcurrentHashMap<>();
     }
 
     @Override
-    public void add(String interfaceName, Object implementation) {
-        List<Object> objectList = this.container.get(interfaceName);
+    public void add(Instance instance) {
+        final String interfaceName = instance.getPlugin().getJarArchive().getExtensionManifest().getImplementsProperty();
+        List<Instance> objectList = this.container.get(interfaceName);
         if (isNull(objectList)) {
-            this.container.put(interfaceName, new ArrayList<>(Collections.singletonList(implementation)));
+            this.container.put(interfaceName, new ArrayList<>(Collections.singletonList(instance)));
         } else {
-            objectList.add(implementation);
+            if (objectList.contains(instance)) {
+                log.error("===> Cannot add two the same plugin implementations for this one: {}", instance.getPlugin());
+                return;
+            }
+            objectList.add(instance);
         }
     }
 
@@ -53,11 +59,16 @@ class DefaultPluginContainer implements PluginContainer {
         return this.container.size();
     }
 
+    @Override
+    public int implementationSize(String interfaceName) {
+        return this.container.get(interfaceName).size();
+    }
+
     private Object get(String interfaceName) {
         log.error("Method requires implementation with priority choosing");
-        List<Object> objectList = ofNullable(container.get(interfaceName)).orElse(Collections.emptyList());
-        if (!objectList.isEmpty()) {
-            return objectList.get(0);         //        TODO implement!
+        List<Instance> instanceList = ofNullable(container.get(interfaceName)).orElse(Collections.emptyList());
+        if (!instanceList.isEmpty()) {
+            return instanceList.get(0).getInstance();         //        TODO implement!
         }
         return null;
     }

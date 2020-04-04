@@ -79,8 +79,10 @@ class ExtensionInfrastructureInitTest {
         extensionInfrastructureInit.prepareInfrastructure();
         List<Path> pluginDirectories = extensionInfrastructureInit.getPluginDirectories();
 
-        assertAll(() -> assertEquals(2, pluginDirectories.size()),
-                () -> pluginDirectories.forEach(path -> assertTrue(Files.isDirectory(path))));
+        final int expectedSize = 3; // 2 directories + 1 plugin.yml.file
+
+        assertAll(() -> assertEquals(expectedSize, pluginDirectories.size()),
+                () -> pluginDirectories.forEach(path -> assertTrue(Files.exists(path))));
 
         cleanDirs(pluginDirectories);
     }
