@@ -99,7 +99,11 @@ class DefaultPluginLoader implements PluginLoader {
                 .instantiate(plugin.getJarArchive());
     }
 
-    void insert(Plugin plugin, Object instance) {
-        this.pluginContainer.add(plugin.getJarArchive().getExtensionManifest().getImplementsProperty(), instance);
+    void insert(Plugin plugin, Object object) {
+        Instance instance = Instance.builder()
+                .plugin(plugin)
+                .instance(object)
+                .build();
+        this.pluginContainer.add(instance);
     }
 }

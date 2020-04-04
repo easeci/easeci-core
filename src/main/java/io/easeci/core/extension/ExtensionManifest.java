@@ -11,7 +11,7 @@ import static java.util.Objects.nonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-class ExtensionManifest {
+public class ExtensionManifest {
     final static String IMPLEMENTS = "Implements";
     final static String ENTRY_CLASS = "Entry-Class";
     final static String EXTENSION_PACKAGE_PREFIX = "io.easeci.extension";
@@ -22,7 +22,7 @@ class ExtensionManifest {
     @Getter
     private String entryClassProperty;
 
-    static ExtensionManifest of(String implementsProperty, String entryClassProperty) {
+    public static ExtensionManifest of(String implementsProperty, String entryClassProperty) {
         return new ExtensionManifest(implementsProperty, entryClassProperty);
     }
 

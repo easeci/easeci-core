@@ -6,6 +6,8 @@ import java.util.function.Predicate;
  * Representation of container for hold all references
  * to object instantiated from external implementation
  * of extension-api.
+ * Notice that PluginContainer could be accessed from few
+ * threads so it must be thread-safety.
  * @author Karol Meksuła
  * 2020-03-27
  * */
@@ -14,14 +16,10 @@ interface PluginContainer {
     /**
      * Add implementation one of the interface from extension-api
      * and store this one in container.
-     * @param interfaceName is a path of interface in extension-api
-     *                      for example: (restrict a format!)
-     *                      io.easeci.extension.bootstrap.OnStartup
-     * @param implementation is a concrete implementation of the
-     *                       interface that you specified as first
-     *                       argument of this method.
+     * @param instance is object that represents all required data to
+     *                 managing plugin in runtime.
      * */
-    void add(String interfaceName, Object implementation);
+    void add(Instance instance);
 
     /**
      * Get specific implementation for one of interface specified
@@ -57,4 +55,6 @@ interface PluginContainer {
      * @return size of current container's key set
      * */
     int size();
+
+    int implementationSize(String interfaceName);
 }
