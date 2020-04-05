@@ -34,9 +34,9 @@ class DefaultPluginContainer implements PluginContainer {
 
     @Override
     public <T> T getSpecific(String interfaceName, Class<T> type) {
-        Object instance = get(interfaceName);
+        Instance instance = get(interfaceName);
         try {
-            return type.cast(instance);
+            return type.cast(Objects.requireNonNull(instance).getInstance());
         } catch (ClassCastException exception) {
             return null;
         }
@@ -64,11 +64,14 @@ class DefaultPluginContainer implements PluginContainer {
         return this.container.get(interfaceName).size();
     }
 
-    private Object get(String interfaceName) {
+    private Instance get(String interfaceName) {
         log.error("Method requires implementation with priority choosing");
         List<Instance> instanceList = ofNullable(container.get(interfaceName)).orElse(Collections.emptyList());
-        if (!instanceList.isEmpty()) {
-            return instanceList.get(0).getInstance();         //        TODO implement!
+        if (instanceList.size() == 1) {
+            return instanceList.get(0);
+        }
+        if (instanceList.size() > 1) {
+            return instanceList.get(0);         //        TODO implement!
         }
         return null;
     }
