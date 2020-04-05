@@ -45,4 +45,9 @@ public class LocationUtils {
         return Paths.get(getWorkspaceLocation()
                 .concat("/plugins.yml"));
     }
+
+    public static Path getPluginConfigYmlLocation() {
+        return Paths.get(getWorkspaceLocation()
+                .concat("/plugins-config.yml"));
+    }
 }
