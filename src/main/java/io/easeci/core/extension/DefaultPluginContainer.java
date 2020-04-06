@@ -12,9 +12,11 @@ import static java.util.Optional.ofNullable;
 @Slf4j
 class DefaultPluginContainer implements PluginContainer {
     private Map<String, List<Instance>> container;
+    private PluginStrategy pluginStrategy;
 
-    DefaultPluginContainer() {
+    DefaultPluginContainer(PluginStrategy pluginStrategy) {
         this.container = new ConcurrentHashMap<>();
+        this.pluginStrategy = pluginStrategy;
     }
 
     @Override
@@ -37,9 +39,14 @@ class DefaultPluginContainer implements PluginContainer {
         Instance instance = get(interfaceName);
         try {
             return type.cast(Objects.requireNonNull(instance).getInstance());
-        } catch (ClassCastException exception) {
+        } catch (ClassCastException | NullPointerException exception) {
             return null;
         }
+    }
+
+    private Instance get(String interfaceName) {
+        List<Instance> instanceList = ofNullable(container.get(interfaceName)).orElse(Collections.emptyList());
+        return pluginStrategy.choose(instanceList, interfaceName);
     }
 
     @Override
@@ -62,17 +69,5 @@ class DefaultPluginContainer implements PluginContainer {
     @Override
     public int implementationSize(String interfaceName) {
         return this.container.get(interfaceName).size();
-    }
-
-    private Instance get(String interfaceName) {
-        log.error("Method requires implementation with priority choosing");
-        List<Instance> instanceList = ofNullable(container.get(interfaceName)).orElse(Collections.emptyList());
-        if (instanceList.size() == 1) {
-            return instanceList.get(0);
-        }
-        if (instanceList.size() > 1) {
-            return instanceList.get(0);         //        TODO implement!
-        }
-        return null;
     }
 }
