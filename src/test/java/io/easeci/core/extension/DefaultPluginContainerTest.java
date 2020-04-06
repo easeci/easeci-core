@@ -3,16 +3,18 @@ package io.easeci.core.extension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static io.easeci.core.extension.utils.PluginContainerUtils.fromBasic;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultPluginContainerTest {
     private PluginContainer pluginContainer;
+    private PluginStrategy pluginStrategy = Mockito.mock(PluginStrategy.class);
 
     @BeforeEach
     void setup() {
-        this.pluginContainer = new DefaultPluginContainer();
+        this.pluginContainer = new DefaultPluginContainer(pluginStrategy);
     }
 
     @Test

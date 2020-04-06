@@ -25,14 +25,16 @@ class ExtensionsManager {
     private PluginContainer pluginContainer;
     private PluginResolver pluginResolver;
     private PluginLoader pluginLoader;
+    private PluginConfig pluginConfig;
 
     private PluginDownloader pluginDownloader;
 
-    private ExtensionsManager(Path pluginYml) {
+    private ExtensionsManager(Path pluginYml, Path pluginConfigYml) {
         log.info("==> ExtensionManager instance creation process invoked");
         this.pluginYml = pluginYml;
         this.infrastructureInit = this.instantiateExtensionInfrastructure();
-        this.pluginContainer = new DefaultPluginContainer();
+        this.pluginConfig = new DefaultPluginConfig(pluginConfigYml);
+        this.pluginContainer = new DefaultPluginContainer((PluginStrategy) pluginConfig);
         this.pluginResolver = new DefaultPluginResolver();
         this.pluginLoader = new DefaultPluginLoader(this.pluginContainer);
         this.pluginDownloader = this.instantiatePluginDownloader();
@@ -60,9 +62,9 @@ class ExtensionsManager {
         return new DefaultPluginDownloader(registryUrl, pluginDestination, timeoutMilliseconds);
     }
 
-    static ExtensionsManager getInstance(Path pluginYml) {
+    static ExtensionsManager getInstance(Path pluginYml, Path pluginConfigYml) {
         if (isNull(extensionsManager)) {
-            extensionsManager = new ExtensionsManager(pluginYml);
+            extensionsManager = new ExtensionsManager(pluginYml, pluginConfigYml);
         }
         return extensionsManager;
     }

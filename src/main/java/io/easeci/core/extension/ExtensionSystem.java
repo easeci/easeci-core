@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
+import static io.easeci.core.workspace.LocationUtils.getPluginConfigYmlLocation;
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static java.util.Objects.isNull;
 
@@ -19,7 +20,7 @@ public class ExtensionSystem {
     public static ExtensionSystem getInstance() {
         if (isNull(extensionSystem)) {
             extensionSystem = new ExtensionSystem();
-            extensionSystem.extensionsManager = ExtensionsManager.getInstance(getPluginsYmlLocation());
+            extensionSystem.extensionsManager = ExtensionsManager.getInstance(getPluginsYmlLocation(), getPluginConfigYmlLocation());
         }
         return extensionSystem;
     }

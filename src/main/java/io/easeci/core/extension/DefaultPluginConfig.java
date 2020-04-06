@@ -6,15 +6,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static java.util.Objects.isNull;
 
-class DefaultPluginConfig implements PluginConfig {
+@Slf4j
+class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     private Path pluginConfigYmlPath;
     private PluginsConfigFile pluginsConfigFile;
 
     DefaultPluginConfig(Path pluginConfigYmlPath) {
         this.pluginConfigYmlPath = pluginConfigYmlPath;
+        this.pluginsConfigFile = this.load();
     }
 
     @Override
@@ -32,6 +35,34 @@ class DefaultPluginConfig implements PluginConfig {
     @Override
     public synchronized PluginsConfigFile save(PluginsConfigFile pluginsConfigFile) {
 //        TODO implement!
+        return null;
+    }
+
+    @Override
+    public boolean enable(UUID pluginUuid) {
+        return false;
+    }
+
+    @Override
+    public boolean disableAll(String interfaceName) {
+        return false;
+    }
+
+    @Override
+    public Instance choose(List<Instance> instanceList, String interfaceName) {
+        if (instanceList.size() == 1) {
+            return instanceList.get(0);
+        } if (instanceList.size() > 1) {
+            return instanceList.stream()
+                    .filter(this.pluginsConfigFile.getConfigDescriptions()
+                            .get(interfaceName)
+                            .stream()
+                            .filter(ConfigDescription::getEnabled)
+                            .findFirst()
+                            .orElse(ConfigDescription.empty()))
+                    .findFirst()
+                    .orElse(null);
+        }
         return null;
     }
 }
@@ -52,9 +83,7 @@ class PluginsConfigFile {
         items.forEach(map -> {
             List<Map<String, ?>> plugins = (List<Map<String, ?>>) map.get("item");
             String interfaceName = (String) map.get("interface");
-            plugins.forEach(plugin -> {
-                add(configDescriptions, interfaceName, ConfigDescription.of((Map<?, ?>) plugin.get("plugin")));
-            });
+            plugins.forEach(plugin -> add(configDescriptions, interfaceName, ConfigDescription.of((Map<?, ?>) plugin.get("plugin"))));
         });
         return new PluginsConfigFile(configDescriptions);
     }
@@ -73,10 +102,11 @@ class PluginsConfigFile {
     }
 }
 
+@Getter
 @ToString
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-class ConfigDescription {
+class ConfigDescription implements Predicate<Instance> {
     private UUID uuid;
     private String name;
     private String version;
@@ -88,5 +118,16 @@ class ConfigDescription {
         String version = (String) values.get("version");
         Boolean enabled = (Boolean) values.get("enabled");
         return new ConfigDescription(uuid, name, version, enabled);
+    }
+
+    static ConfigDescription empty() {
+        return new ConfigDescription(UUID.randomUUID(), "", "", false);
+    }
+
+    @Override
+    public boolean test(Instance instance) {
+        return this.name.equals(instance.getPlugin().getName())
+                && this.version.equals(instance.getPlugin().getVersion())
+                && this.enabled;
     }
 }
