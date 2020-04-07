@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.utils.io.FileUtils;
 import io.easeci.utils.io.YamlUtils;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 class DefaultPluginConfig implements PluginConfig, PluginStrategy {
@@ -17,6 +19,9 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     DefaultPluginConfig(Path pluginConfigYmlPath) {
         this.pluginConfigYmlPath = pluginConfigYmlPath;
+        if (isNull(this.pluginConfigYmlPath) || !FileUtils.isExist(this.pluginConfigYmlPath.toString())) {
+            throw new IllegalStateException("PluginsConfigFile is null or file not exists!");
+        }
         this.pluginsConfigFile = this.load();
     }
 
@@ -50,7 +55,9 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public Instance choose(List<Instance> instanceList, String interfaceName) {
-        if (instanceList.size() == 1) {
+        if (isNull(instanceList) || isNull(interfaceName)) {
+            return null;
+        } if (instanceList.size() == 1) {
             return instanceList.get(0);
         } if (instanceList.size() > 1) {
             return instanceList.stream()
@@ -77,15 +84,18 @@ class PluginsConfigFile {
     private Map<String, List<ConfigDescription>> configDescriptions;
 
     @SuppressWarnings("unchecked")
-    static PluginsConfigFile of(Map<?, ?> ymlValues) throws ClassCastException {
+    static PluginsConfigFile of(Map<?, ?> ymlValues) throws ClassCastException, YamlUtils.YamlException {
         Map<String, List<ConfigDescription>> configDescriptions = new HashMap<>();
         List<Map<?, ?>> items = (List<Map<?, ?>>) YamlUtils.ymlGet(ymlValues, "extension").getValue();
-        items.forEach(map -> {
-            List<Map<String, ?>> plugins = (List<Map<String, ?>>) map.get("item");
-            String interfaceName = (String) map.get("interface");
-            plugins.forEach(plugin -> add(configDescriptions, interfaceName, ConfigDescription.of((Map<?, ?>) plugin.get("plugin"))));
-        });
-        return new PluginsConfigFile(configDescriptions);
+        if (nonNull(items)) {
+            items.forEach(map -> {
+                List<Map<String, ?>> plugins = (List<Map<String, ?>>) map.get("item");
+                String interfaceName = (String) map.get("interface");
+                plugins.forEach(plugin -> add(configDescriptions, interfaceName, ConfigDescription.of((Map<?, ?>) plugin.get("plugin"))));
+            });
+            return new PluginsConfigFile(configDescriptions);
+        }
+        return new PluginsConfigFile();
     }
 
     private static void add(Map<String, List<ConfigDescription>> configDescriptionsMap, String interfaceName, ConfigDescription configDescription) {
