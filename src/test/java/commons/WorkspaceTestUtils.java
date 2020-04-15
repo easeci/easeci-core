@@ -15,4 +15,9 @@ public class WorkspaceTestUtils {
         Path path = Paths.get(Objects.requireNonNull(url).getPath());
         return YamlUtils.ymlLoad(path);
     }
+
+    public static Path buildPathFromResources(String reference) {
+        URL url = WorkspaceTestUtils.class.getClassLoader().getResource(reference);
+        return Paths.get(Objects.requireNonNull(url).getPath());
+    }
 }
