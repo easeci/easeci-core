@@ -48,6 +48,6 @@ public class LocationUtils {
 
     public static Path getPluginConfigYmlLocation() {
         return Paths.get(getWorkspaceLocation()
-                .concat("/plugins-config.yml"));
+                .concat("/plugins-config.json"));
     }
 }

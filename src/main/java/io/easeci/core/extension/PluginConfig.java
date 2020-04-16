@@ -6,7 +6,13 @@ interface PluginConfig {
 
     PluginsConfigFile load();
 
-    PluginsConfigFile save(PluginsConfigFile pluginsConfigFile);
+    PluginsConfigFile save();
+
+    boolean add(String interfaceName, ConfigDescription configDescription);
+
+    boolean update(ConfigDescription configDescription);
+
+    boolean remove(ConfigDescription configDescription);
 
     boolean enable(UUID pluginUuid);
 
