@@ -1,19 +1,24 @@
 package io.easeci.core.extension;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.utils.io.FileUtils;
-import io.easeci.utils.io.YamlUtils;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @Slf4j
 class DefaultPluginConfig implements PluginConfig, PluginStrategy {
+    private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
     private Path pluginConfigYmlPath;
     private PluginsConfigFile pluginsConfigFile;
 
@@ -27,20 +32,41 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public PluginsConfigFile load() {
-        Map<?, ?> values = YamlUtils.ymlLoad(this.pluginConfigYmlPath);
         try {
-            this.pluginsConfigFile = PluginsConfigFile.of(values);
+            this.pluginsConfigFile = JSON_MAPPER.readValue(this.pluginConfigYmlPath.toFile(), PluginsConfigFile.class);
             return this.pluginsConfigFile;
-        } catch (ClassCastException exception) {
+        } catch (IOException exception) {
             exception.printStackTrace();
-            return null;
         }
+        return null;
     }
 
     @Override
-    public synchronized PluginsConfigFile save(PluginsConfigFile pluginsConfigFile) {
-//        TODO implement!
-        return null;
+    public synchronized PluginsConfigFile save() {
+        try {
+            String content = JSON_MAPPER.writeValueAsString(this.pluginsConfigFile);
+            Path path = FileUtils.fileChange(this.pluginConfigYmlPath.toString(), content);
+            log.info("===> PluginsConfigFile saved in: {}", path.toString());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return this.pluginsConfigFile;
+        }
+        return load();
+    }
+
+    @Override
+    public boolean add(String interfaceName, ConfigDescription configDescription) {
+        return this.pluginsConfigFile.put(interfaceName, configDescription);
+    }
+
+    @Override
+    public boolean update(ConfigDescription configDescription) {
+        return false;
+    }
+
+    @Override
+    public boolean remove(ConfigDescription configDescription) {
+        return false;
     }
 
     @Override
@@ -81,38 +107,21 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 class PluginsConfigFile {
-    private Map<String, List<ConfigDescription>> configDescriptions;
+    private Map<String, Set<ConfigDescription>> configDescriptions;
 
-    @SuppressWarnings("unchecked")
-    static PluginsConfigFile of(Map<?, ?> ymlValues) throws ClassCastException, YamlUtils.YamlException {
-        Map<String, List<ConfigDescription>> configDescriptions = new HashMap<>();
-        List<Map<?, ?>> items = (List<Map<?, ?>>) YamlUtils.ymlGet(ymlValues, "extension").getValue();
-        if (nonNull(items)) {
-            items.forEach(map -> {
-                List<Map<String, ?>> plugins = (List<Map<String, ?>>) map.get("item");
-                String interfaceName = (String) map.get("interface");
-                plugins.forEach(plugin -> add(configDescriptions, interfaceName, ConfigDescription.of((Map<?, ?>) plugin.get("plugin"))));
-            });
-            return new PluginsConfigFile(configDescriptions);
-        }
-        return new PluginsConfigFile();
-    }
-
-    private static void add(Map<String, List<ConfigDescription>> configDescriptionsMap, String interfaceName, ConfigDescription configDescription) {
-        List<ConfigDescription> configDescriptionList = configDescriptionsMap.get(interfaceName);
-        if (isNull(configDescriptionList)) {
-            configDescriptionsMap.put(interfaceName, new ArrayList<>(Collections.singletonList(configDescription)));
+    boolean put(String interfaceName, ConfigDescription configDescription) {
+        Set<ConfigDescription> configDescriptionSet = this.configDescriptions.get(interfaceName);
+        if (isNull(configDescriptionSet)) {
+            this.configDescriptions.put(interfaceName, Set.of(configDescription));
         } else {
-            if (configDescriptionList.contains(configDescription)) {
-                log.error("===> Cannot add two the same PluginConfigFile data objects for this one: {}", configDescription);
-                return;
-            }
-            configDescriptionList.add(configDescription);
+            configDescriptionSet.add(configDescription);
         }
+        return true;
     }
 }
 
 @Getter
+@Builder
 @ToString
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -121,14 +130,6 @@ class ConfigDescription implements Predicate<Instance> {
     private String name;
     private String version;
     private Boolean enabled;
-
-    static ConfigDescription of(Map<?, ?> values) throws ClassCastException {
-        UUID uuid = UUID.fromString((String) values.get("uuid"));
-        String name = (String) values.get("name");
-        String version = (String) values.get("version");
-        Boolean enabled = (Boolean) values.get("enabled");
-        return new ConfigDescription(uuid, name, version, enabled);
-    }
 
     static ConfigDescription empty() {
         return new ConfigDescription(UUID.randomUUID(), "", "", false);
@@ -139,5 +140,17 @@ class ConfigDescription implements Predicate<Instance> {
         return this.name.equals(instance.getPlugin().getName())
                 && this.version.equals(instance.getPlugin().getVersion())
                 && this.enabled;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        ConfigDescription configDescription = (ConfigDescription) obj;
+        return this.name.equals(configDescription.name)
+                && this.version.equals(configDescription.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

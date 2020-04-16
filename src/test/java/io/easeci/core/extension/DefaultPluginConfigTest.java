@@ -10,14 +10,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultPluginConfigTest {
-    private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test.yml",
-                                 NOT_EXISTING_FILE = "workspace/not-exists/plugins-config-test.yml",
-                               INVALID_CONFIG_FILE = "workspace/plugins-config-test-invalid.yml";
+    private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test.json",
+                                 NOT_EXISTING_FILE = "workspace/not-exists/plugins-config-test.json",
+                               INVALID_CONFIG_FILE = "workspace/plugins-config-test-invalid.json";
 
     private final static String INSTANCE_A_INTERFACE = "io.easeci.extension.bootstrap.OnStartup",
                                 INSTANCE_B_INTERFACE = "io.easeci.extension.bootstrap.OnStartup";
@@ -120,6 +121,31 @@ class DefaultPluginConfigTest {
         Object text = chosen.getInstance();
 
         assertEquals(INSTANCE_A_OBJECT, text);
+    }
+
+    @Test
+    @DisplayName("Should correctly save modified object to file in correct yaml format")
+    void savePluginConfigurationTest() {
+        Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginConfig pluginConfig = new DefaultPluginConfig(path);
+        PluginsConfigFile before = pluginConfig.load();
+
+//        Before adding new implementation size = 2
+        assertEquals(2, before.getConfigDescriptions().get("io.easeci.extension.bootstrap.TestPlugin").size());
+
+        ConfigDescription configDescription = ConfigDescription.builder()
+                .uuid(UUID.randomUUID())
+                .name("add-test-plugin")
+                .version("0.0.1")
+                .enabled(false)
+                .build();
+
+        pluginConfig.add("io.easeci.extension.bootstrap.TestPlugin", configDescription);
+        PluginsConfigFile saved = pluginConfig.save();
+
+//        Before adding new implementation size = 3
+        assertAll(() -> assertNotNull(saved),
+                () -> assertEquals(3, saved.getConfigDescriptions().get("io.easeci.extension.bootstrap.TestPlugin").size()));
     }
 
     private List<Instance> provideSingleInstanceList() {
