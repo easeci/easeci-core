@@ -1,5 +1,6 @@
 package com.meksula;
 
+import io.easeci.extension.ExtensionType;
 import io.easeci.extension.bootstrap.OnStartup;
 
 public class WelcomeLogo implements OnStartup {
@@ -19,6 +20,11 @@ public class WelcomeLogo implements OnStartup {
 
     @Override
     public String about() {
+        return null;
+    }
+
+    @Override
+    public ExtensionType type() {
         return null;
     }
 }
