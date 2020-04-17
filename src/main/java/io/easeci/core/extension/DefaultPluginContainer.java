@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
@@ -37,16 +38,38 @@ class DefaultPluginContainer implements PluginContainer {
     @Override
     public <T> T getSpecific(String interfaceName, Class<T> type) {
         Instance instance = get(interfaceName);
-        try {
-            return type.cast(Objects.requireNonNull(instance).getInstance());
-        } catch (ClassCastException | NullPointerException exception) {
-            return null;
+        return cast(instance, type);
+    }
+
+    @Override
+    public <T> List<T> getGathered(String interfaceName, Class<T> type) {
+        List<Instance> instances = container.get(interfaceName);
+        if (isNull(instances) || instances.isEmpty()) {
+            return Collections.emptyList();
         }
+        return instances
+                .stream()
+                .dropWhile(instance -> isNull(instance.getInstance()))
+                .map(instance -> cast(instance, type))
+                .dropWhile(Objects::isNull)
+                .collect(Collectors.toList());
     }
 
     private Instance get(String interfaceName) {
         List<Instance> instanceList = ofNullable(container.get(interfaceName)).orElse(Collections.emptyList());
         return pluginStrategy.choose(instanceList, interfaceName);
+    }
+
+    private <T> T cast(Instance instance, Class<T> type) {
+        if (isNull(instance)) {
+            return null;
+        }
+        try {
+            return type.cast(Objects.requireNonNull(instance).getInstance());
+        } catch (ClassCastException | NullPointerException exception) {
+            exception.printStackTrace();
+            return null;
+        }
     }
 
     @Override
