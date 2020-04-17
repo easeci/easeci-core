@@ -17,6 +17,8 @@ public class EaseciCoreApplication {
         ExtensionSystem.getInstance().get("io.easeci.extension.bootstrap.OnStartup", OnStartup.class)
                 .ifPresentOrElse(OnStartup::action, () -> log.error("===> Could not find {} implementation in system", OnStartup.class));
 
+        ExtensionSystem.getInstance().startStandalonePlugins();
+
         SpringApplication.run(EaseciCoreApplication.class, args);
     }
 }

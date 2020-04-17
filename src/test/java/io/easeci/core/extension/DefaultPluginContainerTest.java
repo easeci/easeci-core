@@ -5,10 +5,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.nio.file.Path;
+import java.util.List;
+
+import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static io.easeci.core.extension.utils.PluginContainerUtils.fromBasic;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultPluginContainerTest {
+    private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test.json";
     private PluginContainer pluginContainer;
     private PluginStrategy pluginStrategy = Mockito.mock(PluginStrategy.class);
 
@@ -109,5 +114,131 @@ class DefaultPluginContainerTest {
     @DisplayName("Should return 0 (zero) when container is empty")
     void defaultPluginContainerSizeTest() {
         assertEquals(0, pluginContainer.size());
+    }
+
+    @Test
+    @DisplayName("Should correctly get concrete implementation with getSpecific(..) method where there is only one object")
+    void defaultPluginContainerGetSpecific() {
+        final String INTERFACE_NAME = "java.lang.String";
+        final String IMPLEMENTATION_A = "This is implementation A";
+
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        pluginContainer.add(instanceA);
+
+        String specific = pluginContainer.getSpecific(INTERFACE_NAME, String.class);
+
+        assertEquals(1, pluginContainer.size());
+        assertEquals(IMPLEMENTATION_A, specific);
+    }
+
+    @Test
+    @DisplayName("Should correctly get concrete implementation with getSpecific(..) when there is more than one object")
+    void defaultPluginContainerMultiObjectsGetSpecific() {
+        final String INTERFACE_NAME = "java.lang.String";
+        final String IMPLEMENTATION_A = "This is implementation A";
+        final String IMPLEMENTATION_B = "This is implementation B";
+
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        Instance instanceB = fromBasic(INTERFACE_NAME, IMPLEMENTATION_B);
+        pluginContainer.add(instanceA);
+        pluginContainer.add(instanceB);
+
+        String specific = pluginContainer.getSpecific(INTERFACE_NAME, String.class);
+
+        assertEquals(1, pluginContainer.size());
+        assertEquals(IMPLEMENTATION_A, specific);
+    }
+
+    @Test
+    @DisplayName("Should return empty list when cannot find interface name in container")
+    void defaultPluginContainerInterfaceNotRecognizedGetSpecific() {
+        final String INTERFACE_NAME = "java.lang.String";
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        String specific = pluginContainer.getSpecific(INTERFACE_NAME, String.class);
+
+        assertNull(specific);
+    }
+
+    @Test
+    @DisplayName("Should return null when trying to cast instance to not matching type")
+    void defaultPluginContainerCastExceptionGetSpecific() {
+        final String INTERFACE_NAME = "java.lang.String";
+        final String IMPLEMENTATION_A = "This is implementation A";
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        pluginContainer.add(instanceA);
+
+        Double specific = pluginContainer.getSpecific(INTERFACE_NAME, Double.class);
+
+        assertNull(specific);
+    }
+
+    @Test
+    @DisplayName("Should correctly get all instances of Standalone interface")
+    void defaultPluginContainerGetGathered() {
+        final String INTERFACE_NAME = "java.lang.String";
+        final String IMPLEMENTATION_A = "This is implementation A";
+        final String IMPLEMENTATION_B = "This is implementation B";
+
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        Instance instanceB = fromBasic(INTERFACE_NAME, IMPLEMENTATION_B, "0.0.2");
+        pluginContainer.add(instanceA);
+        pluginContainer.add(instanceB);
+
+        List<String> gathered = pluginContainer.getGathered(INTERFACE_NAME, String.class);
+
+        assertEquals(2, gathered.size());
+    }
+
+    @Test
+    @DisplayName("Should return empty list when there is any implementation of Standalone interface in container")
+    void defaultPluginContainerEmptyListGetGathered() {
+        final String INTERFACE_NAME = "java.lang.String";
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        List<String> gathered = pluginContainer.getGathered(INTERFACE_NAME, String.class);
+
+        assertTrue(gathered.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should not return element on list when cast exception occurred (null value should be dropped from Stream)")
+    void defaultPluginContainerCastExceptionGetGathered() {
+        final String INTERFACE_NAME = "java.lang.String";
+        final String IMPLEMENTATION_A = "This is implementation A";
+        final String IMPLEMENTATION_B = "This is implementation B";
+
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        Instance instanceB = fromBasic(INTERFACE_NAME, IMPLEMENTATION_B, "0.0.2");
+        pluginContainer.add(instanceA);
+        pluginContainer.add(instanceB);
+
+        List<Double> gathered = pluginContainer.getGathered(INTERFACE_NAME, Double.class);
+
+        assertTrue(gathered.isEmpty());
     }
 }

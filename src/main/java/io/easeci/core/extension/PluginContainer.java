@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -32,6 +33,8 @@ interface PluginContainer {
      *                      it it specified in second method's argument
      * */
     <T> T getSpecific(String interfaceName, Class<T> type);
+
+    <T> List<T> getGathered(String interfaceName, Class<T> type);
 
     /**
      * Removes instance from container.
