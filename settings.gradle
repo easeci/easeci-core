@@ -1,4 +1,5 @@
 rootProject.name = 'easeci-core'
 include 'extension-api'
 include 'welcome-logo'
+include 'time-printer'
 
