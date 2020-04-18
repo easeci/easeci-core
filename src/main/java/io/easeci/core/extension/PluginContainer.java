@@ -30,10 +30,21 @@ interface PluginContainer {
      *                      io.easeci.extension.bootstrap.OnStartup
      * @param type is a class's type that you want this method to return
      * @return instance of class stored before in container of type like
-     *                      it it specified in second method's argument
+     *                      it is specified in second method's argument
      * */
     <T> T getSpecific(String interfaceName, Class<T> type);
 
+    /**
+     * Get all implementations of Standalone plugins from extension-api.
+     * Standalone plugins is plugin's type that could be run next of
+     * main application flow.
+     * @param interfaceName is a path of interface in extension-api
+     *                      for example: (restrict a format!)
+     *                      io.easeci.extension.bootstrap.OnStartup
+     * @param type is a class's type that you want this method to return
+     * @return all instances of class stored before in container of type like
+     *                      it is specified in second method's argument
+     * */
     <T> List<T> getGathered(String interfaceName, Class<T> type);
 
     /**
@@ -50,14 +61,17 @@ interface PluginContainer {
 
     /**
      * Get information of current state of container
-     * @return string representation of container's information.
+     * @return POJO representation of container's information.
      * */
-    String state();
+    PluginContainerState state();
 
     /**
      * @return size of current container's key set
      * */
     int size();
 
+    /**
+     * @return size of instance of specific interface
+     * */
     int implementationSize(String interfaceName);
 }
