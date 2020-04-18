@@ -79,7 +79,7 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
-    public String state() {
+    public PluginContainerState state() {
 //        TODO implement!
         return null;
     }
