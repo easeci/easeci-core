@@ -1,5 +1,8 @@
 package io.easeci.core.extension;
 
+import io.easeci.api.extension.ActionRequest;
+import io.easeci.api.extension.ActionResponse;
+import io.easeci.extension.ExtensionType;
 import io.easeci.utils.io.YamlUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -15,7 +18,7 @@ import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static java.util.Objects.isNull;
 
 @Slf4j
-class ExtensionsManager {
+class ExtensionsManager implements ExtensionControllable {
     private static ExtensionsManager extensionsManager;
 
     private Path pluginYml;
@@ -78,6 +81,29 @@ class ExtensionsManager {
         } else if (pluginsNotResolved.isEmpty()) {
             log.info("====> All plugins was loaded correctly.\nReport:\n {}", getReport(resolve));
         }
+    }
+
+    @Override
+    public PluginContainerState state(ExtensionType extensionType) {
+        return this.pluginContainer.state(extensionType);
+    }
+
+    @Override
+    public ActionResponse shutdownExtension(ActionRequest actionRequest) {
+//        TODO
+        return null;
+    }
+
+    @Override
+    public ActionResponse startupExtension(ActionRequest actionRequest) {
+//        TODO
+        return null;
+    }
+
+    @Override
+    public ActionResponse restart(ActionRequest actionRequest) {
+//        TODO
+        return null;
     }
 
     private String getReport(Set<Plugin> resolve) {

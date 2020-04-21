@@ -4,4 +4,6 @@ import java.util.List;
 
 interface PluginStrategy {
     Instance choose(List<Instance> instanceList, String interfaceName);
+
+    PluginsConfigFile pluginsConfigFile();
 }
