@@ -98,6 +98,11 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
         }
         return null;
     }
+
+    @Override
+    public PluginsConfigFile pluginsConfigFile() {
+        return this.pluginsConfigFile;
+    }
 }
 
 @Slf4j

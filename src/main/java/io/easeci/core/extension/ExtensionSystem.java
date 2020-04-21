@@ -1,5 +1,8 @@
 package io.easeci.core.extension;
 
+import io.easeci.api.extension.ActionRequest;
+import io.easeci.api.extension.ActionResponse;
+import io.easeci.extension.ExtensionType;
 import io.easeci.extension.Standalone;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -15,7 +18,7 @@ import static java.util.Objects.isNull;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ExtensionSystem {
+public class ExtensionSystem implements ExtensionControllable {
     private final static String STANDALONE_INTERFACE = "io.easeci.extension.Standalone";
     private final static Class<Standalone> STANDALONE_CLASS = Standalone.class;
     private static ExtensionSystem extensionSystem;
@@ -64,5 +67,25 @@ public class ExtensionSystem {
                 .distinct()
                 .peek(Standalone::start)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PluginContainerState state(ExtensionType extensionType) {
+        return ((ExtensionControllable) this.extensionsManager).state(extensionType);
+    }
+
+    @Override
+    public ActionResponse shutdownExtension(ActionRequest actionRequest) {
+        return ((ExtensionControllable) this.extensionsManager).shutdownExtension(actionRequest);
+    }
+
+    @Override
+    public ActionResponse startupExtension(ActionRequest actionRequest) {
+        return ((ExtensionControllable) this.extensionsManager).startupExtension(actionRequest);
+    }
+
+    @Override
+    public ActionResponse restart(ActionRequest actionRequest) {
+        return ((ExtensionControllable) this.extensionsManager).restart(actionRequest);
     }
 }

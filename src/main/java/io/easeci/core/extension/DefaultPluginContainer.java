@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.extension.ExtensionType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -79,9 +80,14 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
-    public PluginContainerState state() {
+    public PluginContainerState state(ExtensionType extensionType) {
 //        TODO implement!
-        return null;
+
+        PluginContainerState pluginContainerState = new PluginContainerState();
+        pluginContainerState.setContainer(this.container);
+        pluginContainerState.setPluginsConfigFile(this.pluginStrategy.pluginsConfigFile());
+
+        return pluginContainerState;
     }
 
     @Override

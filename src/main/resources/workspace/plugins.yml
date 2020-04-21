@@ -12,3 +12,6 @@ extensions:
   - plugin:
       name: welcome-logo
       version: 0.0.1
+  - plugin:
+      name: time-printer
+      version: 0.0.1
