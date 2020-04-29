@@ -1,6 +1,6 @@
 package commons;
 
-import io.easeci.utils.io.YamlUtils;
+import io.easeci.commons.YamlUtils;
 
 import java.net.URL;
 import java.nio.file.Path;

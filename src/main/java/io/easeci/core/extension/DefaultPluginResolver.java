@@ -1,7 +1,7 @@
 package io.easeci.core.extension;
 
-import io.easeci.utils.io.FileUtils;
-import io.easeci.utils.io.YamlUtils;
+import io.easeci.commons.FileUtils;
+import io.easeci.commons.YamlUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static io.easeci.core.extension.Utils.likelyLocations;
 import static io.easeci.core.extension.Utils.pluginFileName;
-import static io.easeci.utils.io.YamlUtils.ymlGet;
+import static io.easeci.commons.YamlUtils.ymlGet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 

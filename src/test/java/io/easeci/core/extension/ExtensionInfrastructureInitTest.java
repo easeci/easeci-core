@@ -1,8 +1,8 @@
 package io.easeci.core.extension;
 
 import io.easeci.core.bootstrap.LinuxBootstrapper;
-import io.easeci.utils.io.DirUtils;
-import io.easeci.utils.io.FileUtils;
+import io.easeci.commons.DirUtils;
+import io.easeci.commons.FileUtils;
 import org.junit.jupiter.api.*;
 
 import java.io.File;

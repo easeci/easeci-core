@@ -1,6 +1,6 @@
 package io.easeci.core.workspace;
 
-import io.easeci.utils.io.YamlUtils;
+import io.easeci.commons.YamlUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;

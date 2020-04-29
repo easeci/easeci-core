@@ -15,5 +15,5 @@ public class State {
     private LocalDateTime startDateTime;
     private LocalDateTime stopDateTime;
     private boolean isRunning;
-    private String threadName = Thread.currentThread().getName();
+    private final String threadName = Thread.currentThread().getName();
 }
