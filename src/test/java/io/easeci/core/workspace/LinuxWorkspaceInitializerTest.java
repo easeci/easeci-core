@@ -1,6 +1,6 @@
 package io.easeci.core.workspace;
 
-import io.easeci.utils.io.YamlUtils;
+import io.easeci.commons.YamlUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

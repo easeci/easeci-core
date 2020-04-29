@@ -2,7 +2,7 @@ package io.easeci.core.extension;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.easeci.utils.io.FileUtils;
+import io.easeci.commons.FileUtils;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 

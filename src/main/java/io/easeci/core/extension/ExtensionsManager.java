@@ -3,7 +3,7 @@ package io.easeci.core.extension;
 import io.easeci.api.extension.ActionRequest;
 import io.easeci.api.extension.ActionResponse;
 import io.easeci.extension.ExtensionType;
-import io.easeci.utils.io.YamlUtils;
+import io.easeci.commons.YamlUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

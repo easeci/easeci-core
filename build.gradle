@@ -1,9 +1,17 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "io.ratpack:ratpack-gradle:1.8.0"
+    }
+}
+
 plugins {
-    id 'org.springframework.boot' version '2.2.2.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.61'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'application'
     id 'java'
-    id 'groovy'
 }
 
 group = 'io.easeci.core'
@@ -22,17 +30,10 @@ repositories {
 
 dependencies {
     compile project(':extension-api')
-//    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-//    implementation 'org.springframework.boot:spring-boot-starter-cache'
-//    implementation 'org.springframework.boot:spring-boot-starter-mail'
-//    implementation 'org.springframework.boot:spring-boot-starter-quartz'
-//    implementation 'org.springframework.boot:spring-boot-starter-security'
-//    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    compile project(':io-lib')
+
+    implementation 'io.ratpack:ratpack-core:1.8.0'
     implementation 'org.codehaus.groovy:groovy-all:2.5.8'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.3.61'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.61"
     implementation 'org.yaml:snakeyaml:1.25'
     implementation 'org.python:jython:2.7.2b2'
     implementation 'com.google.guava:guava:28.1-jre'
@@ -40,27 +41,32 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'org.javatuples:javatuples:1.2'
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+    implementation 'org.slf4j:slf4j-simple:1.7.30'
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
+    implementation 'javax.validation:validation-api:2.0.1.Final'
+    implementation 'org.hibernate.validator:hibernate-validator:6.1.4.Final'
+
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.6.2'
     testImplementation 'org.mockito:mockito-core:3.3.3'
-    testImplementation 'io.projectreactor:reactor-test'
-//    testImplementation 'org.springframework.security:spring-security-test'
 }
 
-configurations {
-    runtime.exclude module: 'spring-boot-starter-tomcat'
-    compile.exclude module: 'spring-boot-starter-tomcat'
-}
+mainClassName = 'io.easeci.EaseciCoreApplication'
 
-sourceSets {
-    main {
-        java { srcDirs = [] }
-        groovy { srcDirs += ['src/main/java'] }
-        kotlin { srcDirs += ['src/main/java'] }
+jar {
+    def mainClassName = 'io.easeci.EaseciCoreApplication'
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': "${mainClassName}"
+        )
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 

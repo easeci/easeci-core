@@ -1,7 +1,7 @@
 package io.easeci.core.log.file;
 
 import io.easeci.core.output.Event;
-import io.easeci.utils.io.FileUtils;
+import io.easeci.commons.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

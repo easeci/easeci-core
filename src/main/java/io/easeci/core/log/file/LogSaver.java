@@ -2,7 +2,7 @@ package io.easeci.core.log.file;
 
 import com.google.common.collect.ObjectArrays;
 import io.easeci.core.output.Event;
-import io.easeci.utils.io.FileUtils;
+import io.easeci.commons.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 
