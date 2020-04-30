@@ -54,5 +54,6 @@ public class LinuxBootstrapper implements Bootstrapper {
                 .build());
         this.extensionSystem = ExtensionSystem.getInstance();
         this.extensionSystem.start();
+        this.extensionSystem.startStandalonePlugins();
     }
 }
