@@ -1,10 +1,13 @@
 package io.easeci;
 
+import io.easeci.api.extension.ExtensionHandlers;
 import io.easeci.core.bootstrap.BootstrapperFactory;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.extension.bootstrap.OnStartup;
 import io.easeci.server.ServerBootstrapper;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 public class EaseciCoreApplication {
@@ -17,6 +20,7 @@ public class EaseciCoreApplication {
 
         ExtensionSystem.getInstance().startStandalonePlugins();
 
+        ServerBootstrapper.instantiate(List.of(new ExtensionHandlers()), null);
         ServerBootstrapper.getInstance().run();
     }
 }
