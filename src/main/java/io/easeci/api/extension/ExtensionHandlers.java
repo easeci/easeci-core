@@ -3,10 +3,10 @@ package io.easeci.api.extension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
-import io.easeci.core.extension.PluginContainerState;
 import io.easeci.extension.ExtensionType;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
+import ratpack.exec.Promise;
 
 import java.util.List;
 
@@ -14,6 +14,7 @@ import static ratpack.http.HttpMethod.*;
 import static ratpack.http.MediaType.APPLICATION_JSON;
 
 public class ExtensionHandlers implements InternalHandlers {
+    private final static String MAPPING = "plugin/";
     private ExtensionControllable controllable;
     private ObjectMapper objectMapper;
 
@@ -22,43 +23,61 @@ public class ExtensionHandlers implements InternalHandlers {
         this.objectMapper = new ObjectMapper();
     }
 
-    private EndpointDeclaration getState() {
-        return EndpointDeclaration.builder()
-                .httpMethod(GET)
-                .endpointUri("state/:extensionType")
-                .handler(ctx -> {
-                    String extensionType = ctx.getPathTokens().get("extensionType").toUpperCase();
-                    PluginContainerState containerState = this.controllable.state(ExtensionType.valueOf(extensionType));
-                    ctx.getResponse().contentType(APPLICATION_JSON);
-                    byte[] responseAsBytes = objectMapper.writeValueAsBytes(containerState);
-                    ctx.getResponse().send(responseAsBytes);
-                })
-                .build();
-    }
-
     @Override
     public List<EndpointDeclaration> endpoints() {
         return List.of(
-                getState()
+                getState(),
+                shutdownExtension(),
+                enableExtension(),
+                restartExtension()
         );
     }
 
-//
-//    @PatchMapping("/shutdown")
-//    @ResponseStatus(HttpStatus.OK)
-//    Mono<ActionResponse> shutdownExtension(@RequestBody ActionRequest actionRequest) {
-//        return Mono.just(this.controllable.shutdownExtension(actionRequest));
-//    }
-//
-//    @PatchMapping("/startup")
-//    @ResponseStatus(HttpStatus.OK)
-//    Mono<ActionResponse> enableExtension(@RequestBody ActionRequest actionRequest) {
-//        return Mono.just(this.controllable.startupExtension(actionRequest));
-//    }
-//
-//    @PatchMapping("/restart")
-//    @ResponseStatus(HttpStatus.OK)
-//    Mono<ActionResponse> restartExtension(@RequestBody ActionRequest actionRequest) {
-//        return Mono.just(this.controllable.restart(actionRequest));
-//    }
+    private EndpointDeclaration getState() {
+        return EndpointDeclaration.builder()
+                .httpMethod(GET)
+                .endpointUri(MAPPING + "state/:extensionType")
+                .handler(ctx -> Promise.value(ctx.getPathTokens().get("extensionType").toUpperCase())
+                        .map(ExtensionType::valueOf)
+                        .map(extensionType -> this.controllable.state(extensionType))
+                        .map(pluginContainerState -> objectMapper.writeValueAsBytes(pluginContainerState))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    private EndpointDeclaration shutdownExtension() {
+        return EndpointDeclaration.builder()
+                .httpMethod(PATCH)
+                .endpointUri(MAPPING + "shutdown")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> objectMapper.readValue(typedData.getBytes(), ActionRequest.class))
+                        .map(actionRequest -> this.controllable.shutdownExtension(actionRequest))
+                        .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    private EndpointDeclaration enableExtension() {
+        return EndpointDeclaration.builder()
+                .httpMethod(PATCH)
+                .endpointUri(MAPPING + "startup")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> objectMapper.readValue(typedData.getBytes(), ActionRequest.class))
+                        .map(actionRequest -> this.controllable.startupExtension(actionRequest))
+                        .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    private EndpointDeclaration restartExtension() {
+        return EndpointDeclaration.builder()
+                .httpMethod(PATCH)
+                .endpointUri(MAPPING + "restart")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> objectMapper.readValue(typedData.getBytes(), ActionRequest.class))
+                        .map(actionRequest -> this.controllable.restart(actionRequest))
+                        .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
 }

@@ -2,11 +2,11 @@ package io.easeci.server;
 
 import ratpack.handling.Chain;
 import ratpack.handling.Handler;
+import ratpack.http.HttpMethod;
 import ratpack.server.RatpackServer;
 
 import java.util.List;
 
-import static io.vavr.API.*;
 import static java.util.Objects.isNull;
 import static ratpack.http.HttpMethod.*;
 
@@ -65,14 +65,13 @@ public class ServerBootstrapper {
     private void attach(Chain chain, EndpointDeclaration declaration) {
         String endpointUri = declaration.getEndpointUri();
         Handler handler = declaration.getHandler();
-        Match(declaration.getHttpMethod())
-                .of(
-                        Case($(GET), chain.get(endpointUri, handler)),
-                        Case($(POST), chain.post(endpointUri, handler)),
-                        Case($(PATCH), chain.patch(endpointUri, handler)),
-                        Case($(PUT), chain.put(endpointUri, handler)),
-                        Case($(DELETE), chain.delete(endpointUri, handler)),
-                        Case($(OPTIONS), chain.options(endpointUri, handler))
-                );
+        HttpMethod method = declaration.getHttpMethod();
+
+        if (GET.equals(method))          chain.get(endpointUri, handler);
+        else if (POST.equals(method))    chain.post(endpointUri, handler);
+        else if (PATCH.equals(method))   chain.patch(endpointUri, handler);
+        else if (PUT.equals(method))     chain.put(endpointUri, handler);
+        else if (DELETE.equals(method))  chain.delete(endpointUri, handler);
+        else if (OPTIONS.equals(method)) chain.options(endpointUri, handler);
     }
 }
