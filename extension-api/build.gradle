@@ -12,6 +12,8 @@ repositories {
 dependencies {
     compile 'org.codehaus.groovy:groovy:2.4.10'
 
+    implementation 'io.ratpack:ratpack-core:1.8.0'
+
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
