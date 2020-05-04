@@ -8,12 +8,12 @@ version '0.0.1'
 sourceCompatibility = '11'
 
 repositories {
-
     mavenCentral()
 }
 
 dependencies {
     compile project(':extension-api')
+    compile project(':welcome-logo')
 
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
@@ -22,4 +22,17 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Implements': 'io.easeci.extension.Standalone',
+                'Entry-Class': 'com.meksula.TimePrinter'
+        )
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

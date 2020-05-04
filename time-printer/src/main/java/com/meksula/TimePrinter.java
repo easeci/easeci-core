@@ -14,7 +14,8 @@ public class TimePrinter implements Standalone {
 
     @Override
     public void start() {
-        executorService.scheduleAtFixedRate(() -> System.out.printf("\n===> [time-printer] %s", LocalDateTime.now()), 1, 1, TimeUnit.SECONDS);
+        new WelcomeLogo().action();
+        executorService.scheduleAtFixedRate(() -> System.out.printf("\n===> [time-printer] %s %s", LocalDateTime.now(), Thread.currentThread().getName()), 1, 1, TimeUnit.SECONDS);
     }
 
     @Override
