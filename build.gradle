@@ -10,6 +10,8 @@ buildscript {
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'jacoco'
+    id 'com.github.dawnwords.jacoco.badge' version '0.1.0'
     id 'application'
     id 'java'
 }
@@ -78,4 +80,19 @@ jar {
 
 test {
     useJUnitPlatform()
+}
+
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
+
+check.dependsOn jacocoTestReport
+
+jacocoBadgeGenSetting {
+    jacocoReportPath  "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
+    readmePath "$projectDir/README.md"
 }
