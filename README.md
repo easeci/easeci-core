@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/easeci/easeci-core-java.svg?branch=master)](https://travis-ci.org/easeci/easeci-core-java)
+![LINE](https://img.shields.io/badge/line--coverage-60%25-orange.svg)
 
 Ease CI core
 ================
@@ -21,10 +22,22 @@ If you want to develop the EaseCI project, you must follow several community rul
 
 In Ease CI you can write in any JVM language. No matter which one.
 The only condition is that the application works properly.
+<br>Main:
 - Java 11
-- Kotlin 1.3
 - Groovy 2.5
-- Spring 5 (Spring Boot 2.2.2)
+- Ratpack 1.8
+- Netty 4.1
+<hr>
+
+<br>Libraries:
 - Junit 5
-- Pivotal Reactor
-- Netty application server
+- Mockito 3
+- RxJava 3
+- Vavr 0.10.2
+- Guava 28.1
+- Lombok 1.18
+
+## Plugin system
+
+EaseCI core as the name implies only provides an easily expandable core. Plugins for EaseCI can be developed 
+in any language that compiles into the jar archive and meets the requirements described in the documentation.

@@ -10,3 +10,7 @@ jdk:
 
 script:
   - ./gradlew build --info
+  - ./gradlew jacocoTestReport generateJacocoBadge
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t ab251073-1ba1-4600-a84c-dd3f71465f4f
