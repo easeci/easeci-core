@@ -2,14 +2,18 @@ package io.easeci.core.extension;
 
 import io.easeci.api.extension.ActionRequest;
 import io.easeci.api.extension.ActionResponse;
+import io.easeci.commons.YamlUtils;
 import io.easeci.extension.ExtensionType;
 import io.easeci.extension.Standalone;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.workspace.LocationUtils.getPluginConfigYmlLocation;
@@ -23,12 +27,16 @@ public class ExtensionSystem implements ExtensionControllable {
     private final static Class<Standalone> STANDALONE_CLASS = Standalone.class;
     private static ExtensionSystem extensionSystem;
     private ExtensionsManager extensionsManager;
-    private boolean started = false;
+    @Getter private boolean started = false;
+    @Getter private Integer threadPoolMaxSize;
+    private ThreadPoolExecutor threadPoolExecutor;
 
     public static ExtensionSystem getInstance() {
         if (isNull(extensionSystem)) {
             extensionSystem = new ExtensionSystem();
             extensionSystem.extensionsManager = ExtensionsManager.getInstance(getPluginsYmlLocation(), getPluginConfigYmlLocation());
+            extensionSystem.threadPoolMaxSize = (Integer) YamlUtils.ymlGet(getPluginsYmlLocation(), "plugins.local.threadpool.max-size").getValue();
+            extensionSystem.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(extensionSystem.threadPoolMaxSize);
         }
         return extensionSystem;
     }
@@ -65,7 +73,17 @@ public class ExtensionSystem implements ExtensionControllable {
         return this.getAll(STANDALONE_INTERFACE, STANDALONE_CLASS)
                 .stream()
                 .distinct()
-                .peek(Standalone::start)
+                .peek(standalone -> {
+                    int activeCount = extensionSystem.threadPoolExecutor.getActiveCount();
+                    if (activeCount > extensionSystem.threadPoolMaxSize) {
+                        log.error("=> Cannot assign new thread for new task. The thread pool is full.");
+                        return;
+                    }
+                    Thread thread = new Thread(standalone::start);
+                    thread.setDaemon(true);
+//                    Here it will be good to handle Future<?> as a result of submit task TODO
+                    extensionSystem.threadPoolExecutor.submit(thread);
+                })
                 .collect(Collectors.toList());
     }
 
