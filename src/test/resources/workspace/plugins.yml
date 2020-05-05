@@ -1,0 +1,19 @@
+plugins:
+  local:
+    localisations:
+      - <current>/plugins
+      - <workspace>/plugins
+    download: true
+    threadpool:
+      max-size: 1
+  registry:
+    timeout: 1000
+    url: http://localhost:8080
+
+extensions:
+  - plugin:
+      name: welcome-logo
+      version: 0.0.1
+  - plugin:
+      name: time-printer
+      version: 0.0.1
