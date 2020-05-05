@@ -4,6 +4,8 @@ plugins:
       - <current>/plugins
       - <workspace>/plugins
     download: true
+    threadpool:
+      max-size: 100
   registry:
     timeout: 1000
     url: http://localhost:8080
