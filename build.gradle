@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    compile project(':extension-api')
+    compile project(':domain')
     compile project(':io-lib')
 
     implementation 'io.ratpack:ratpack-core:1.8.0'
