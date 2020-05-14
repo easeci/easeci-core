@@ -5,6 +5,7 @@ import io.easeci.api.log.LogHandler;
 import io.easeci.core.bootstrap.BootstrapperFactory;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.extension.bootstrap.OnStartup;
+import io.easeci.server.BaseExternalHandlers;
 import io.easeci.server.ServerBootstrapper;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +22,7 @@ public class EaseciCoreApplication {
 
         ExtensionSystem.getInstance().startStandalonePlugins();
 
-        ServerBootstrapper.instantiate(List.of(new ExtensionHandlers(), new LogHandler()), null);
+        ServerBootstrapper.instantiate(List.of(new ExtensionHandlers(), new LogHandler()), BaseExternalHandlers.get());
         ServerBootstrapper.getInstance().run();
     }
 }

@@ -3,7 +3,8 @@ plugins {
     id 'groovy'
 }
 
-sourceCompatibility = '11'
+group 'io.easeci.core'
+version '0.0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -24,5 +25,3 @@ dependencies {
         exclude module: 'groovy-all'
     }
 }
-
-version = '0.0.1'

@@ -1,9 +1,3 @@
-main:
-  mount:
-    copy: true
-  paths:
-    home: /tmp/easeci/workspace/easeci
-    temp: /tmp/ease
 output:
   autopublishing: false
   queue:

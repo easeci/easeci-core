@@ -15,4 +15,13 @@ public class EndpointDeclaration {
     private HttpMethod httpMethod;
     private String endpointUri;
     private Handler handler;
+
+    @Override
+    public String toString() {
+        return "EndpointDeclaration{" +
+                "httpMethod=" + httpMethod +
+                ", endpointUri='" + endpointUri + '\'' +
+                ", handler=" + handler +
+                '}';
+    }
 }

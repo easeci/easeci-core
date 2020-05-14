@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compile project(':extension-api')
+    compile project(':domain')
     compile project(':welcome-logo')
 
     compileOnly 'org.projectlombok:lombok:1.18.12'
