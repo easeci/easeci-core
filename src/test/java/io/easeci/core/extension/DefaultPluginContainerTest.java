@@ -1,5 +1,8 @@
 package io.easeci.core.extension;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.extension.ExtensionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,9 +10,12 @@ import org.mockito.Mockito;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static io.easeci.core.extension.utils.PluginContainerUtils.fromBasic;
+import static io.easeci.core.extension.utils.PluginContainerUtils.fromBasicWithPluginName;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultPluginContainerTest {
@@ -240,5 +246,40 @@ class DefaultPluginContainerTest {
         List<Double> gathered = pluginContainer.getGathered(INTERFACE_NAME, Double.class);
 
         assertTrue(gathered.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should correctly find Instance.class identified with UUID passed in method argument")
+    void defaultPluginContainerFindByUuid() {
+        final UUID PLUGIN_UUID = UUID.fromString("4593a486-776b-11ea-bc55-0242ac130006");   // this is value from plugins-config-test.json
+        final ExtensionType EXTENSION_TYPE = ExtensionType.EXTENSION_PLUGIN;               // same ^
+
+        final String INTERFACE_NAME = "java.lang.String";
+        final String IMPLEMENTATION_A = "This is implementation A";
+        final String IMPLEMENTATION_B = "This is implementation B";
+        final String IMPLEMENTATION_C = "This is implementation C";
+        final String IMPLEMENTATION_D = "This is implementation D";
+
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        Instance instanceB = fromBasic(INTERFACE_NAME, IMPLEMENTATION_B, "0.0.2");
+        Instance instanceC = fromBasic(INTERFACE_NAME, IMPLEMENTATION_C, "0.0.1");
+        Instance instanceD = fromBasicWithPluginName(INTERFACE_NAME, IMPLEMENTATION_D, "welcome-logo", "0.0.1");
+        pluginContainer.add(instanceA);
+        pluginContainer.add(instanceB);
+        pluginContainer.add(instanceC);
+        pluginContainer.add(instanceD);
+
+        Optional<Instance> instance = pluginContainer.findByUuid(EXTENSION_TYPE, PLUGIN_UUID);
+        assertTrue(instance.isPresent());
+    }
+
+    @Test
+    @DisplayName("Should not find Instance.class because one not exists in container and not specified this UUID in plugins-config.json file")
+    void defaultPluginContainerFindByUuidFail() {
+
     }
 }

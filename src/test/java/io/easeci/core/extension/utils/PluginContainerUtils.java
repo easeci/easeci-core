@@ -26,6 +26,16 @@ public class PluginContainerUtils {
                 .build();
     }
 
+    public static Instance fromBasicWithPluginName(String interfaceName, Object implementation, String name, String version) {
+        Plugin plugin = Plugin.of(name, version);
+        ExtensionManifest manifest = ExtensionManifest.of(interfaceName, "java.lang.String");
+        Plugin.JarArchive jar = Plugin.JarArchive.of(null, false, null, null, manifest);
+        return Instance.builder()
+                .plugin(Plugin.of(plugin, jar))
+                .instance(implementation)
+                .build();
+    }
+
     public static Instance fromBasic(String interfaceName, Object implementation, String pluginName, String pluginVersion) {
         Plugin plugin = Plugin.of(pluginName, pluginVersion);
         ExtensionManifest manifest = ExtensionManifest.of(interfaceName, "java.lang.String");

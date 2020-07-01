@@ -43,6 +43,18 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
+    public Optional<Instance> findByUuid(ExtensionType extensionType, UUID pluginUuid) {
+        ConfigDescription configDescription = this.pluginStrategy.find(extensionType, pluginUuid);
+
+        return this.container.values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(instance -> instance.getPlugin().getName().equals(configDescription.getName())
+                                 && instance.getPlugin().getVersion().equals(configDescription.getVersion()))
+                .findAny();
+    }
+
+    @Override
     public <T> List<T> getGathered(String interfaceName, Class<T> type) {
         List<Instance> instances = container.get(interfaceName);
         if (isNull(instances) || instances.isEmpty()) {
