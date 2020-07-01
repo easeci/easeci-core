@@ -10,12 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 class ExtensionsManager implements ExtensionControllable {
@@ -90,8 +92,42 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse shutdownExtension(ActionRequest actionRequest) {
-//        TODO
-        return null;
+        return pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid())
+                .map(instance -> zip(
+                        Stream.of(interruptPluginThread(), modifyConfigFile(), reloadContainer())
+                                .map(func -> func.apply(instance))
+                                .collect(Collectors.toList()))
+                ).orElseGet(() -> ActionResponse.builder()
+                        .isSuccessfullyDone(false)
+                        .message("Cannot find plugin to shutdown: ".concat(actionRequest.toString()))
+                        .build());
+    }
+
+    private Function<Instance, ActionResponse> interruptPluginThread() {
+//      TODO
+    }
+
+    private Function<Instance, ActionResponse> modifyConfigFile() {
+//      TODO
+    }
+
+    private Function<Instance, ActionResponse> reloadContainer() {
+//      TODO
+    }
+
+    private static ActionResponse zip(List<ActionResponse> actionResponseList) {
+        return actionResponseList.stream()
+                .reduce(((responseA, responseB) -> {
+                    boolean isSuccess = Boolean.logicalAnd(responseA.getIsSuccessfullyDone(), responseB.getIsSuccessfullyDone());
+                    List<String> messagesAggregated = Stream.of(responseB.getMessages(),
+                            List.of(responseB.getMessage()),
+                            responseA.getMessages(),
+                            List.of(responseA.getMessage()))
+                            .flatMap(Collection::stream)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
+                    return ActionResponse.of(isSuccess, messagesAggregated);
+                })).orElseThrow();
     }
 
     @Override

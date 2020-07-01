@@ -3,7 +3,8 @@ package io.easeci.core.extension;
 import io.easeci.extension.ExtensionType;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -36,6 +37,14 @@ interface PluginContainer {
      *                      it is specified in second method's argument
      * */
     <T> T getSpecific(String interfaceName, Class<T> type);
+
+    /**
+     * Find specific plugin in container, identified by UUID that is
+     * specified in plugins-config.json
+     * @param pluginUuid is UUID defined in plugins-config.json
+     * @return optional of instance representation
+     * */
+    Optional<Instance> findByUuid(ExtensionType extensionType, UUID pluginUuid);
 
     /**
      * Get all implementations of Standalone plugins from extension-api.
@@ -79,4 +88,6 @@ interface PluginContainer {
      * @return size of instance of specific interface
      * */
     int implementationSize(String interfaceName);
+
+
 }

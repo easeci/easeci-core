@@ -1,10 +1,7 @@
 package io.easeci.api.extension;
 
 import io.easeci.extension.ExtensionType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -12,6 +9,7 @@ import javax.validation.constraints.Size;
 
 @Data
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class ActionRequest {
