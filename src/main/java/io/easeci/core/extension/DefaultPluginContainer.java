@@ -49,8 +49,8 @@ class DefaultPluginContainer implements PluginContainer {
         return this.container.values()
                 .stream()
                 .flatMap(Collection::stream)
-                .filter(instance -> instance.getPlugin().getName().equals(configDescription.getName())
-                                 && instance.getPlugin().getVersion().equals(configDescription.getVersion()))
+                .filter(instance -> instance.getPlugin().getName().equals(configDescription.getName()) &&
+                                    instance.getPlugin().getVersion().equals(configDescription.getVersion()))
                 .findAny();
     }
 
@@ -93,13 +93,17 @@ class DefaultPluginContainer implements PluginContainer {
 
     @Override
     public PluginContainerState state(ExtensionType extensionType) {
-//        TODO implement!
+        return new PluginContainerState(mapContainer());
+    }
 
-        PluginContainerState pluginContainerState = new PluginContainerState();
-        pluginContainerState.setContainer(this.container);
-        pluginContainerState.setPluginsConfigFile(this.pluginStrategy.pluginsConfigFile());
-
-        return pluginContainerState;
+    private List<PluginState> mapContainer() {
+        return container.entrySet()
+                .stream()
+                .flatMap(entry -> entry.getValue()
+                        .stream()
+                        .map(instance -> PluginStateProxy.of(entry.getKey(), instance)))
+                .map(pluginStateProxy -> pluginStateProxy.toPluginState(pluginStrategy))
+                .collect(Collectors.toList());
     }
 
     @Override

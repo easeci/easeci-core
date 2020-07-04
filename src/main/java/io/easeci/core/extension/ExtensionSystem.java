@@ -83,6 +83,16 @@ public class ExtensionSystem implements ExtensionControllable {
                     thread.setDaemon(true);
 //                    Here it will be good to handle Future<?> as a result of submit task TODO
                     extensionSystem.threadPoolExecutor.submit(thread);
+//                    Instance instance = (Instance) standalone;
+//                    instance.assignThread(thread);
+                    /* TODO
+                    *    problem jest taki, że mam tutaj tylko goły objekt,
+                    *    nie mam informacji o tym w jakim objekcie Instance.class się mój
+                    *    goły objekt znajduje. Zadanie polega na skorelowaniu tego.
+                    *    Poza tym, oprócz Standalone mam też inne pluginy, więc trzeba będzie
+                    *    robić destrukcję tychże objektów, a zatem może będzie trzeba użyć dwóch
+                    *    osobnych implementacji takiego destruktora. PluginDestructor.class -- ????
+                    * */
                 })
                 .collect(Collectors.toList());
     }

@@ -3,15 +3,13 @@ package io.easeci.core.extension;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.FileUtils;
+import io.easeci.extension.ExtensionType;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static java.util.Objects.isNull;
@@ -102,6 +100,24 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     @Override
     public PluginsConfigFile pluginsConfigFile() {
         return this.pluginsConfigFile;
+    }
+
+    @Override
+    public ConfigDescription find(ExtensionType extensionType, String pluginName, String pluginVersion) {
+        return this.pluginsConfigFile.getConfigDescriptions().get(ExtensionType.toInterface(extensionType))
+                .stream()
+                .filter(configDescription -> configDescription.getName().equals(pluginName) && configDescription.getVersion().equals(pluginVersion))
+                .findAny()
+                .orElseThrow(PluginSystemIntegrityViolated::new);
+    }
+
+    @Override
+    public ConfigDescription find(ExtensionType extensionType, UUID uuid) {
+        return this.pluginsConfigFile.getConfigDescriptions().get(ExtensionType.toInterface(extensionType))
+                .stream()
+                .filter(configDescription -> configDescription.getUuid().equals(uuid))
+                .findAny()
+                .orElseThrow(PluginSystemIntegrityViolated::new);
     }
 }
 
