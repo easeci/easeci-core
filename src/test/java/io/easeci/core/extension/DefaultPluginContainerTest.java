@@ -274,12 +274,19 @@ class DefaultPluginContainerTest {
         pluginContainer.add(instanceD);
 
         Optional<Instance> instance = pluginContainer.findByUuid(EXTENSION_TYPE, PLUGIN_UUID);
+
         assertTrue(instance.isPresent());
+        assertNotNull(instance.get().thread);
     }
 
     @Test
     @DisplayName("Should not find Instance.class because one not exists in container and not specified this UUID in plugins-config.json file")
     void defaultPluginContainerFindByUuidFail() {
+        final UUID PLUGIN_UUID = UUID.fromString("4593a486-776b-11ea-bc55-0242ac130006");   // this is value from plugins-config-test.json
+        final ExtensionType EXTENSION_TYPE = ExtensionType.EXTENSION_PLUGIN;               // same ^
 
+        Optional<Instance> instance = pluginContainer.findByUuid(EXTENSION_TYPE, PLUGIN_UUID);
+
+        assertFalse(instance.isPresent());
     }
 }

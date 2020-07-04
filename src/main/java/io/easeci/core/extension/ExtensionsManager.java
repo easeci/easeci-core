@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @Slf4j
 class ExtensionsManager implements ExtensionControllable {
@@ -92,6 +91,7 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse shutdownExtension(ActionRequest actionRequest) {
+        log.info("===> Trying to finish plugin identified by UUID: " + actionRequest.getPluginUuid());
         return pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid())
                 .map(instance -> zip(
                         Stream.of(interruptPluginThread(), modifyConfigFile(), reloadContainer())
@@ -104,15 +104,30 @@ class ExtensionsManager implements ExtensionControllable {
     }
 
     private Function<Instance, ActionResponse> interruptPluginThread() {
-//      TODO
+        return instance -> {
+            instance.getThread().interrupt();
+            boolean isInterrupted = instance.getThread().isInterrupted();
+            if (isInterrupted) {
+                return ActionResponse.of(true,
+                        List.of("Thread ".concat(instance.thread.getName()).concat(" is interrupted. Waiting for gently kill it.")));
+            }
+            return ActionResponse.of(false,
+                    List.of("Thread ".concat(instance.thread.getName())
+                            .concat(" is not interrupted yet, but interrupt() method was called. " +
+                                    "Waiting for gently kill it. Check is this thread is alive again.")));
+        };
+    }
+
+    private Function<Instance, ActionResponse> onPluginFinish() {
+        return instance -> null;
     }
 
     private Function<Instance, ActionResponse> modifyConfigFile() {
-//      TODO
+        return instance -> ActionResponse.of(true, List.of("Correct"));  // TODO
     }
 
     private Function<Instance, ActionResponse> reloadContainer() {
-//      TODO
+        return instance -> ActionResponse.of(true, List.of("Correct"));  // TODO
     }
 
     private static ActionResponse zip(List<ActionResponse> actionResponseList) {
@@ -120,14 +135,19 @@ class ExtensionsManager implements ExtensionControllable {
                 .reduce(((responseA, responseB) -> {
                     boolean isSuccess = Boolean.logicalAnd(responseA.getIsSuccessfullyDone(), responseB.getIsSuccessfullyDone());
                     List<String> messagesAggregated = Stream.of(responseB.getMessages(),
-                            List.of(responseB.getMessage()),
+                            nullableToList(responseB.getMessage()),
                             responseA.getMessages(),
-                            List.of(responseA.getMessage()))
-                            .flatMap(Collection::stream)
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList());
+                            nullableToList(responseA.getMessage()))
+                                .filter(Objects::nonNull)
+                                .flatMap(Collection::stream)
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
                     return ActionResponse.of(isSuccess, messagesAggregated);
                 })).orElseThrow();
+    }
+
+    private static List<String> nullableToList(String message) {
+        return isNull(message) ? Collections.emptyList() : List.of(message);
     }
 
     @Override

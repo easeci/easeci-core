@@ -1,32 +1,50 @@
 package io.easeci.core.extension;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.extension.ExtensionType;
-import io.easeci.extension.State;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class PluginContainerState {
-//    private Map<ExtensionType, Map<String, PluginState>> containerState;
+    private List<PluginState> pluginStates;
+}
 
-    private Map<String, List<Instance>> container;
-    private PluginsConfigFile pluginsConfigFile;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+class PluginState {
+    private String implementsValue;
+    private String pluginName;
+    private String pluginVersion;
+    private ExtensionType extensionType;
+    private boolean isRunning;
+    private String runDate;
+    private ConfigDescription configDescription;
 }
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-class PluginState extends State {
-    private String pluginName;
-    private String pluginVersion;
+@AllArgsConstructor(staticName = "of")
+class PluginStateProxy {
+    private String implementsValue;
+    private Instance instance;
+
+    PluginState toPluginState(PluginStrategy pluginStrategy) {
+        ExtensionType extensionType = ExtensionType.toEnum(this.implementsValue);
+        String pluginName = this.instance.getPlugin().getName();
+        String pluginVersion = this.instance.getPlugin().getVersion();
+        return PluginState.builder()
+                .implementsValue(this.implementsValue)
+                .pluginName(pluginName)
+                .pluginVersion(pluginVersion)
+                .extensionType(extensionType)
+                .isRunning(this.instance.isRunning())   // TODO ping method needs to implements
+                .runDate(this.instance.getInstantiateDateTime().toString())
+                .configDescription(pluginStrategy.find(extensionType, pluginName, pluginVersion))
+                .build();
+    }
 }

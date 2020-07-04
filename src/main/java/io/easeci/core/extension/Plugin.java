@@ -84,6 +84,12 @@ public class Plugin {
                 .concat((isNull(this.jarArchive) ? "" : this.jarArchive.toString()));
     }
 
+    public String toShortString() {
+        return "~ Plugin '".concat(name)
+                .concat("' ver. ")
+                .concat(version);
+    }
+
     @Getter
     @AllArgsConstructor(staticName = "of")
     public static class JarArchive {
