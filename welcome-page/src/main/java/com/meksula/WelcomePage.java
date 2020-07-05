@@ -5,6 +5,7 @@ import io.easeci.extension.Standalone;
 import io.easeci.extension.State;
 import io.easeci.server.BaseExternalHandlers;
 import io.easeci.server.EndpointDeclaration;
+import io.easeci.server.EndpointExistsException;
 import ratpack.http.HttpMethod;
 
 import static ratpack.http.MediaType.PLAIN_TEXT_UTF8;
@@ -22,11 +23,15 @@ public class WelcomePage implements Standalone {
 
     @Override
     public void start() {
-        BaseExternalHandlers.register(EndpointDeclaration.builder()
-                .httpMethod(HttpMethod.GET)
-                .endpointUri("")
-                .handler(ctx -> ctx.getResponse().contentType(PLAIN_TEXT_UTF8).send(CONTENT))
-                .build());
+        try {
+            BaseExternalHandlers.register(EndpointDeclaration.builder()
+                    .httpMethod(HttpMethod.GET)
+                    .endpointUri("")
+                    .handler(ctx -> ctx.getResponse().contentType(PLAIN_TEXT_UTF8).send(CONTENT))
+                    .build());
+        } catch (EndpointExistsException e) {
+
+        }
     }
 
     @Override

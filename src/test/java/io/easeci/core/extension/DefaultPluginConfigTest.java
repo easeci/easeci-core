@@ -148,6 +148,18 @@ class DefaultPluginConfigTest {
                 () -> assertEquals(3, saved.getConfigDescriptions().get("io.easeci.extension.bootstrap.TestPlugin").size()));
     }
 
+    @Test
+    @DisplayName("Should correctly disable extension")
+    void disableByPluginNameAndVersionTest() {
+
+    }
+
+    @Test
+    @DisplayName("Should not disable extension if there is no such pluginName and pluginVersion")
+    void disableByPluginNameAndVersionFailureTest() {
+
+    }
+
     private List<Instance> provideSingleInstanceList() {
         try {
             return new ArrayList<>(Collections.singletonList(Instance.builder()

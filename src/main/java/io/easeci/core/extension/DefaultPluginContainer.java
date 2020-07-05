@@ -55,6 +55,15 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
+    public Optional<Instance> findByIdentityHashCode(int identityHashCode) {
+        return this.container.values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(instance -> instance.getIdentityHashCode() == identityHashCode)
+                .findAny();
+    }
+
+    @Override
     public <T> List<T> getGathered(String interfaceName, Class<T> type) {
         List<Instance> instances = container.get(interfaceName);
         if (isNull(instances) || instances.isEmpty()) {

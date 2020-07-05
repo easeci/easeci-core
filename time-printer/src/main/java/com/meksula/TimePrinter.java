@@ -14,13 +14,13 @@ public class TimePrinter implements Standalone {
 
     @Override
     public void start() {
-        new WelcomeLogo().action();
         executorService.scheduleAtFixedRate(() -> System.out.printf("\n===> [time-printer] %s %s", LocalDateTime.now(), Thread.currentThread().getName()), 1, 1, TimeUnit.SECONDS);
     }
 
     @Override
     public void stop() {
-
+        System.out.println("Shutting down");
+        executorService.shutdown();
     }
 
     @Override

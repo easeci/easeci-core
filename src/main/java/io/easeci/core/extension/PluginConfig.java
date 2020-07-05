@@ -16,5 +16,9 @@ interface PluginConfig {
 
     boolean enable(UUID pluginUuid);
 
+    boolean disable(UUID pluginUuid);
+
+    boolean disable(String pluginName, String pluginVersion);
+
     boolean disableAll(String interfaceName);
 }

@@ -73,6 +73,18 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     }
 
     @Override
+    public boolean disable(UUID pluginUuid) {
+//        TODO
+        return false;
+    }
+
+    @Override
+    public boolean disable(String pluginName, String pluginVersion) {
+//        TODO
+        return false;
+    }
+
+    @Override
     public boolean disableAll(String interfaceName) {
         return false;
     }
