@@ -94,7 +94,7 @@ class ExtensionsManager implements ExtensionControllable {
         log.info("===> Trying to finish plugin identified by UUID: " + actionRequest.getPluginUuid());
         return pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid())
                 .map(instance -> zip(
-                        Stream.of(interruptPluginThread(), modifyConfigFile(), reloadContainer())
+                        Stream.of((instance.isStandalone() ? interruptStandalonePlugin() : interruptNotStandalonePlugin()), modifyConfigFile())
                                 .map(func -> func.apply(instance))
                                 .collect(Collectors.toList()))
                 ).orElseGet(() -> ActionResponse.builder()
@@ -103,31 +103,43 @@ class ExtensionsManager implements ExtensionControllable {
                         .build());
     }
 
-    private Function<Instance, ActionResponse> interruptPluginThread() {
+    private Function<Instance, ActionResponse> interruptStandalonePlugin() {
         return instance -> {
-            instance.getThread().interrupt();
-            boolean isInterrupted = instance.getThread().isInterrupted();
-            if (isInterrupted) {
+            log.info("===> Stopping standalone plugin work " + instance.getPlugin().toShortString());
+            instance.toStandalone().stop();
+            boolean instanceCleared = instance.clear();
+            if (instanceCleared) {
                 return ActionResponse.of(true,
-                        List.of("Thread ".concat(instance.thread.getName()).concat(" is interrupted. Waiting for gently kill it.")));
+                        List.of("Plugin " + instance.getPlugin().toShortString() + " is stopped by stop() method"));
             }
             return ActionResponse.of(false,
-                    List.of("Thread ".concat(instance.thread.getName())
-                            .concat(" is not interrupted yet, but interrupt() method was called. " +
-                                    "Waiting for gently kill it. Check is this thread is alive again.")));
+                    List.of("Plugin " + instance.getPlugin().toShortString() + " was not stopped correctly"));
         };
     }
 
-    private Function<Instance, ActionResponse> onPluginFinish() {
-        return instance -> null;
+    private Function<Instance, ActionResponse> interruptNotStandalonePlugin() {
+        return instance -> {
+            log.info("===> Stopping other than standalone plugin work " + instance.getPlugin().toShortString());
+            boolean instanceCleared = instance.clear();
+            if (instanceCleared) {
+                return ActionResponse.of(true,
+                        List.of("Plugin " + instance.getPlugin().toShortString() + " should be removed from memory of JVM by GC"));
+            }
+            return ActionResponse.of(false,
+                    List.of("Plugin " + instance.getPlugin().toShortString() + " was not removed"));
+        };
     }
 
     private Function<Instance, ActionResponse> modifyConfigFile() {
-        return instance -> ActionResponse.of(true, List.of("Correct"));  // TODO
-    }
-
-    private Function<Instance, ActionResponse> reloadContainer() {
-        return instance -> ActionResponse.of(true, List.of("Correct"));  // TODO
+        return instance -> {
+            boolean isDisabled = pluginConfig.disable(instance.getPlugin().getName(), instance.getPlugin().getVersion());
+            if (isDisabled) {
+                return ActionResponse.of(true,
+                        List.of("Config file was modified correctly, and plugin " + instance.getPlugin().toShortString() + " was disabled"));
+            }
+            return ActionResponse.of(false,
+                    List.of("Config file was not modified"));
+        };
     }
 
     private static ActionResponse zip(List<ActionResponse> actionResponseList) {
@@ -160,6 +172,10 @@ class ExtensionsManager implements ExtensionControllable {
     public ActionResponse restart(ActionRequest actionRequest) {
 //        TODO
         return null;
+    }
+
+    public Optional<Instance> findInstanceByIdentityHashCode(int hashCode) {
+        return this.pluginContainer.findByIdentityHashCode(hashCode);
     }
 
     private String getReport(Set<Plugin> resolve) {

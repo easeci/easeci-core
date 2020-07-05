@@ -103,6 +103,7 @@ class DefaultPluginLoader implements PluginLoader {
         Instance instance = Instance.builder()
                 .plugin(plugin)
                 .instance(object)
+                .identityHashCode(System.identityHashCode(object))
                 .build();
         this.pluginContainer.add(instance);
     }

@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.extension.Standalone;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,8 +18,9 @@ public class Instance {
     public final LocalDateTime instantiateDateTime = LocalDateTime.now();
     private Plugin plugin;
     private Object instance;
+    private int identityHashCode;
 
-    public synchronized void assignThread(Thread thread) {
+    public void assignThread(Thread thread) {
         if (this.thread == null) {
             this.thread = thread;
             log.info("Thread " + thread.getName() + " is assigned now to plugin: " + plugin.toShortString());
@@ -29,7 +31,23 @@ public class Instance {
     public boolean isRunning() {
         return nonNull(this.getInstance()) &&
                nonNull(this.getInstantiateDateTime()) &&
-               nonNull(this.thread.getName());
+               this.identityHashCode != 0;
+    }
+
+    public boolean clear() {
+        this.instance = null;
+        return this.instance == null;
+    }
+
+    public Standalone toStandalone() throws ClassCastException {
+        if (this.instance instanceof Standalone) {
+            return (Standalone) this.instance;
+        }
+        throw new PluginSystemIntegrityViolated("This instance with hashCode: " + this.identityHashCode + " is not instance of Standalone.class");
+    }
+
+    public boolean isStandalone() {
+        return this.instance instanceof Standalone;
     }
 
     @Override

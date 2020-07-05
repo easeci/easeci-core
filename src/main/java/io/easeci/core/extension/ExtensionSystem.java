@@ -83,16 +83,15 @@ public class ExtensionSystem implements ExtensionControllable {
                     thread.setDaemon(true);
 //                    Here it will be good to handle Future<?> as a result of submit task TODO
                     extensionSystem.threadPoolExecutor.submit(thread);
-//                    Instance instance = (Instance) standalone;
-//                    instance.assignThread(thread);
-                    /* TODO
-                    *    problem jest taki, że mam tutaj tylko goły objekt,
-                    *    nie mam informacji o tym w jakim objekcie Instance.class się mój
-                    *    goły objekt znajduje. Zadanie polega na skorelowaniu tego.
-                    *    Poza tym, oprócz Standalone mam też inne pluginy, więc trzeba będzie
-                    *    robić destrukcję tychże objektów, a zatem może będzie trzeba użyć dwóch
-                    *    osobnych implementacji takiego destruktora. PluginDestructor.class -- ????
-                    * */
+                    int identityHashCode = System.identityHashCode(standalone);
+                    this.extensionsManager.findInstanceByIdentityHashCode(identityHashCode)
+                            .ifPresentOrElse(instance -> {
+                                if (instance.isStandalone()) {
+                                    instance.assignThread(thread);
+                                    log.info("===> [Standalone plugin] Correctly found Instance by hashCode[{}], plugin: {} assigned to running in Thread: {}",
+                                            identityHashCode, instance.getPlugin().toShortString(), instance.getThread().toString());
+                                } else log.info("===> [Extension plugin] Correctly found Instance by hashCode[{}], plugin: {}", identityHashCode, instance.getPlugin().toShortString());
+                            }, () -> log.error("===> Cannot find Instance by hashCode[{}] of plugin object", identityHashCode));
                 })
                 .collect(Collectors.toList());
     }
