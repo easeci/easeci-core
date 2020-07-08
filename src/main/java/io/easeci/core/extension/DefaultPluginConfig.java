@@ -74,14 +74,42 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public boolean disable(UUID pluginUuid) {
-//        TODO
-        return false;
+        return this.disable(configDescription ->
+                configDescription.getUuid().equals(pluginUuid));
     }
 
     @Override
     public boolean disable(String pluginName, String pluginVersion) {
-//        TODO
-        return false;
+        return this.disable(configDescription ->
+                configDescription.getName().equals(pluginName) &&
+                configDescription.getVersion().equals(pluginVersion));
+    }
+
+    private boolean disable(Predicate<ConfigDescription> configDescriptionPredicate) {
+        return this.pluginsConfigFile.getConfigDescriptions()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(configDescriptionPredicate)
+                .filter(configDescription -> isPluginEnabled().test(configDescription))
+                .findAny()
+                .map(configDescription -> {
+                    log.info("=====> Found plugin to disable: {}", configDescription.toString());
+                    configDescription.setEnabled(false);
+                    this.save();
+                    return true;
+                }).orElse(false);
+    }
+
+    private Predicate<ConfigDescription> isPluginEnabled() {
+        return config -> {
+            if (config.getEnabled()) {
+                return true;
+            } else {
+                log.info("=====> Plugin {} is not enabled now!", config.toString());
+                return false;
+            }
+        };
     }
 
     @Override
@@ -162,7 +190,7 @@ class ConfigDescription implements Predicate<Instance> {
     private UUID uuid;
     private String name;
     private String version;
-    private Boolean enabled;
+    @Setter private Boolean enabled;
 
     static ConfigDescription empty() {
         return new ConfigDescription(UUID.randomUUID(), "", "", false);

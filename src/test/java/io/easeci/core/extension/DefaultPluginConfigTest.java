@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.extension.ExtensionType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -149,15 +150,38 @@ class DefaultPluginConfigTest {
     }
 
     @Test
-    @DisplayName("Should correctly disable extension")
+    @DisplayName("Should correctly disable extension by pluginName and pluginVersion")
     void disableByPluginNameAndVersionTest() {
+        Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginConfig pluginConfig = new DefaultPluginConfig(path);
 
+        String pluginNameToDisable = "welcome-logo";
+        String pluginVersionToDisable = "0.0.1";
+
+        boolean isDisabled = pluginConfig.disable(pluginNameToDisable, pluginVersionToDisable);
+
+//        check is configuration is reloaded to newest version after plugin disabling
+        PluginStrategy pluginStrategy = (PluginStrategy) pluginConfig;
+        ConfigDescription configDescription = pluginStrategy.find(ExtensionType.EXTENSION_PLUGIN, pluginNameToDisable, pluginVersionToDisable);
+
+        assertAll(() -> assertTrue(isDisabled),
+                () -> assertEquals(pluginNameToDisable, configDescription.getName()),
+                () -> assertEquals(pluginVersionToDisable, configDescription.getVersion()),
+                () -> assertFalse(configDescription.getEnabled()));
     }
 
     @Test
     @DisplayName("Should not disable extension if there is no such pluginName and pluginVersion")
     void disableByPluginNameAndVersionFailureTest() {
+        Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginConfig pluginConfig = new DefaultPluginConfig(path);
 
+        String pluginNameToDisable = "welcome-logo2";  // not exists in plugins-config.json
+        String pluginVersionToDisable = "0.0.1";
+
+        boolean isDisabled = pluginConfig.disable(pluginNameToDisable, pluginVersionToDisable);
+
+        assertFalse(isDisabled);
     }
 
     private List<Instance> provideSingleInstanceList() {
