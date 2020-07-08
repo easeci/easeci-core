@@ -10,24 +10,27 @@ class ExtensionsManagerTest {
     @Test
     @DisplayName("Should correctly shutdown plugin other than Standalone.class")
     void shutdownExtensionTest() {
-
+//        TODO
     }
 
     @Test
     @DisplayName("Should not shutdown plugin that not exists in container and is other than Standalone.class")
     void shutdownExtensionFailureTest() {
+//        TODO
 
     }
 
     @Test
     @DisplayName("Should correctly shutdown plugin that is Standalone extension")
     void shutdownExtensionStandaloneTest() {
+//        TODO
 
     }
 
     @Test
     @DisplayName("Should not shutdown plugin that is Standalone extension but it is no such plugin in container")
     void shutdownExtensionStandaloneFailureTest() {
+//        TODO
 
     }
 }
