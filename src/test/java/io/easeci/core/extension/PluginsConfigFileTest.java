@@ -7,7 +7,6 @@ import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Set;
 
 import static commons.WorkspaceTestUtils.buildPathFromResources;

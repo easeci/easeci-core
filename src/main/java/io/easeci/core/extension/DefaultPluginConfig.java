@@ -17,7 +17,7 @@ import static java.util.Objects.isNull;
 @Slf4j
 class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
-    private Path pluginConfigYmlPath;
+    private final Path pluginConfigYmlPath;
     private PluginsConfigFile pluginsConfigFile;
 
     DefaultPluginConfig(Path pluginConfigYmlPath) {
@@ -156,6 +156,17 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
         return this.pluginsConfigFile.getConfigDescriptions().get(ExtensionType.toInterface(extensionType))
                 .stream()
                 .filter(configDescription -> configDescription.getUuid().equals(uuid))
+                .findAny()
+                .orElseThrow(PluginSystemIntegrityViolated::new);
+    }
+
+    @Override
+    public ConfigDescription find(String pluginName, String pluginVersion) {
+        return this.pluginsConfigFile.getConfigDescriptions()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(configDescription -> configDescription.getName().equals(pluginName) && configDescription.getVersion().equals(pluginVersion))
                 .findAny()
                 .orElseThrow(PluginSystemIntegrityViolated::new);
     }

@@ -40,7 +40,7 @@ class ExtensionsManager implements ExtensionControllable {
         this.pluginConfig = new DefaultPluginConfig(pluginConfigYml);
         this.pluginContainer = new DefaultPluginContainer((PluginStrategy) pluginConfig);
         this.pluginResolver = new DefaultPluginResolver();
-        this.pluginLoader = new DefaultPluginLoader(this.pluginContainer);
+        this.pluginLoader = new DefaultPluginLoader(this.pluginContainer, new JarJoiner());
         this.pluginDownloader = this.instantiatePluginDownloader();
     }
 
@@ -75,12 +75,12 @@ class ExtensionsManager implements ExtensionControllable {
 
     void enableExtensions() {
         log.info("==> Declared plugins enabling started");
-        Set<Plugin> resolve = pluginResolver.resolve(pluginYml, infrastructureInit);
-        Set<Plugin> pluginsNotResolved = pluginLoader.loadPlugins(resolve);
+        Set<Plugin> resolvedPlugins = pluginResolver.resolve(pluginYml, infrastructureInit);
+        Set<Plugin> pluginsNotResolved = pluginLoader.loadPlugins(resolvedPlugins, (PluginStrategy) pluginConfig);
         if (!pluginsNotResolved.isEmpty() && isDownloadProcessEnabled()) {
             download(pluginsNotResolved);
         } else if (pluginsNotResolved.isEmpty()) {
-            log.info("====> All plugins was loaded correctly.\nReport:\n {}", getReport(resolve));
+            log.info("====> All plugins was loaded correctly.\nReport:\n {}", getReport(resolvedPlugins));
         }
     }
 
