@@ -28,6 +28,7 @@ jar {
     manifest {
         attributes(
                 'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': "${mainClassName}",
                 'Implements': 'io.easeci.extension.Standalone',
                 'Entry-Class': 'com.meksula.TimePrinter'
         )
