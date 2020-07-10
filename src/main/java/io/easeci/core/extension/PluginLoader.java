@@ -17,11 +17,14 @@ interface PluginLoader {
      * @param pluginSet is set of plugin, provided read from some source.
      *                  All plugins in this set will be loaded or
      *                  if some plugin was not loaded correctly, one should be returned.
+     * @param pluginStrategy is object required for checking if plugin is enabled or not.
+     *                       PluginStrategy has information about current plugin state
+     *                       that is persisted in plugins-config.json file.
      * @return Set<Plugin> that should be set of plugins
      *          that was NOT correctly loaded and NOT placed in classpath
      *          for some reason.
      * */
-    Set<Plugin> loadPlugins(Set<Plugin> pluginSet);
+    Set<Plugin> loadPlugins(Set<Plugin> pluginSet, PluginStrategy pluginStrategy);
 
     /**
      * Main method of this interface.

@@ -4,6 +4,10 @@ import io.easeci.core.extension.ExtensionManifest;
 import io.easeci.core.extension.Instance;
 import io.easeci.core.extension.Plugin;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+
 public class PluginContainerUtils {
 
     public static Instance fromBasic(String interfaceName, Object implementation) {
@@ -44,5 +48,23 @@ public class PluginContainerUtils {
                 .plugin(Plugin.of(plugin, jar))
                 .instance(implementation)
                 .build();
+    }
+
+    /**
+     * Plugin correlated with data from plugins-config-test-all-disabled.json
+     * */
+    public static Plugin createFakePlugin() {
+        Plugin.JarArchive jarArchive = null;
+        try {
+            jarArchive = Plugin.JarArchive.of("welcome-logo-0.0.2.jar",
+                                                true,
+                                                new URL("file://"),
+                                                Path.of(""),
+                                                ExtensionManifest.of("", ""));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Plugin plugin = Plugin.of("welcome-logo", "0.0.2");
+        return Plugin.of(plugin, jarArchive);
     }
 }

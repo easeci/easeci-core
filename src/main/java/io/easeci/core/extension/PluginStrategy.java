@@ -13,4 +13,6 @@ interface PluginStrategy {
     ConfigDescription find(ExtensionType extensionType, String pluginName, String pluginVersion);
 
     ConfigDescription find(ExtensionType extensionType, UUID uuid);
+
+    ConfigDescription find(String pluginName, String pluginVersion);
 }
