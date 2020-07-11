@@ -273,8 +273,12 @@ class DefaultPluginContainerTest {
 
         Optional<Instance> instance = pluginContainer.findByUuid(EXTENSION_TYPE, PLUGIN_UUID);
 
-        assertTrue(instance.isPresent());
-        assertNotNull(instance.get().thread);
+        assertAll(() -> assertTrue(instance.isPresent()),
+                () -> instance.ifPresent(inst -> {
+                    assertEquals(IMPLEMENTATION_D, inst.getInstance());
+                    assertEquals("welcome-logo", inst.getPlugin().getName());
+                    assertEquals("0.0.1", inst.getPlugin().getVersion());
+                }));
     }
 
     @Test

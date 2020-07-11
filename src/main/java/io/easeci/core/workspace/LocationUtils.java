@@ -17,6 +17,7 @@ public class LocationUtils {
     }
 
     public static String getWorkspaceLocation() {
+        System.out.println(getRunFile().toPath());
         return (String) ymlGet(getRunFile().toPath(), "easeci.workspace.path").getValue();
     }
 
