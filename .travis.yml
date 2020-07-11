@@ -14,3 +14,4 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash) -t ab251073-1ba1-4600-a84c-dd3f71465f4f
+  - cat /home/travis/build/easeci/easeci-core-java/build/reports/tests/test/index.html
