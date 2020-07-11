@@ -4,6 +4,7 @@ import io.easeci.api.extension.ExtensionHandlers;
 import io.easeci.api.log.LogHandler;
 import io.easeci.core.bootstrap.BootstrapperFactory;
 import io.easeci.core.extension.ExtensionSystem;
+import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.extension.bootstrap.OnStartup;
 import io.easeci.server.BaseExternalHandlers;
 import io.easeci.server.ServerBootstrapper;
@@ -14,7 +15,7 @@ import java.util.List;
 @Slf4j
 public class EaseciCoreApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws PluginSystemCriticalException {
         BootstrapperFactory.factorize().bootstrap(args);
 
         ExtensionSystem.getInstance().get("io.easeci.extension.bootstrap.OnStartup", OnStartup.class)

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DefaultPluginResolverTest {
 
     @BeforeAll
-    static void setup() {
+    static void setup() throws PluginSystemCriticalException {
         LinuxBootstrapper.getInstance().bootstrap(new String[]{});
     }
 

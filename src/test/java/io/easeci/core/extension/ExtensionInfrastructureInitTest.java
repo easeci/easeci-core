@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ExtensionInfrastructureInitTest {
 
     @BeforeAll
-    static void setup() {
+    static void setup() throws PluginSystemCriticalException {
         LinuxBootstrapper.getInstance().bootstrap(new String[] {});
     }
 

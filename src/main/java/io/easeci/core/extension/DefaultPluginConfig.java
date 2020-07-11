@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -20,7 +21,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     private final Path pluginConfigYmlPath;
     private PluginsConfigFile pluginsConfigFile;
 
-    DefaultPluginConfig(Path pluginConfigYmlPath) {
+    DefaultPluginConfig(Path pluginConfigYmlPath) throws PluginSystemCriticalException {
         this.pluginConfigYmlPath = pluginConfigYmlPath;
         if (isNull(this.pluginConfigYmlPath) || !FileUtils.isExist(this.pluginConfigYmlPath.toString())) {
             throw new IllegalStateException("PluginsConfigFile is null or file not exists!");
@@ -29,18 +30,40 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     }
 
     @Override
-    public PluginsConfigFile load() {
+    public PluginsConfigFile load() throws PluginSystemCriticalException {
         try {
             this.pluginsConfigFile = JSON_MAPPER.readValue(this.pluginConfigYmlPath.toFile(), PluginsConfigFile.class);
-            return this.pluginsConfigFile;
+            return uniquePluginConfigCheck(this.pluginsConfigFile);
         } catch (IOException exception) {
             exception.printStackTrace();
         }
         return null;
     }
 
+    /**
+     * Throws exception if there is repetition of UUID in PluginsConfigFile
+     * */
+    private static PluginsConfigFile uniquePluginConfigCheck(PluginsConfigFile pluginsConfigFile) throws PluginSystemCriticalException {
+        int pluginsConfigSize = pluginsConfigFile.getConfigDescriptions().values().size();
+        int uniqueUuidSetSize = pluginsConfigFile.getConfigDescriptions()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(ConfigDescription::getEnabled)
+                .map(ConfigDescription::getUuid)
+                .collect(Collectors.toSet())
+                .size();
+
+        if (pluginsConfigSize != uniqueUuidSetSize) {
+            throw new PluginSystemCriticalException("Cannot start application. UUIDs of plugins's config are not unique! " +
+                    "Please check your plugins-config.json file and resolve that issue yourself");
+        }
+
+        return pluginsConfigFile;
+    }
+
     @Override
-    public synchronized PluginsConfigFile save() {
+    public synchronized PluginsConfigFile save() throws PluginSystemCriticalException {
         try {
             String content = JSON_MAPPER.writeValueAsString(this.pluginsConfigFile);
             Path path = FileUtils.fileChange(this.pluginConfigYmlPath.toString(), content);
@@ -96,7 +119,11 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
                 .map(configDescription -> {
                     log.info("=====> Found plugin to disable: {}", configDescription.toString());
                     configDescription.setEnabled(false);
-                    this.save();
+                    try {
+                        this.save();
+                    } catch (PluginSystemCriticalException e) {
+                        e.printStackTrace();
+                    }
                     return true;
                 }).orElse(false);
     }

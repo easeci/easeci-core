@@ -4,9 +4,9 @@ import java.util.UUID;
 
 interface PluginConfig {
 
-    PluginsConfigFile load();
+    PluginsConfigFile load() throws PluginSystemCriticalException;
 
-    PluginsConfigFile save();
+    PluginsConfigFile save() throws PluginSystemCriticalException;
 
     boolean add(String interfaceName, ConfigDescription configDescription);
 

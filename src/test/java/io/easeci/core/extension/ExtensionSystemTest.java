@@ -31,7 +31,7 @@ class ExtensionSystemTest {
 
     @Test
     @DisplayName("Should correctly instantiate ExtensionSystem with expected thread pool's size")
-    void extensionSystemInitTest() {
+    void extensionSystemInitTest() throws PluginSystemCriticalException {
         ExtensionSystem instance = ExtensionSystem.getInstance();
 
         assertEquals(1, instance.getThreadPoolMaxSize());
@@ -39,7 +39,7 @@ class ExtensionSystemTest {
 
     @Test
     @DisplayName("Should correctly set boolean flag 'started' when ExtensionSystem is running")
-    void extensionSystemStartTest() {
+    void extensionSystemStartTest() throws PluginSystemCriticalException {
         ExtensionSystem extensionSystem = ExtensionSystem.getInstance();
         extensionSystem.start();
 
@@ -48,7 +48,7 @@ class ExtensionSystemTest {
 
     @Test
     @DisplayName("Should not allow create threads more than it is specified in threadPoolMaxSize variable")
-    void extensionSystemOverflowedTest() {
+    void extensionSystemOverflowedTest() throws PluginSystemCriticalException {
         ExtensionSystem extensionSystem = ExtensionSystem.getInstance();
         extensionSystem.start();
         List<String> all = extensionSystem.getAll("some.interface", String.class);

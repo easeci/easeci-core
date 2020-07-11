@@ -122,7 +122,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should correctly get concrete implementation with getSpecific(..) method where there is only one object")
-    void defaultPluginContainerGetSpecific() {
+    void defaultPluginContainerGetSpecific() throws PluginSystemCriticalException {
         final String INTERFACE_NAME = "java.lang.String";
         final String IMPLEMENTATION_A = "This is implementation A";
 
@@ -141,7 +141,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should correctly get concrete implementation with getSpecific(..) when there is more than one object")
-    void defaultPluginContainerMultiObjectsGetSpecific() {
+    void defaultPluginContainerMultiObjectsGetSpecific() throws PluginSystemCriticalException {
         final String INTERFACE_NAME = "java.lang.String";
         final String IMPLEMENTATION_A = "This is implementation A";
         final String IMPLEMENTATION_B = "This is implementation B";
@@ -163,7 +163,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should return empty list when cannot find interface name in container")
-    void defaultPluginContainerInterfaceNotRecognizedGetSpecific() {
+    void defaultPluginContainerInterfaceNotRecognizedGetSpecific() throws PluginSystemCriticalException {
         final String INTERFACE_NAME = "java.lang.String";
         Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
@@ -176,7 +176,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should return null when trying to cast instance to not matching type")
-    void defaultPluginContainerCastExceptionGetSpecific() {
+    void defaultPluginContainerCastExceptionGetSpecific() throws PluginSystemCriticalException {
         final String INTERFACE_NAME = "java.lang.String";
         final String IMPLEMENTATION_A = "This is implementation A";
         Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
@@ -193,7 +193,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should correctly get all instances of Standalone interface")
-    void defaultPluginContainerGetGathered() {
+    void defaultPluginContainerGetGathered() throws PluginSystemCriticalException {
         final String INTERFACE_NAME = "java.lang.String";
         final String IMPLEMENTATION_A = "This is implementation A";
         final String IMPLEMENTATION_B = "This is implementation B";
@@ -214,7 +214,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should return empty list when there is any implementation of Standalone interface in container")
-    void defaultPluginContainerEmptyListGetGathered() {
+    void defaultPluginContainerEmptyListGetGathered() throws PluginSystemCriticalException {
         final String INTERFACE_NAME = "java.lang.String";
         Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
@@ -227,7 +227,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should not return element on list when cast exception occurred (null value should be dropped from Stream)")
-    void defaultPluginContainerCastExceptionGetGathered() {
+    void defaultPluginContainerCastExceptionGetGathered() throws PluginSystemCriticalException {
         final String INTERFACE_NAME = "java.lang.String";
         final String IMPLEMENTATION_A = "This is implementation A";
         final String IMPLEMENTATION_B = "This is implementation B";
@@ -248,7 +248,7 @@ class DefaultPluginContainerTest {
 
     @Test
     @DisplayName("Should correctly find Instance.class identified with UUID passed in method argument")
-    void defaultPluginContainerFindByUuid() {
+    void defaultPluginContainerFindByUuid() throws PluginSystemCriticalException {
         final UUID PLUGIN_UUID = UUID.fromString("4593a486-776b-11ea-bc55-0242ac130006");   // this is value from plugins-config-test.json
         final ExtensionType EXTENSION_TYPE = ExtensionType.EXTENSION_PLUGIN;               // same ^
 

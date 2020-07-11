@@ -31,7 +31,7 @@ public class ExtensionSystem implements ExtensionControllable {
     @Getter private Integer threadPoolMaxSize;
     private ThreadPoolExecutor threadPoolExecutor;
 
-    public static ExtensionSystem getInstance() {
+    public static ExtensionSystem getInstance() throws PluginSystemCriticalException {
         if (isNull(extensionSystem)) {
             extensionSystem = new ExtensionSystem();
             extensionSystem.extensionsManager = ExtensionsManager.getInstance(getPluginsYmlLocation(), getPluginConfigYmlLocation());

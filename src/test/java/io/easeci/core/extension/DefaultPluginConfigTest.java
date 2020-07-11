@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class DefaultPluginConfigTest {
     private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test.json",
                                  NOT_EXISTING_FILE = "workspace/not-exists/plugins-config-test.json",
-                               INVALID_CONFIG_FILE = "workspace/plugins-config-test-invalid.json";
+                               INVALID_CONFIG_FILE = "workspace/plugins-config-test-invalid.json",
+           PLUGIN_CONFIG_FILE_WITH_NOT_UNIQUE_UUID = "workspace/plugins-config-test-not-unique-uuid.json";
 
     private final static String INSTANCE_A_INTERFACE = "io.easeci.extension.bootstrap.OnStartup",
                                 INSTANCE_B_INTERFACE = "io.easeci.extension.bootstrap.OnStartup";
@@ -49,7 +50,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should correctly load config from file indicated as a method argument")
-    void loadTest() {
+    void loadTest() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginConfig pluginConfig = new DefaultPluginConfig(path);
 
@@ -62,7 +63,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should return null when exception occurred while config file parsing")
-    void loadReturnNull() {
+    void loadReturnNull() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(INVALID_CONFIG_FILE);
         PluginConfig pluginConfig = new DefaultPluginConfig(path);
 
@@ -73,7 +74,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should return null when one of method argument is null in choose()")
-    void loadReturnNullArgumentNull() {
+    void loadReturnNullArgumentNull() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(INVALID_CONFIG_FILE);
         PluginStrategy pluginStrategy = new DefaultPluginConfig(path);
 
@@ -84,7 +85,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should return null when list in method argument is empty")
-    void loadReturnNullEmptyList() {
+    void loadReturnNullEmptyList() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(INVALID_CONFIG_FILE);
         PluginStrategy pluginStrategy = new DefaultPluginConfig(path);
 
@@ -95,7 +96,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should return one and only instance when this instance is on list in method argument")
-    void loadReturnOneInstanceOnList() {
+    void loadReturnOneInstanceOnList() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginStrategy pluginStrategy = new DefaultPluginConfig(path);
 
@@ -112,7 +113,7 @@ class DefaultPluginConfigTest {
     * */
     @Test
     @DisplayName("Should return correctly instance marked in field `Boolean enabled` as true")
-    void loadReturnInstanceMarkedAsTrue() {
+    void loadReturnInstanceMarkedAsTrue() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginStrategy pluginStrategy = new DefaultPluginConfig(path);
 
@@ -126,7 +127,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should correctly save modified object to file in correct yaml format")
-    void savePluginConfigurationTest() {
+    void savePluginConfigurationTest() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginConfig pluginConfig = new DefaultPluginConfig(path);
         PluginsConfigFile before = pluginConfig.load();
@@ -151,7 +152,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should correctly disable extension by pluginName and pluginVersion")
-    void disableByPluginNameAndVersionTest() {
+    void disableByPluginNameAndVersionTest() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginConfig pluginConfig = new DefaultPluginConfig(path);
 
@@ -172,7 +173,7 @@ class DefaultPluginConfigTest {
 
     @Test
     @DisplayName("Should not disable extension if there is no such pluginName and pluginVersion")
-    void disableByPluginNameAndVersionFailureTest() {
+    void disableByPluginNameAndVersionFailureTest() throws PluginSystemCriticalException {
         Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
         PluginConfig pluginConfig = new DefaultPluginConfig(path);
 
@@ -182,6 +183,25 @@ class DefaultPluginConfigTest {
         boolean isDisabled = pluginConfig.disable(pluginNameToDisable, pluginVersionToDisable);
 
         assertFalse(isDisabled);
+    }
+
+    @Test
+    @DisplayName("Should correctly detect repetition of UUID in PluginsConfigFile.class and throw exception")
+    void uniquePluginConfigCheckTest() {
+        Path path = buildPathFromResources(PLUGIN_CONFIG_FILE_WITH_NOT_UNIQUE_UUID);
+
+//          constructor invokes load() method that next invokes function under testing uniquePluginConfigCheck()
+        assertThrows(PluginSystemCriticalException.class, () -> new DefaultPluginConfig(path));
+    }
+
+    @Test
+    @DisplayName("Should not detect any repetition of UUID in PluginsConfigFile.class and not trow any exception")
+    void uniquePluginConfigCheckNotDetectTest() throws PluginSystemCriticalException {
+        Path path = buildPathFromResources(PLUGIN_CONFIG_FILE);
+
+        DefaultPluginConfig defaultPluginConfig = new DefaultPluginConfig(path);
+
+        assertNotNull(defaultPluginConfig);
     }
 
     private List<Instance> provideSingleInstanceList() {
