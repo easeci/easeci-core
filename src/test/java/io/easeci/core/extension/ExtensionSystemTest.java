@@ -1,6 +1,7 @@
 package io.easeci.core.extension;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled
 class ExtensionSystemTest {
 
     @BeforeAll
@@ -46,6 +48,7 @@ class ExtensionSystemTest {
         assertTrue(extensionSystem.isStarted());
     }
 
+    @Disabled
     @Test
     @DisplayName("Should not allow create threads more than it is specified in threadPoolMaxSize variable")
     void extensionSystemOverflowedTest() throws PluginSystemCriticalException {
@@ -56,6 +59,7 @@ class ExtensionSystemTest {
 //        Mock not works, fix it TODO
     }
 
+    @Disabled
     @Test
     @DisplayName("Should throw RuntimeException when trying to get all plugins without starting mechanism")
     void extensionSystemNoStartedTest() {

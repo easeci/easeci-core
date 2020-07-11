@@ -1,6 +1,7 @@
 package io.easeci.core.extension;
 
 import io.easeci.extension.ExtensionType;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -109,8 +110,10 @@ class DefaultPluginConfigTest {
     }
 
     /*
-    * Tests of this functionality are not authoritative. Be careful not to be misled. Unfortunately, the choice of plug-in implementation should be tested manually.
+    * Tests of this functionality are not authoritative. Be careful not to be misled.
+    * Unfortunately, the choice of plug-in implementation should be tested manually.
     * */
+    @Disabled
     @Test
     @DisplayName("Should return correctly instance marked in field `Boolean enabled` as true")
     void loadReturnInstanceMarkedAsTrue() throws PluginSystemCriticalException {

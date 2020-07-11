@@ -44,15 +44,17 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
      * Throws exception if there is repetition of UUID in PluginsConfigFile
      * */
     private static PluginsConfigFile uniquePluginConfigCheck(PluginsConfigFile pluginsConfigFile) throws PluginSystemCriticalException {
-        int pluginsConfigSize = pluginsConfigFile.getConfigDescriptions().values().size();
-        int uniqueUuidSetSize = pluginsConfigFile.getConfigDescriptions()
+        Set<ConfigDescription> enabledConfigDescriptionSet = pluginsConfigFile.getConfigDescriptions()
                 .values()
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(ConfigDescription::getEnabled)
+                .collect(Collectors.toSet());
+
+        int pluginsConfigSize = enabledConfigDescriptionSet.size();
+        long uniqueUuidSetSize = enabledConfigDescriptionSet.stream()
                 .map(ConfigDescription::getUuid)
-                .collect(Collectors.toSet())
-                .size();
+                .collect(Collectors.toSet()).size();
 
         if (pluginsConfigSize != uniqueUuidSetSize) {
             throw new PluginSystemCriticalException("Cannot start application. UUIDs of plugins's config are not unique! " +
