@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 class PluginsFileTest {
 
     @BeforeAll
-    static void setup() {
+    static void setup() throws PluginSystemCriticalException {
         try {
             LinuxBootstrapper.getInstance().bootstrap(new String[]{});
         } catch (RuntimeException e) {}

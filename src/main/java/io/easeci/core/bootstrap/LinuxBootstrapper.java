@@ -1,6 +1,7 @@
 package io.easeci.core.bootstrap;
 
 import io.easeci.core.extension.ExtensionSystem;
+import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.log.ApplicationLevelLog;
 import io.easeci.core.log.LogManager;
 import io.easeci.core.output.Event;
@@ -34,7 +35,7 @@ public class LinuxBootstrapper implements Bootstrapper {
     }
 
     @Override
-    public void bootstrap(String[] args) {
+    public void bootstrap(String[] args) throws PluginSystemCriticalException {
         LinuxBootstrapper.workspaceInitializer = LinuxWorkspaceInitializer.getInstance();
         Path workspacePath = workspaceInitializer.init(args.length > 0 ? Optional.of(Path.of(args[0])) : Optional.empty());
         WorkspaceGuard workspaceGuard = (WorkspaceGuard) workspaceInitializer;

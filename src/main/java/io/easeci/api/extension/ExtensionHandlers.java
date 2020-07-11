@@ -3,6 +3,7 @@ package io.easeci.api.extension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
+import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.extension.ExtensionType;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
@@ -18,7 +19,7 @@ public class ExtensionHandlers implements InternalHandlers {
     private ExtensionControllable controllable;
     private ObjectMapper objectMapper;
 
-    public ExtensionHandlers() {
+    public ExtensionHandlers() throws PluginSystemCriticalException {
         this.controllable = ExtensionSystem.getInstance();
         this.objectMapper = new ObjectMapper();
     }

@@ -27,7 +27,8 @@ class DefaultPluginLoaderTest {
 
     @Test
     @DisplayName("Should not load plugin that is disabled in plugins-config.json")
-    void loadPluginsNotLoadDisabledPluginsTest() {
+    void loadPluginsNotLoadDisabledPluginsTest() throws PluginSystemCriticalException {
+//        prepare required objects
         PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigJsonPath);
         PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
         JarJoiner jarJoinerMock = Mockito.mock(JarJoiner.class);

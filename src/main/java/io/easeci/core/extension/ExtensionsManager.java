@@ -33,7 +33,7 @@ class ExtensionsManager implements ExtensionControllable {
 
     private PluginDownloader pluginDownloader;
 
-    private ExtensionsManager(Path pluginYml, Path pluginConfigYml) {
+    private ExtensionsManager(Path pluginYml, Path pluginConfigYml) throws PluginSystemCriticalException {
         log.info("==> ExtensionManager instance creation process invoked");
         this.pluginYml = pluginYml;
         this.infrastructureInit = this.instantiateExtensionInfrastructure();
@@ -66,7 +66,7 @@ class ExtensionsManager implements ExtensionControllable {
         return new DefaultPluginDownloader(registryUrl, pluginDestination, timeoutMilliseconds);
     }
 
-    static ExtensionsManager getInstance(Path pluginYml, Path pluginConfigYml) {
+    static ExtensionsManager getInstance(Path pluginYml, Path pluginConfigYml) throws PluginSystemCriticalException {
         if (isNull(extensionsManager)) {
             extensionsManager = new ExtensionsManager(pluginYml, pluginConfigYml);
         }
