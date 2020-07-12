@@ -41,3 +41,21 @@ The only condition is that the application works properly.
 
 EaseCI core as the name implies only provides an easily expandable core. Plugins for EaseCI can be developed 
 in any language that compiles into the jar archive and meets the requirements described in the documentation.
+
+## Run EaseCI core
+EaseCI can be run with few ways.
+#### Docker
+- Firstly build your docker image or download one from Docker Hub (available in future)<br>
+<code>docker build --tag easeci:1.0 .</code>
+- Run a new container from created image before<br>
+<code>docker run -td -p 5050:5050 <image_name></code>
+- Test application working, check plugin state for example<br>
+<code>curl -X GET localhost:5050/plugin/state</code>
+#### Virtual Machine (by Vagrant and Virtualbox)
+- You must have installed Vagrant and Virtualbox
+- Next clone source code <code>git clone --depth=5 --branch=master https://github.com/easeci/easeci-core-java.git </code>
+- Go to directory with source code where <code>Vagrantfile</code> is placed and type <code>vagrant up</code> in your terminal
+#### systemd (directly on your host)
+- Clone git repository as it is show above
+- Copy <code>easeci.service</code> to <code>/etc/systemd/system</code> in your host
+- Start this unit with systemctl <code>systemcrl start easeci</code>
