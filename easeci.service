@@ -1,0 +1,14 @@
+[Unit]
+Description=EaseCI core application server
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/bin/java -jar /home/vagrant/easeci/easeci-core-java/build/libs/easeci-core-0.0.1-SNAPSHOT-all.jar
+
+[Install]
+WantedBy=multi-user.target
