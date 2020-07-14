@@ -35,9 +35,9 @@ dependencies {
     compile project(':io-lib')
 
     implementation 'io.ratpack:ratpack-core:1.8.0'
+    implementation 'org.asynchttpclient:async-http-client:2.12.1'
     implementation 'org.codehaus.groovy:groovy-all:2.5.8'
     implementation 'org.yaml:snakeyaml:1.25'
-    implementation 'org.python:jython:2.7.2b2'
     implementation 'com.google.guava:guava:28.1-jre'
     compile group: 'io.vavr', name: 'vavr', version: '0.10.2'
     implementation 'commons-io:commons-io:2.6'
@@ -81,7 +81,6 @@ jar {
 test {
     useJUnitPlatform()
 }
-
 
 jacocoTestReport {
     reports {
