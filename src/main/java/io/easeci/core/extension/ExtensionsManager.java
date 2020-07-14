@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +64,7 @@ class ExtensionsManager implements ExtensionControllable {
         URL registryUrl = new URL((String) YamlUtils.ymlGet(yamlValues, "plugins.registry.url").getValue());
         Path pluginDestination = this.infrastructureInit.getPluginDirectories().stream().findFirst().orElseThrow();
 
-        return new DefaultPluginDownloader(registryUrl, pluginDestination, timeoutMilliseconds);
+        return new DefaultPluginDownloader(registryUrl, pluginDestination, timeoutMilliseconds, Optional.empty());
     }
 
     static ExtensionsManager getInstance(Path pluginYml, Path pluginConfigYml) throws PluginSystemCriticalException {
@@ -78,7 +79,10 @@ class ExtensionsManager implements ExtensionControllable {
         Set<Plugin> resolvedPlugins = pluginResolver.resolve(pluginYml, infrastructureInit);
         Set<Plugin> pluginsNotResolved = pluginLoader.loadPlugins(resolvedPlugins, (PluginStrategy) pluginConfig);
         if (!pluginsNotResolved.isEmpty() && isDownloadProcessEnabled()) {
-            download(pluginsNotResolved);
+            Set<CompletableFuture<Plugin>> justDownloaded = download(pluginsNotResolved);
+            justDownloaded.stream()
+                    .map(future -> future.thenApply(plugin -> pluginLoader.loadPlugin(plugin)))
+                    .forEach(future -> future.thenAccept(plugin -> log.info("===> Plugin {} correctly installed in EaseCI system", plugin.toShortString())));
         } else if (pluginsNotResolved.isEmpty()) {
             log.info("====> All plugins was loaded correctly.\nReport:\n {}", getReport(resolvedPlugins));
         }
@@ -189,15 +193,16 @@ class ExtensionsManager implements ExtensionControllable {
         return (Boolean) YamlUtils.ymlGet(pluginsYmlLocation, "plugins.local.download").getValue();
     }
 
-    private void download(Set<Plugin> pluginSet) {
+    private Set<CompletableFuture<Plugin>> download(Set<Plugin> pluginSet) {
         log.info("===> Downloading of plugins just started for items: {}", getReport(pluginSet));
-        pluginSet.stream()
+
+        return pluginDownloader.download(pluginSet.stream()
                 .filter(Plugin::isDownloadable)
                 .filter(plugin -> !plugin.getJarArchive().isStoredLocally())
-                .map(plugin -> pluginDownloader.download(plugin))
-                .forEach(future -> future.whenComplete((plugin, throwable) -> {
-                    Plugin pluginJustLoaded = pluginLoader.loadPlugin(plugin);
-                    log.info("===> Downloading of plugin: {}\n just finished", pluginJustLoaded.toString());
-                }));
+                .collect(Collectors.toSet()))
+                .map(pluginCompletableFuture -> pluginCompletableFuture.whenCompleteAsync(((plugin, throwable) -> {
+                    log.info("Yeah, plik się pobrał dla pluginu: " + plugin.toShortString());
+                    throwable.printStackTrace();
+                }))).collect(Collectors.toSet());
     }
 }

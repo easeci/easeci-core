@@ -2,7 +2,9 @@ package io.easeci.core.extension;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 /**
  * Defines a method for downloading plugin .jar files from
@@ -26,4 +28,12 @@ abstract class PluginDownloader {
      *          just downloading asynchronously.
      * */
     abstract CompletableFuture<Plugin> download(Plugin plugin);
+
+    /**
+     * Download defined set of plugin from remote server.
+     * @param pluginSet specify what plugins are required to download
+     * @return CompletableFuture just wrapping Plugin that is
+     *          just downloading asynchronously.
+     * */
+    abstract Stream<CompletableFuture<Plugin>> download(Set<Plugin> pluginSet);
 }
