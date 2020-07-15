@@ -1,20 +1,12 @@
 package io.easeci.core.extension;
 
-import java.nio.file.Path;
-import java.util.List;
-
 /**
  * Main interface that is responsible for creation of
  * whole plugin management infrastructure.
  * @author Karol Meksuła
  * 2020-03-12
  * */
-interface InfrastructureInit {
-
-    /**
-     * @return method should return all directories where plugins could be stored
-     * */
-    List<Path> getPluginDirectories();
+interface InfrastructureInit extends PluginInfrastructureInfo {
 
     /**
      * Reloads/loads/refreshes infrastructure data. Simply defines way

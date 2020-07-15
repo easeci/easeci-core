@@ -6,6 +6,9 @@ interface PluginConfig {
 
     PluginsConfigFile load() throws PluginSystemCriticalException;
 
+    /**
+     * Saves and reloading content!
+     * */
     PluginsConfigFile save() throws PluginSystemCriticalException;
 
     boolean add(String interfaceName, ConfigDescription configDescription);

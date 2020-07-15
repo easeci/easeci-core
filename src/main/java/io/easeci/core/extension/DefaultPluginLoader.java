@@ -31,28 +31,23 @@ class DefaultPluginLoader implements PluginLoader {
         Set<Plugin> pluginSetOutput = pluginSetInput.stream()
                 .filter(Plugin::isLoadable)
                 .map(jarJoiner::addToClasspath)
-                .peek(plugin -> {
-                    Boolean isEnabled = pluginStrategy.find(plugin.getName(), plugin.getVersion()).getEnabled();
-                    if (isEnabled) {
-                        Object instance = this.instantiate(plugin);
-                        this.insert(plugin, instance);
-                    } else {
-                        this.insert(plugin, null);
-                    }
-                }).collect(Collectors.toSet());
+                .peek(plugin -> instantiatePlugin(plugin, pluginStrategy))
+                .collect(Collectors.toSet());
         return new HashSet<>(Sets.difference(pluginSetInput, pluginSetOutput));
     }
 
-//    TODO
-    @Override
-    public Plugin loadPlugin(Plugin plugin) {
-        if (!plugin.isLoadable()) {
-            log.error("===> {} is not loadable! Basic information required for plugin load was not provided.", plugin);
+    /**
+     * Checks by PluginStrategy if plugin is correctly defined in plugins-config.json file.
+     * If configuration is correct then create object and insert to container.
+     * */
+    private void instantiatePlugin(Plugin plugin, PluginStrategy pluginStrategy) {
+        Boolean isEnabled = pluginStrategy.find(plugin.getName(), plugin.getVersion()).getEnabled();
+        if (isEnabled) {
+            Object instance = this.instantiate(plugin);
+            this.insert(plugin, instance);
+        } else {
+            this.insert(plugin, null);
         }
-        Plugin pluginAdded = jarJoiner.addToClasspath(plugin);
-        Object instance = instantiate(pluginAdded);
-        this.insert(plugin, instance);
-        return pluginAdded;
     }
 
     Object instantiate(Plugin plugin) {

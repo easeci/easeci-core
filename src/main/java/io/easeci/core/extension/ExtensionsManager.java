@@ -64,7 +64,11 @@ class ExtensionsManager implements ExtensionControllable {
         URL registryUrl = new URL((String) YamlUtils.ymlGet(yamlValues, "plugins.registry.url").getValue());
         Path pluginDestination = this.infrastructureInit.getPluginDirectories().stream().findFirst().orElseThrow();
 
-        return new DefaultPluginDownloader(registryUrl, pluginDestination, timeoutMilliseconds, Optional.empty());
+        return DefaultPluginDownloader.builder()
+                .registryUrl(registryUrl)
+                .targetPath(pluginDestination)
+                .timeoutMilliseconds(timeoutMilliseconds)
+                .build();
     }
 
     static ExtensionsManager getInstance(Path pluginYml, Path pluginConfigYml) throws PluginSystemCriticalException {
@@ -81,8 +85,10 @@ class ExtensionsManager implements ExtensionControllable {
         if (!pluginsNotResolved.isEmpty() && isDownloadProcessEnabled()) {
             Set<CompletableFuture<Plugin>> justDownloaded = download(pluginsNotResolved);
             justDownloaded.stream()
-                    .map(future -> future.thenApply(plugin -> pluginLoader.loadPlugin(plugin)))
-                    .forEach(future -> future.thenAccept(plugin -> log.info("===> Plugin {} correctly installed in EaseCI system", plugin.toShortString())));
+                    .map(future -> future.thenApply(plugin -> pluginLoader.loadPlugins(Set.of(plugin), (PluginStrategy) pluginConfig)))
+                    .forEach(future -> future.thenAccept(pluginSet -> {
+                        pluginSet.forEach(plugin -> log.info("===> Plugin {} correctly installed in EaseCI system", plugin.toShortString()));
+                    }));
         } else if (pluginsNotResolved.isEmpty()) {
             log.info("====> All plugins was loaded correctly.\nReport:\n {}", getReport(resolvedPlugins));
         }
@@ -168,7 +174,7 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse startupExtension(ActionRequest actionRequest) {
-//        TODO
+//        TODO !! urgent !!
         return null;
     }
 
@@ -201,7 +207,34 @@ class ExtensionsManager implements ExtensionControllable {
                 .filter(plugin -> !plugin.getJarArchive().isStoredLocally())
                 .collect(Collectors.toSet()))
                 .map(pluginCompletableFuture -> pluginCompletableFuture.whenCompleteAsync(((plugin, throwable) -> {
-                    log.info("Yeah, plik się pobrał dla pluginu: " + plugin.toShortString());
+
+//                    TODO logika jest, przetestować + zrefaktoryzować
+                    Plugin pluginResolved = pluginResolver.resolve(infrastructureInit, plugin.getName(), plugin.getVersion());
+                    String interfaceName = pluginResolved.getJarArchive().getExtensionManifest().getImplementsProperty();
+
+                    ConfigDescription configDescription = ConfigDescription.builder()
+                            .uuid(UUID.randomUUID())
+                            .name(plugin.getName())
+                            .version(plugin.getVersion())
+                            .enabled(true)
+                            .build();
+
+                    boolean isAdded = pluginConfig.add(interfaceName, configDescription);
+                    try {
+                        pluginConfig.save();
+                    } catch (PluginSystemCriticalException e) {
+                        e.printStackTrace();
+                    }
+
+                    ActionRequest actionRequest = ActionRequest.builder()
+                            .extensionType(ExtensionType.toEnum(interfaceName))
+                            .pluginUuid(configDescription.getUuid())
+                            .pluginName(plugin.getName())
+                            .pluginVersion(plugin.getVersion())
+                            .build();
+
+                    ActionResponse actionResponse = this.startupExtension(actionRequest);
+
                     throwable.printStackTrace();
                 }))).collect(Collectors.toSet());
     }
