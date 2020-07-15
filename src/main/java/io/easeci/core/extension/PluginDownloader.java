@@ -1,7 +1,5 @@
 package io.easeci.core.extension;
 
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -13,9 +11,6 @@ import java.util.stream.Stream;
  * 2020-03-28
  * */
 abstract class PluginDownloader {
-
-    PluginDownloader(URL registryUrl, Path targetPath, long timeoutMilliseconds) {
-    }
 
     /**
      * Download plugin from remote server.

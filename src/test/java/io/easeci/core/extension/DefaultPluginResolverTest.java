@@ -90,4 +90,10 @@ class DefaultPluginResolverTest {
 
         org.apache.commons.io.FileUtils.deleteDirectory(fakeDir.toFile());
     }
+
+    @Test
+    @DisplayName("Should correctly resolve Plugin object by name and version of plugin")
+    void defaultPluginResolverLoadResolveSingle() {
+//        TODO
+    }
 }

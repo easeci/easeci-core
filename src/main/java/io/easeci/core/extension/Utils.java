@@ -3,6 +3,7 @@ package io.easeci.core.extension;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -42,5 +43,22 @@ class Utils {
                 .map(pathAsString -> pathAsString.concat(SLASH).concat(pluginFileName(name, version)))
                 .map(pathAsString -> Paths.get(pathAsString))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Prepare full URL for download plugin from EaseCI registry server.
+     * @param registryUrl is address of registry server: http://localhost:8080 or https://easeci-registry.io
+     * @param pluginName is name of plugin
+     * @param pluginVersion is version of plugin
+     * @return complete GET URL, example:
+     *      http://localhost:8080/api/v1/download/time-printer/0.0.1
+     * */
+    static String completePluginDownloadUrl(URL registryUrl, String pluginName, String pluginVersion) {
+        final String REST_API_ENDPOINT = "/api/v1/download/";
+        return registryUrl.toString()
+                .concat(REST_API_ENDPOINT)
+                .concat(pluginName)
+                .concat(SLASH)
+                .concat(pluginVersion);
     }
 }

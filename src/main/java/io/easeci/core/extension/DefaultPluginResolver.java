@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.extension.Utils.likelyLocations;
@@ -29,20 +30,26 @@ class DefaultPluginResolver implements PluginResolver {
                              VERSION = "version";
 
     @Override
-    public Set<Plugin> resolve(Path pluginYml, InfrastructureInit infrastructureInit) {
+    public Set<Plugin> resolve(Path pluginYml, PluginInfrastructureInfo infrastructureInfo) {
         if (isNull(pluginYml) || !FileUtils.isExist(pluginYml.toString())
-                || isNull(infrastructureInit) || isNull(infrastructureInit.getPluginDirectories())) {
+                || isNull(infrastructureInfo) || isNull(infrastructureInfo.getPluginDirectories())) {
             log.error("=> Cannot execute resolve() method because of method's arguments are not correct");
             return Collections.emptySet();
         }
-
         return PluginsFile.create(pluginYml).getPluginsList()
                 .stream()
                 .flatMap(nestedMap -> nestedMap.values().stream())
                 .filter(pluginAsMap -> nonNull(pluginAsMap.get(NAME)) && nonNull(pluginAsMap.get(VERSION)))
                 .map(pluginAsMap -> Plugin.of(pluginAsMap.get(NAME), pluginAsMap.get(VERSION)))
-                .map(plugin -> Plugin.of(plugin, prepareJar(infrastructureInit.getPluginDirectories(), plugin.getName(), plugin.getVersion())))
+                .map(plugin -> Plugin.of(plugin, prepareJar(infrastructureInfo.getPluginDirectories(), plugin.getName(), plugin.getVersion())))
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Plugin resolve(PluginInfrastructureInfo infrastructureInfo, String pluginName, String pluginVersion) {
+        Plugin plugin = Plugin.of(pluginName, pluginVersion);
+        Plugin.JarArchive jarArchive = prepareJar(infrastructureInfo.getPluginDirectories(), pluginName, pluginVersion);
+        return Plugin.of(plugin, jarArchive);
     }
 
     private Plugin.JarArchive prepareJar(List<Path> pluginDirectories, String name, String version) {
