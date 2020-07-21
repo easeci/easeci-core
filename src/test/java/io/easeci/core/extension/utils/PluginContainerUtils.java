@@ -7,6 +7,7 @@ import io.easeci.core.extension.Plugin;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Set;
 
 public class PluginContainerUtils {
 
@@ -66,5 +67,38 @@ public class PluginContainerUtils {
         }
         Plugin plugin = Plugin.of("welcome-logo", "0.0.2");
         return Plugin.of(plugin, jarArchive);
+    }
+
+    /**
+     * Plugin correlated with data from plugins-config-test.json
+     * */
+    public static Set<Plugin> createCorrectFakePlugin() {
+        Plugin.JarArchive jarArchive = null;
+        try {
+            jarArchive = Plugin.JarArchive.of("welcome-logo-0.0.1.jar",
+                    true,
+                    new URL("file://"),
+                    Path.of(""),
+                    ExtensionManifest.of("", "java.lang.String"));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Plugin plugin = Plugin.of("welcome-logo", "0.0.1");
+        plugin = Plugin.of(plugin, jarArchive);
+
+        Plugin.JarArchive jarArchiveB = null;
+        try {
+            jarArchiveB = Plugin.JarArchive.of("test-plugin-0.0.1.jar",
+                    true,
+                    new URL("file://"),
+                    Path.of(""),
+                    ExtensionManifest.of("", "java.lang.Thread"));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Plugin pluginB = Plugin.of("test-plugin", "0.0.1");
+        pluginB = Plugin.of(pluginB, jarArchiveB);
+
+        return Set.of(plugin, pluginB);
     }
 }
