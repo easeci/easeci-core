@@ -41,7 +41,7 @@ class DefaultPluginContainerTest {
         Instance instance = fromBasic(INTERFACE_NAME, IMPLEMENTATION);
         pluginContainer.add(instance);
 
-        assertEquals(1, pluginContainer.size());
+        assertEquals(1, pluginContainer.keySize());
     }
 
     /* Adding a new instance should not duplicate the key in the container map.
@@ -59,7 +59,7 @@ class DefaultPluginContainerTest {
         pluginContainer.add(instanceA);
         pluginContainer.add(instanceB);
 
-        assertEquals(1, pluginContainer.size());
+        assertEquals(1, pluginContainer.keySize());
     }
 
     @Test
@@ -76,7 +76,7 @@ class DefaultPluginContainerTest {
         pluginContainer.add(instanceA);
         pluginContainer.add(instanceB);
 
-        assertEquals(2, pluginContainer.size());
+        assertEquals(2, pluginContainer.keySize());
         assertEquals(1, pluginContainer.implementationSize(INTERFACE_NAME_A));
         assertEquals(1, pluginContainer.implementationSize(INTERFACE_NAME_B));
     }
@@ -93,7 +93,7 @@ class DefaultPluginContainerTest {
         pluginContainer.add(instance);
         pluginContainer.add(instanceDuplicate);
 
-        assertEquals(1, pluginContainer.size());
+        assertEquals(1, pluginContainer.keySize());
         assertEquals(1, pluginContainer.implementationSize(INTERFACE_NAME));
     }
 
@@ -110,14 +110,14 @@ class DefaultPluginContainerTest {
         pluginContainer.add(instanceA);
         pluginContainer.add(instanceB);
 
-        assertEquals(1, pluginContainer.size());
+        assertEquals(1, pluginContainer.keySize());
         assertEquals(2, pluginContainer.implementationSize(INTERFACE_NAME));
     }
 
     @Test
     @DisplayName("Should return 0 (zero) when container is empty")
     void defaultPluginContainerSizeTest() {
-        assertEquals(0, pluginContainer.size());
+        assertEquals(0, pluginContainer.keySize());
     }
 
     @Test
@@ -135,7 +135,7 @@ class DefaultPluginContainerTest {
 
         String specific = pluginContainer.getSpecific(INTERFACE_NAME, String.class);
 
-        assertEquals(1, pluginContainer.size());
+        assertEquals(1, pluginContainer.keySize());
         assertEquals(IMPLEMENTATION_A, specific);
     }
 
@@ -157,7 +157,7 @@ class DefaultPluginContainerTest {
 
         String specific = pluginContainer.getSpecific(INTERFACE_NAME, String.class);
 
-        assertEquals(1, pluginContainer.size());
+        assertEquals(1, pluginContainer.keySize());
         assertEquals(IMPLEMENTATION_A, specific);
     }
 

@@ -90,12 +90,16 @@ interface PluginContainer {
     /**
      * @return size of current container's key set
      * */
-    int size();
+    int keySize();
+
+    /**
+     * This method counts all created objects for defined plugins.
+     * @return size of current container's instances.
+     * */
+    int instanceSize();
 
     /**
      * @return size of instance of specific interface
      * */
     int implementationSize(String interfaceName);
-
-
 }

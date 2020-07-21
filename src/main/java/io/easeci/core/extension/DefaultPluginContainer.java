@@ -116,8 +116,16 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
-    public int size() {
+    public int keySize() {
         return this.container.size();
+    }
+
+    @Override
+    public int instanceSize() {
+        return (int) this.container.values()
+                .stream()
+                .mapToLong(Collection::size)
+                .sum();
     }
 
     @Override
