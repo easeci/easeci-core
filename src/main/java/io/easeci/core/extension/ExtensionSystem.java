@@ -87,6 +87,7 @@ public class ExtensionSystem implements ExtensionControllable {
                     this.extensionsManager.findInstanceByIdentityHashCode(identityHashCode)
                             .ifPresentOrElse(instance -> {
                                 if (instance.isStandalone()) {
+                                    instance.setStarted(true);
                                     instance.assignThread(thread);
                                     log.info("===> [Standalone plugin] Correctly found Instance by hashCode[{}], plugin: {} assigned to running in Thread: {}",
                                             identityHashCode, instance.getPlugin().toShortString(), instance.getThread().toString());

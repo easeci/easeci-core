@@ -204,115 +204,55 @@ class ExtensionsManager implements ExtensionControllable {
                 .filter(Plugin::isDownloadable)
                 .filter(plugin -> !plugin.getJarArchive().isStoredLocally())
                 .collect(Collectors.toSet())
-                .forEach(plugin -> {
-                    pluginDownloader.download(plugin)
-                            .thenApply(pluginFuture -> {
-                                Plugin pluginResolved = pluginResolver.resolve(infrastructureInit, pluginFuture.getName(), pluginFuture.getVersion());
+                .forEach(plugin -> pluginDownloader.download(plugin)
+                        .thenApply(pluginFuture -> {
+                            Plugin pluginResolved = pluginResolver.resolve(infrastructureInit, pluginFuture.getName(), pluginFuture.getVersion());
 
 //                                wyciągnij sobie manifest w tym miejscu. Powyżej w obiekcie pluginu już mamy URL do jara
-                                String interfaceName = "io.easeci.extension.Standalone";
-                                ConfigDescription configDescription = ConfigDescription.builder()
-                                        .uuid(UUID.randomUUID())
-                                        .name(plugin.getName())
-                                        .version(plugin.getVersion())
-                                        .enabled(true)
-                                        .build();
+                            String interfaceName = "io.easeci.extension.Standalone";
+                            ConfigDescription configDescription = ConfigDescription.builder()
+                                    .uuid(UUID.randomUUID())
+                                    .name(plugin.getName())
+                                    .version(plugin.getVersion())
+                                    .enabled(true)
+                                    .build();
 
-                                boolean isAdded = pluginConfig.add(interfaceName, configDescription);
+                            boolean isAdded = pluginConfig.add(interfaceName, configDescription);
+                            if (isAdded) {
                                 try {
                                     pluginConfig.save();
                                 } catch (PluginSystemCriticalException e) {
                                     e.printStackTrace();
                                 }
+                            }
 
-                                ActionRequest actionRequest = ActionRequest.builder()
-                                        .extensionType(ExtensionType.toEnum(interfaceName))
-                                        .pluginUuid(configDescription.getUuid())
-                                        .pluginName(pluginResolved.getName())
-                                        .pluginVersion(pluginResolved.getVersion())
-                                        .build();
+                            ActionRequest actionRequest = ActionRequest.builder()
+                                    .extensionType(ExtensionType.toEnum(interfaceName))
+                                    .pluginUuid(configDescription.getUuid())
+                                    .pluginName(pluginResolved.getName())
+                                    .pluginVersion(pluginResolved.getVersion())
+                                    .build();
 
-                                return new Wrapper(pluginResolved, actionRequest);
-                            })
-                            .whenComplete(((wrapper, throwable) -> {
-                                Set<Plugin> pluginsNotLoaded = pluginLoader.loadPlugins(Set.of(wrapper.plugin), (PluginStrategy) pluginConfig);
-                                if (!pluginsNotLoaded.isEmpty())
-                                    log.info("===> Downloaded but not loaded: " + pluginsNotLoaded);
+                            return Wrapper.of(pluginResolved, actionRequest);
+                        })
+                        .whenComplete(((wrapper, throwable) -> {
+                            Set<Plugin> pluginsNotLoaded = pluginLoader.loadPlugins(Set.of(wrapper.plugin), (PluginStrategy) pluginConfig);
+                            if (!pluginsNotLoaded.isEmpty())
+                                log.info("===> Downloaded but not loaded: " + pluginsNotLoaded);
 
-                                ActionResponse actionResponse = this.startupExtension(wrapper.actionRequest);
+                            ActionResponse actionResponse = this.startupExtension(wrapper.actionRequest);
 
-                                if (actionResponse.getIsSuccessfullyDone())
-                                    log.info("===> Plugin {} correctly installed in EaseCI system", wrapper.plugin.toShortString());
+                            if (actionResponse.getIsSuccessfullyDone())
+                                log.info("===> Plugin {} correctly installed in EaseCI system", wrapper.plugin.toShortString());
 
-                                if (nonNull(throwable))
-                                    throwable.printStackTrace();
-                            }));
-
-
-
-
-//        pluginDownloader.download(pluginSet.stream()
-//                .filter(Plugin::isDownloadable)
-//                .filter(plugin -> !plugin.getJarArchive().isStoredLocally())
-//                .collect(Collectors.toSet()))
-//                        .map(pluginCompletableFuture -> pluginCompletableFuture
-//                                .thenApply(plugin -> {
-////                                    TODO logika jest, przetestować + zrefaktoryzować
-//                                    Plugin pluginResolved = pluginResolver.resolve(infrastructureInit, plugin.getName(), plugin.getVersion());
-//
-////                            Nie dostajemy tutaj ExtensionManifestu
-////                            String interfaceName = pluginResolved.getJarArchive().getExtensionManifest().getImplementsProperty();
-//                                    String interfaceName = "io.easeci.extension.Standalone";
-//                                    /**
-//                                     * Muszę przeczytać manifest jeszcze bez dodawania jara.
-//                                     * */
-//
-//                                    ConfigDescription configDescription = ConfigDescription.builder()
-//                                            .uuid(UUID.randomUUID())
-//                                            .name(plugin.getName())
-//                                            .version(plugin.getVersion())
-//                                            .enabled(true)
-//                                            .build();
-//
-//                                    boolean isAdded = pluginConfig.add(interfaceName, configDescription);
-//                                    try {
-//                                        pluginConfig.save();
-//                                    } catch (PluginSystemCriticalException e) {
-//                                        e.printStackTrace();
-//                                    }
-//
-//                                    ActionRequest actionRequest = ActionRequest.builder()
-//                                            .extensionType(ExtensionType.toEnum(interfaceName))
-//                                            .pluginUuid(configDescription.getUuid())
-//                                            .pluginName(plugin.getName())
-//                                            .pluginVersion(plugin.getVersion())
-//                                            .build();
-//
-//                                    System.out.println("207:  .thenApply(plugin -> {");
-//                                    return new Wrapper(plugin, actionRequest);
-//                                })
-//                                .whenComplete(((wrapper, throwable) -> {
-//                                    Set<Plugin> pluginsNotLoaded = pluginLoader.loadPlugins(Set.of(wrapper.plugin), (PluginStrategy) pluginConfig);
-//                                    System.out.println("Niezaładowane: " + pluginsNotLoaded);
-//                                    ActionResponse actionResponse = this.startupExtension(wrapper.actionRequest);
-//                                    throwable.printStackTrace();
-//
-//                                    System.out.println("Plugin " + wrapper.plugin.toShortString() + " powinien być już gotowy do użycia.");
-//
-////                            pluginCompletableFuture
-////                                    .thenApply(future -> pluginLoader.loadPlugins(Set.of(future), (PluginStrategy) pluginConfig))
-////                                    .thenAccept(plugins -> plugins.forEach(newestPlugin -> log.info("===> Plugin {} correctly installed in EaseCI system", newestPlugin.toShortString())))
-////                                    .exceptionally(thr -> {
-////                                        thr.printStackTrace();
-////                                        return null;
-////                                    });
-//                        }))).collect(Collectors.toSet());
-        });
+                            if (nonNull(throwable))
+                                throwable.printStackTrace();
+                        })));
     }
 
-    @AllArgsConstructor
-    private class Wrapper {
-        private Plugin plugin;
-        private ActionRequest actionRequest;
+    @AllArgsConstructor(staticName = "of")
+    private static class Wrapper {
+        private final Plugin plugin;
+        private final ActionRequest actionRequest;
     }
 }
