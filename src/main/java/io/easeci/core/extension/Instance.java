@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.extension.ExtensionType;
 import io.easeci.extension.Standalone;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,9 @@ public class Instance {
     private Object instance;
     private int identityHashCode;
 
+    @Setter
+    private boolean isStarted;
+
     public void assignThread(Thread thread) {
         if (this.thread == null) {
             this.thread = thread;
@@ -29,9 +33,16 @@ public class Instance {
     }
 
     public boolean isRunning() {
-        return nonNull(this.getInstance()) &&
-               nonNull(this.getInstantiateDateTime()) &&
-               this.identityHashCode != 0;
+        ExtensionType extensionType = ExtensionType.toEnum(plugin.getJarArchive().getExtensionManifest().getImplementsProperty());
+        if (ExtensionType.STANDALONE_PLUGIN.equals(extensionType)) {
+            return isStarted;
+        }
+        if (ExtensionType.EXTENSION_PLUGIN.equals(extensionType)) {
+            return nonNull(this.getInstance()) &&
+                    nonNull(this.getInstantiateDateTime()) &&
+                    this.identityHashCode != 0;
+        }
+        throw new RuntimeException("Cannot define type of Extension!");
     }
 
     public boolean clear() {

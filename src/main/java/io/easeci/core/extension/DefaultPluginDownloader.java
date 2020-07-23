@@ -56,10 +56,7 @@ class DefaultPluginDownloader extends PluginDownloader {
         return asyncHttpClient.prepareGet(completePluginDownloadUrl(registryUrl, plugin.getName(), plugin.getVersion()))
                 .execute(ofNullable(this.asyncFileHandler).orElseGet(() -> this.defaultCompletionHandler(plugin)))
                 .toCompletableFuture()
-                .thenApply(file -> plugin).thenApply(plugin1 -> {
-                    log.info("Ostatnia metoda download");
-                    return plugin1;
-                });
+                .thenApply(file -> plugin);
     }
 
     private AsyncCompletionHandler<File> defaultCompletionHandler(Plugin plugin) {
