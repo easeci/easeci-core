@@ -53,9 +53,13 @@ class DefaultPluginDownloader extends PluginDownloader {
 
     @Override
     CompletableFuture<Plugin> download(Plugin plugin) {
-        ListenableFuture<File> execute = asyncHttpClient.prepareGet(completePluginDownloadUrl(registryUrl, plugin.getName(), plugin.getVersion()))
-                .execute(ofNullable(this.asyncFileHandler).orElseGet(() -> this.defaultCompletionHandler(plugin)));
-        return execute.toCompletableFuture().thenApply(file -> plugin);
+        return asyncHttpClient.prepareGet(completePluginDownloadUrl(registryUrl, plugin.getName(), plugin.getVersion()))
+                .execute(ofNullable(this.asyncFileHandler).orElseGet(() -> this.defaultCompletionHandler(plugin)))
+                .toCompletableFuture()
+                .thenApply(file -> plugin).thenApply(plugin1 -> {
+                    log.info("Ostatnia metoda download");
+                    return plugin1;
+                });
     }
 
     private AsyncCompletionHandler<File> defaultCompletionHandler(Plugin plugin) {

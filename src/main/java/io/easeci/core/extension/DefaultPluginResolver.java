@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.extension.Utils.likelyLocations;

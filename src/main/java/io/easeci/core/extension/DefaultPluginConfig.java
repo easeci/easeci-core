@@ -172,7 +172,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     }
 
     @Override
-    public ConfigDescription find(ExtensionType extensionType, String pluginName, String pluginVersion) {
+    public ConfigDescription find(ExtensionType extensionType, String pluginName, String pluginVersion) throws PluginSystemIntegrityViolated {
         return this.pluginsConfigFile.getConfigDescriptions().get(ExtensionType.toInterface(extensionType))
                 .stream()
                 .filter(configDescription -> configDescription.getName().equals(pluginName) && configDescription.getVersion().equals(pluginVersion))
@@ -181,7 +181,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     }
 
     @Override
-    public ConfigDescription find(ExtensionType extensionType, UUID uuid) {
+    public ConfigDescription find(ExtensionType extensionType, UUID uuid) throws PluginSystemIntegrityViolated {
         return this.pluginsConfigFile.getConfigDescriptions().get(ExtensionType.toInterface(extensionType))
                 .stream()
                 .filter(configDescription -> configDescription.getUuid().equals(uuid))
@@ -190,7 +190,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     }
 
     @Override
-    public ConfigDescription find(String pluginName, String pluginVersion) {
+    public ConfigDescription find(String pluginName, String pluginVersion) throws PluginSystemIntegrityViolated {
         return this.pluginsConfigFile.getConfigDescriptions()
                 .values()
                 .stream()
@@ -210,7 +210,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 class PluginsConfigFile {
     private Map<String, Set<ConfigDescription>> configDescriptions;
 
-    boolean put(String interfaceName, ConfigDescription configDescription) {
+    synchronized boolean put(String interfaceName, ConfigDescription configDescription) {
         Set<ConfigDescription> configDescriptionSet = this.configDescriptions.get(interfaceName);
         if (isNull(configDescriptionSet)) {
             this.configDescriptions.put(interfaceName, Set.of(configDescription));
@@ -252,6 +252,8 @@ class ConfigDescription implements Predicate<Instance> {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Objects.hashCode(this.uuid) +
+                Objects.hashCode(this.name) +
+                Objects.hashCode(this.version);
     }
 }
