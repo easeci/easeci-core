@@ -3,11 +3,15 @@ package io.easeci.core.extension;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 /**
@@ -60,5 +64,17 @@ class Utils {
                 .concat(pluginName)
                 .concat(SLASH)
                 .concat(pluginVersion);
+    }
+
+    /**
+     * Extracting MANIFEST.MF file as a internal POJO representation.
+     * @param jarPath is a path to jar file on your local storage
+     * @return ExtensionManifest is a representation of required information
+     * */
+    static ExtensionManifest extractManifest(Path jarPath) throws IOException {
+        JarFile jarFile = new JarFile(jarPath.toFile());
+        Manifest manifest = jarFile.getManifest();
+        Attributes mainAttributes = manifest.getMainAttributes();
+        return ExtensionManifest.of(mainAttributes);
     }
 }
