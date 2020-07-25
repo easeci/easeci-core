@@ -42,10 +42,7 @@ class JarJoiner {
 
     ExtensionManifest read(Plugin plugin) {
         try {
-            JarFile jarFile = new JarFile(plugin.getJarArchive().getJarPath().toFile());
-            Manifest manifest = jarFile.getManifest();
-            Attributes mainAttributes = manifest.getMainAttributes();
-            ExtensionManifest extensionManifest = ExtensionManifest.of(mainAttributes);
+            ExtensionManifest extensionManifest = Utils.extractManifest(plugin.getJarArchive().getJarPath());
             if (extensionManifest.isComplete()) {
                 return extensionManifest;
             }

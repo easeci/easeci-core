@@ -11,5 +11,6 @@ public enum EventType {
     PIPELINE,
     ERROR,
     SPECIAL,
-    API
+    API,
+    PLUGIN_SYSTEM
 }

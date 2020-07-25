@@ -9,10 +9,10 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -199,55 +199,59 @@ class ExtensionsManager implements ExtensionControllable {
 
     private void downloadInFly(Set<Plugin> pluginSet) {
         log.info("===> Downloading of plugins just started for items:\n{}", getReport(pluginSet));
-
         pluginSet.stream()
                 .filter(Plugin::isDownloadable)
                 .filter(plugin -> !plugin.getJarArchive().isStoredLocally())
                 .collect(Collectors.toSet())
                 .forEach(plugin -> pluginDownloader.download(plugin)
-                        .thenApply(pluginFuture -> {
-                            Plugin pluginResolved = pluginResolver.resolve(infrastructureInit, pluginFuture.getName(), pluginFuture.getVersion());
+                        .thenApply(this::callResolver)
+                        .whenComplete((this::loadOnFly)));
+    }
 
-//                                todo !!!! wyciągnij sobie manifest w tym miejscu. Powyżej w obiekcie pluginu już mamy URL do jara
-                            String interfaceName = "io.easeci.extension.Standalone";
-                            ConfigDescription configDescription = ConfigDescription.builder()
-                                    .uuid(UUID.randomUUID())
-                                    .name(plugin.getName())
-                                    .version(plugin.getVersion())
-                                    .enabled(true)
-                                    .build();
+    private Wrapper callResolver(Plugin pluginFuture) {
+        Plugin pluginResolved = pluginResolver.resolve(infrastructureInit, pluginFuture.getName(), pluginFuture.getVersion());
+        final Path JAR_PATH = pluginResolved.getJarArchive().getJarPath();
+        try {
+            final String INTERFACE_NAME = Utils.extractManifest(JAR_PATH).getImplementsProperty();
+            final UUID PLUGIN_LOCAL_UUID = UUID.randomUUID();
 
-                            boolean isAdded = pluginConfig.add(interfaceName, configDescription);
-                            if (isAdded) {
-                                try {
-                                    pluginConfig.save();
-                                } catch (PluginSystemCriticalException e) {
-                                    e.printStackTrace();
-                                }
-                            }
+            if (pluginConfig.add(INTERFACE_NAME, ConfigDescription.builder()
+                                                                  .uuid(PLUGIN_LOCAL_UUID)
+                                                                  .name(pluginFuture.getName())
+                                                                  .version(pluginFuture.getVersion())
+                                                                  .enabled(true)
+                                                                  .build())) {
+                try {
+                    pluginConfig.save();
+                } catch (PluginSystemCriticalException e) {
+                    e.printStackTrace();
+                }
+            }
 
-                            ActionRequest actionRequest = ActionRequest.builder()
-                                    .extensionType(ExtensionType.toEnum(interfaceName))
-                                    .pluginUuid(configDescription.getUuid())
-                                    .pluginName(pluginResolved.getName())
-                                    .pluginVersion(pluginResolved.getVersion())
-                                    .build();
+            return Wrapper.of(pluginResolved, ActionRequest.builder()
+                    .extensionType(ExtensionType.toEnum(INTERFACE_NAME))
+                    .pluginUuid(PLUGIN_LOCAL_UUID)
+                    .pluginName(pluginResolved.getName())
+                    .pluginVersion(pluginResolved.getVersion())
+                    .build());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new PluginSystemRuntimeException("Error occurred while trying to read MANIFEST.MF file in jar file: " + JAR_PATH.toString());
+        }
+    }
 
-                            return Wrapper.of(pluginResolved, actionRequest);
-                        })
-                        .whenComplete(((wrapper, throwable) -> {
-                            Set<Plugin> pluginsNotLoaded = pluginLoader.loadPlugins(Set.of(wrapper.plugin), (PluginStrategy) pluginConfig);
-                            if (!pluginsNotLoaded.isEmpty())
-                                log.info("===> Downloaded but not loaded: " + pluginsNotLoaded);
+    private void loadOnFly(Wrapper wrapper, Throwable throwable) {
+        Set<Plugin> pluginsNotLoaded = pluginLoader.loadPlugins(Set.of(wrapper.plugin), (PluginStrategy) pluginConfig);
+        if (!pluginsNotLoaded.isEmpty())
+            log.info("===> Downloaded but not loaded: " + pluginsNotLoaded);
 
-                            ActionResponse actionResponse = this.startupExtension(wrapper.actionRequest);
+        ActionResponse actionResponse = this.startupExtension(wrapper.actionRequest);
 
-                            if (actionResponse.getIsSuccessfullyDone())
-                                log.info("===> Plugin {} correctly installed in EaseCI system", wrapper.plugin.toShortString());
+        if (actionResponse.getIsSuccessfullyDone())
+            log.info("===> Plugin {} correctly installed in EaseCI system", wrapper.plugin.toShortString());
 
-                            if (nonNull(throwable))
-                                throwable.printStackTrace();
-                        })));
+        if (nonNull(throwable))
+            throwable.printStackTrace();
     }
 
     @AllArgsConstructor(staticName = "of")
