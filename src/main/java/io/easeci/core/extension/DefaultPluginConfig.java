@@ -10,10 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 
 @Slf4j
 class DefaultPluginConfig implements PluginConfig, PluginStrategy {
@@ -84,16 +86,19 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public boolean update(ConfigDescription configDescription) {
+//        TODO
         return false;
     }
 
     @Override
     public boolean remove(ConfigDescription configDescription) {
+//        TODO
         return false;
     }
 
     @Override
     public boolean enable(UUID pluginUuid) {
+//        TODO
         return false;
     }
 
@@ -143,6 +148,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public boolean disableAll(String interfaceName) {
+//        TODO
         return false;
     }
 
@@ -205,19 +211,21 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 @Getter
 @ToString
 @EqualsAndHashCode
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 class PluginsConfigFile {
-    private Map<String, Set<ConfigDescription>> configDescriptions;
+    private final Map<String, Set<ConfigDescription>> configDescriptions;
+
+    PluginsConfigFile() {
+        this.configDescriptions = new ConcurrentHashMap<>();
+    }
 
     synchronized boolean put(String interfaceName, ConfigDescription configDescription) {
         Set<ConfigDescription> configDescriptionSet = this.configDescriptions.get(interfaceName);
         if (isNull(configDescriptionSet)) {
-            this.configDescriptions.put(interfaceName, Set.of(configDescription));
-        } else {
-            configDescriptionSet.add(configDescription);
+            this.configDescriptions.put(interfaceName, new HashSet<>(asList(configDescription)));
+            return true;
         }
-        return true;
+        return configDescriptionSet.add(configDescription);
     }
 }
 
@@ -252,8 +260,7 @@ class ConfigDescription implements Predicate<Instance> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.uuid) +
-                Objects.hashCode(this.name) +
+        return Objects.hashCode(this.name) +
                 Objects.hashCode(this.version);
     }
 }

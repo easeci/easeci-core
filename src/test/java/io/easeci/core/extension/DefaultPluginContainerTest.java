@@ -249,7 +249,7 @@ class DefaultPluginContainerTest {
     @Test
     @DisplayName("Should correctly find Instance.class identified with UUID passed in method argument")
     void defaultPluginContainerFindByUuid() throws PluginSystemCriticalException {
-        final UUID PLUGIN_UUID = UUID.fromString("4593a486-776b-11ea-bc55-0242ac130006");   // this is value from plugins-config-test.json
+        final UUID PLUGIN_UUID = UUID.fromString("4593a486-776b-11ea-bc55-0242ac130003");   // this is value from plugins-config-test.json
         final ExtensionType EXTENSION_TYPE = ExtensionType.EXTENSION_PLUGIN;               // same ^
 
         final String INTERFACE_NAME = "java.lang.String";
@@ -279,6 +279,16 @@ class DefaultPluginContainerTest {
                     assertEquals("welcome-logo", inst.getPlugin().getName());
                     assertEquals("0.0.1", inst.getPlugin().getVersion());
                 }));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when cannot find configuration of plugin")
+    void defaultPluginContainerFindByUuidInvalidTest() throws PluginSystemCriticalException {
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        assertThrows(PluginSystemIntegrityViolated.class, () -> pluginContainer.findByUuid(ExtensionType.EXTENSION_PLUGIN, UUID.randomUUID()));
     }
 
     @Test

@@ -9,10 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static org.junit.jupiter.api.Assertions.*;
@@ -205,6 +202,37 @@ class DefaultPluginConfigTest {
         DefaultPluginConfig defaultPluginConfig = new DefaultPluginConfig(path);
 
         assertNotNull(defaultPluginConfig);
+    }
+
+    /**
+     * This test was created because after downloading plugin with the same name and version,
+     * it was multiplied in Set. Problem was caused by inappropriate implementation of hashCode
+     * method. After fix, there is no possible to add twice plugin's config that has:
+     * name, version and enabled property
+     * */
+    @Test
+    @DisplayName("Should not add twice the same object to Map<String, Set<ConfigDescription>> configDescriptions")
+    void uniquePluginConfigAddingOnFlyTest() {
+        PluginsConfigFile pluginsConfigFile = new PluginsConfigFile();
+
+        final String INTERFACE_NAME = "io.easeci.extension.bootstrap.OnStartup";
+
+//        Two same objects with different UUIDs and 'enabled' fiels
+        ConfigDescription configDescription_a = new ConfigDescription(UUID.randomUUID(), "welcome-logo", "0.0.1", true);
+        ConfigDescription configDescription_b = new ConfigDescription(UUID.randomUUID(), "welcome-logo", "0.0.1", true);
+        ConfigDescription configDescription_c = new ConfigDescription(UUID.randomUUID(), "welcome-logo", "0.0.1", false);
+
+        boolean isAdded_a = pluginsConfigFile.put(INTERFACE_NAME, configDescription_a);
+        assertTrue(isAdded_a);
+        assertEquals(1, new ArrayList<>(pluginsConfigFile.getConfigDescriptions().get(INTERFACE_NAME)).size());
+
+        boolean isAdded_b = pluginsConfigFile.put(INTERFACE_NAME, configDescription_b);
+        assertFalse(isAdded_b);
+        assertEquals(1, new ArrayList<>(pluginsConfigFile.getConfigDescriptions().get(INTERFACE_NAME)).size());
+
+        boolean isAdded_c = pluginsConfigFile.put(INTERFACE_NAME, configDescription_c);
+        assertFalse(isAdded_c);
+        assertEquals(1, new ArrayList<>(pluginsConfigFile.getConfigDescriptions().get(INTERFACE_NAME)).size());
     }
 
     private List<Instance> provideSingleInstanceList() {

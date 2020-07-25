@@ -30,7 +30,7 @@ class PluginsConfigFileTest {
         Set<ConfigDescription> configDescriptionListB = pluginsConfigFile.getConfigDescriptions().get("io.easeci.extension.bootstrap.TestPlugin");
 
         assertEquals(2, size);
-        assertEquals(3, configDescriptionListA.size());
+        assertEquals(2, configDescriptionListA.size());
         assertEquals(2, configDescriptionListB.size());
     }
 
