@@ -208,7 +208,7 @@ class ExtensionsManager implements ExtensionControllable {
                         .thenApply(pluginFuture -> {
                             Plugin pluginResolved = pluginResolver.resolve(infrastructureInit, pluginFuture.getName(), pluginFuture.getVersion());
 
-//                                wyciągnij sobie manifest w tym miejscu. Powyżej w obiekcie pluginu już mamy URL do jara
+//                                todo !!!! wyciągnij sobie manifest w tym miejscu. Powyżej w obiekcie pluginu już mamy URL do jara
                             String interfaceName = "io.easeci.extension.Standalone";
                             ConfigDescription configDescription = ConfigDescription.builder()
                                     .uuid(UUID.randomUUID())
