@@ -25,4 +25,6 @@ interface PluginLoader {
      *          for some reason.
      * */
     Set<Plugin> loadPlugins(Set<Plugin> pluginSet, PluginStrategy pluginStrategy);
+
+    Instance reinstantiatePlugin(Instance instance, PluginStrategy pluginStrategy);
 }

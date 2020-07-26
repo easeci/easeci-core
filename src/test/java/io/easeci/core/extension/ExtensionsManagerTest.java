@@ -35,7 +35,7 @@ class ExtensionsManagerTest {
     }
 
     @Test
-    @DisplayName("Should correctly startup plugin that was not runnning before")
+    @DisplayName("Should correctly startup plugin that was not running before")
     void startupExtensionTest() {
 //        TODO
     }

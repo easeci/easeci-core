@@ -101,6 +101,19 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
+    public boolean remove(String pluginName, String pluginVersion) {
+//        for (Map.Entry<String, List<Instance>> entry : this.container.entrySet()) {
+//            boolean isRemoved = entry.getValue().removeIf(instance -> instance.getPlugin().getName().equals(pluginName)
+//                    && instance.getPlugin().getVersion().equals(pluginVersion));
+//        }
+
+        return this.container.values().stream()
+                .anyMatch(instances ->
+                        instances.removeIf(instance -> instance.getPlugin().getName().equals(pluginName)
+                                                    && instance.getPlugin().getVersion().equals(pluginVersion)));
+    }
+
+    @Override
     public PluginContainerState state(ExtensionType extensionType) {
         return new PluginContainerState(mapContainer());
     }

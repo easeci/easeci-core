@@ -11,6 +11,7 @@ import static java.util.Objects.nonNull;
 
 @Slf4j
 @Builder
+@ToString(exclude = "instance")
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PACKAGE)
@@ -46,6 +47,7 @@ public class Instance {
     }
 
     public boolean clear() {
+        this.isStarted = false;
         this.instance = null;
         return this.instance == null;
     }

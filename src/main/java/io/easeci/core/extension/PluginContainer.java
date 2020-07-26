@@ -79,6 +79,8 @@ interface PluginContainer {
      * */
     <T> T remove(String interfaceName, Predicate<Object> toRemove, Class<T> type);
 
+    boolean remove(String pluginName, String pluginVersion);
+
     /**
      * Get information of current state of container
      * @param extensionType is type of plugin. Based on the type,
