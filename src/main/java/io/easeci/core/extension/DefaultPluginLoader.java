@@ -36,6 +36,15 @@ class DefaultPluginLoader implements PluginLoader {
         return new HashSet<>(Sets.difference(pluginSetInput, pluginSetOutput));
     }
 
+    @Override
+    public Instance reinstantiatePlugin(Instance instance, PluginStrategy pluginStrategy) {
+        Plugin plugin = jarJoiner.addToClasspath(instance.getPlugin());
+        Object inst = this.instantiate(plugin);
+        boolean isRemoved = pluginContainer.remove(plugin.getName(), plugin.getVersion());
+        this.insert(plugin, inst);
+        return pluginContainer.findByIdentityHashCode(System.identityHashCode(inst)).orElseThrow();
+    }
+
     /**
      * Checks by PluginStrategy if plugin is correctly defined in plugins-config.json file.
      * If configuration is correct then create object and insert to container.

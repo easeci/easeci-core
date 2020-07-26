@@ -4,6 +4,7 @@ import io.easeci.api.extension.ActionRequest;
 import io.easeci.api.extension.ActionResponse;
 import io.easeci.extension.ExtensionType;
 import io.easeci.commons.YamlUtils;
+import io.easeci.extension.Standalone;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -171,8 +173,37 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse startupExtension(ActionRequest actionRequest) {
-//        TODO
-        log.info("Startup: " + actionRequest);
+        this.pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid())
+                .ifPresentOrElse(instance -> {
+
+                    Instance instanceReloaded = pluginLoader.reinstantiatePlugin(instance, (PluginStrategy) pluginConfig);
+
+//                    kawał kodu powielony z ExtensionSystem.java
+                    Standalone standalone = instanceReloaded.toStandalone();
+                    int identityHashCode = System.identityHashCode(standalone);
+                    if (instanceReloaded.isStandalone()) {
+                        Thread thread = new Thread(() -> {
+                            System.out.println("Run");
+                            standalone.start();
+                        });
+                        thread.setDaemon(true);
+
+                        instanceReloaded.setStarted(true);
+                        instanceReloaded.assignThread(thread);
+
+                        thread.start();
+
+                        /*
+                        * TODO!!!
+                        *  W tym miejscu jeszcze musi dojść modyfikacja konfiguracji w plugins-config.json
+                        *  trzeba dać enabled = true
+                        * */
+
+                        log.info("===> [Standalone plugin] Correctly found Instance by hashCode[{}], plugin: {} assigned to running in Thread: {}",
+                                identityHashCode, instanceReloaded.getPlugin().toShortString(), instanceReloaded.getThread().toString());
+                    } else log.info("===> [Extension plugin] Correctly found Instance by hashCode[{}], plugin: {}", identityHashCode, instanceReloaded.getPlugin().toShortString());
+                }, () -> log.error("===> Cannot find Instance by UUID=[{}]", actionRequest.getPluginUuid()));
+
         return null;
     }
 
