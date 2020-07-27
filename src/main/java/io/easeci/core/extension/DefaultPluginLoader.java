@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,6 +72,7 @@ class DefaultPluginLoader implements PluginLoader {
                 .plugin(plugin)
                 .instance(object)
                 .identityHashCode(nonNull(object) ? System.identityHashCode(object) : 0)
+                .instantiateDateTime(LocalDateTime.now())
                 .build();
         this.pluginContainer.add(instance);
     }

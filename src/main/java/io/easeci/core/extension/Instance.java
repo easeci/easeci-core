@@ -17,7 +17,7 @@ import static java.util.Objects.nonNull;
 @Getter(value = AccessLevel.PACKAGE)
 public class Instance {
     public Thread thread;
-    public final LocalDateTime instantiateDateTime = LocalDateTime.now();
+    public LocalDateTime instantiateDateTime;
     private Plugin plugin;
     private Object instance;
     private int identityHashCode;
