@@ -5,7 +5,6 @@ import io.easeci.extension.ExtensionType;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 /**
  * Representation of container for hold all references
@@ -69,16 +68,13 @@ interface PluginContainer {
 
     /**
      * Removes instance from container.
-     * @param interfaceName is a path of interface in extension-api
-     *                      for example: (restrict a format!)
-     *                      io.easeci.extension.bootstrap.OnStartup
-     * @param toRemove is predicate that describes condition when
-     *                 specified instance should be popped from container.
-     * @param type is a class's type that you want this method to return
-     * @return instance that was popped from container.
+     * Plugin must be not running if you want to remove one
+     * from container.
+     * @param pluginName is a name of plugin
+     * @param pluginVersion is a version of plugin
+     * @return boolean value, if true - instance was removed from container
+     *                        if false - instance was not removed from container
      * */
-    <T> T remove(String interfaceName, Predicate<Object> toRemove, Class<T> type);
-
     boolean remove(String pluginName, String pluginVersion);
 
     /**

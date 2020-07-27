@@ -7,6 +7,7 @@ import io.easeci.core.extension.Plugin;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 public class PluginContainerUtils {
@@ -18,6 +19,7 @@ public class PluginContainerUtils {
         return Instance.builder()
                 .plugin(Plugin.of(plugin, jar))
                 .instance(implementation)
+                .instantiateDateTime(LocalDateTime.now())
                 .build();
     }
 
@@ -28,6 +30,7 @@ public class PluginContainerUtils {
         return Instance.builder()
                 .plugin(Plugin.of(plugin, jar))
                 .instance(implementation)
+                .instantiateDateTime(LocalDateTime.now())
                 .build();
     }
 
@@ -38,6 +41,7 @@ public class PluginContainerUtils {
         return Instance.builder()
                 .plugin(Plugin.of(plugin, jar))
                 .instance(implementation)
+                .instantiateDateTime(LocalDateTime.now())
                 .build();
     }
 
@@ -48,6 +52,7 @@ public class PluginContainerUtils {
         return Instance.builder()
                 .plugin(Plugin.of(plugin, jar))
                 .instance(implementation)
+                .instantiateDateTime(LocalDateTime.now())
                 .build();
     }
 

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -95,21 +94,12 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
-    public <T> T remove(String interfaceName, Predicate<Object> toRemove, Class<T> implementationType) {
-//        TODO implement!
-        return null;
-    }
-
-    @Override
     public boolean remove(String pluginName, String pluginVersion) {
-//        for (Map.Entry<String, List<Instance>> entry : this.container.entrySet()) {
-//            boolean isRemoved = entry.getValue().removeIf(instance -> instance.getPlugin().getName().equals(pluginName)
-//                    && instance.getPlugin().getVersion().equals(pluginVersion));
-//        }
-
         return this.container.values().stream()
                 .anyMatch(instances ->
-                        instances.removeIf(instance -> instance.getPlugin().getName().equals(pluginName)
+                        instances.removeIf(instance ->
+                                                    !instance.isRunning()
+                                                    && instance.getPlugin().getName().equals(pluginName)
                                                     && instance.getPlugin().getVersion().equals(pluginVersion)));
     }
 

@@ -301,4 +301,55 @@ class DefaultPluginContainerTest {
 
         assertFalse(instance.isPresent());
     }
+
+    @Test
+    @DisplayName("Should correctly remove instance from Container and return 'true' boolean value")
+    void defaultPluginContainerRemoveByPluginNameAndVersionSuccessTest() throws PluginSystemCriticalException {
+        final String INTERFACE_NAME = "java.lang.String";
+        final String IMPLEMENTATION_A = "This is implementation A";
+        final String IMPLEMENTATION_B = "This is implementation B";
+
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        Instance instanceB = fromBasic(INTERFACE_NAME, IMPLEMENTATION_B, "0.0.2");
+        pluginContainer.add(instanceA);
+        pluginContainer.add(instanceB);
+
+        assertAll(() -> assertEquals(2, pluginContainer.implementationSize(INTERFACE_NAME)),
+                  () -> assertEquals(2, pluginContainer.instanceSize()),
+                  () -> assertEquals(1, pluginContainer.keySize()));
+
+        Plugin pluginA = instanceA.getPlugin();
+        Plugin pluginB = instanceB.getPlugin();
+
+        boolean isPluginBRemoved = pluginContainer.remove(pluginB.getName(), pluginB.getVersion());
+
+        assertAll(() -> assertTrue(isPluginBRemoved),
+                () -> assertEquals(1, pluginContainer.implementationSize(INTERFACE_NAME)),
+                () -> assertEquals(1, pluginContainer.instanceSize()),
+                () -> assertEquals(1, pluginContainer.keySize()));
+    }
+
+    @Test
+    @DisplayName("Should not remove instance from Container because one not exists and return 'false' boolean value")
+    void defaultPluginContainerRemoveByPluginNameAndVersionNotRemovedTest() throws PluginSystemCriticalException {
+        final String INTERFACE_NAME = "java.lang.String";
+        Path pluginConfigPath =  buildPathFromResources(PLUGIN_CONFIG_FILE);
+        PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigPath);
+        PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
+
+        final String IMPLEMENTATION_A = "This is implementation A";
+        Instance instanceA = fromBasic(INTERFACE_NAME, IMPLEMENTATION_A);
+        pluginContainer.add(instanceA);
+
+        boolean isPluginRemoved = pluginContainer.remove("not-exists", "0.0.1");
+
+        assertAll(() -> assertFalse(isPluginRemoved),
+                () -> assertEquals(1, pluginContainer.implementationSize(INTERFACE_NAME)),
+                () -> assertEquals(1, pluginContainer.instanceSize()),
+                () -> assertEquals(1, pluginContainer.keySize()));
+    }
 }

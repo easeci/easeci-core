@@ -43,7 +43,7 @@ public class Instance {
                     nonNull(this.getInstantiateDateTime()) &&
                     this.identityHashCode != 0;
         }
-        throw new RuntimeException("Cannot define type of Extension!");
+        return false;
     }
 
     public boolean clear() {
