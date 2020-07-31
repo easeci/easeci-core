@@ -2,7 +2,6 @@ package io.easeci.core.extension;
 
 import io.easeci.api.extension.ActionRequest;
 import io.easeci.api.extension.ActionResponse;
-import io.easeci.commons.YamlUtils;
 import io.easeci.extension.ExtensionType;
 import io.easeci.extension.Standalone;
 import lombok.AccessLevel;
@@ -12,13 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.workspace.LocationUtils.getPluginConfigYmlLocation;
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -27,16 +25,18 @@ public class ExtensionSystem implements ExtensionControllable {
     private final static Class<Standalone> STANDALONE_CLASS = Standalone.class;
     private static ExtensionSystem extensionSystem;
     private ExtensionsManager extensionsManager;
+    private PluginThreadPool pluginThreadPool;
     @Getter private boolean started = false;
-    @Getter private Integer threadPoolMaxSize;
-    private ThreadPoolExecutor threadPoolExecutor;
 
     public static ExtensionSystem getInstance() throws PluginSystemCriticalException {
         if (isNull(extensionSystem)) {
             extensionSystem = new ExtensionSystem();
             extensionSystem.extensionsManager = ExtensionsManager.getInstance(getPluginsYmlLocation(), getPluginConfigYmlLocation());
-            extensionSystem.threadPoolMaxSize = (Integer) YamlUtils.ymlGet(getPluginsYmlLocation(), "plugins.local.threadpool.max-size").getValue();
-            extensionSystem.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(extensionSystem.threadPoolMaxSize);
+            if (nonNull(extensionSystem.extensionsManager)) {
+                extensionSystem.pluginThreadPool = PluginThreadPool.createInstance(extensionSystem.extensionsManager.getPluginContainer());
+            } else {
+                throw new PluginSystemCriticalException("Cannot create ExtensionSystem correctly, because it is no instantiated to PluginContainer object");
+            }
         }
         return extensionSystem;
     }
@@ -70,31 +70,11 @@ public class ExtensionSystem implements ExtensionControllable {
      * @return list of Standalone instances just ran
      * */
     public List<Standalone> startStandalonePlugins() {
-        return this.getAll(STANDALONE_INTERFACE, STANDALONE_CLASS)
+        List<Standalone> standaloneList = this.getAll(STANDALONE_INTERFACE, STANDALONE_CLASS)
                 .stream()
                 .distinct()
-                .peek(standalone -> {
-                    int activeCount = extensionSystem.threadPoolExecutor.getActiveCount();
-                    if (activeCount > extensionSystem.threadPoolMaxSize) {
-                        log.error("=> Cannot assign new thread for new task. The thread pool is full.");
-                        return;
-                    }
-                    Thread thread = new Thread(standalone::start);
-                    thread.setDaemon(true);
-//                    Here it will be good to handle Future<?> as a result of submit task TODO
-                    extensionSystem.threadPoolExecutor.submit(thread);
-                    int identityHashCode = System.identityHashCode(standalone);
-                    this.extensionsManager.findInstanceByIdentityHashCode(identityHashCode)
-                            .ifPresentOrElse(instance -> {
-                                if (instance.isStandalone()) {
-                                    instance.setStarted(true);
-                                    instance.assignThread(thread);
-                                    log.info("===> [Standalone plugin] Correctly found Instance by hashCode[{}], plugin: {} assigned to running in Thread: {}",
-                                            identityHashCode, instance.getPlugin().toShortString(), instance.getThread().toString());
-                                } else log.info("===> [Extension plugin] Correctly found Instance by hashCode[{}], plugin: {}", identityHashCode, instance.getPlugin().toShortString());
-                            }, () -> log.error("===> Cannot find Instance by hashCode[{}] of plugin object", identityHashCode));
-                })
                 .collect(Collectors.toList());
+        return pluginThreadPool.run(standaloneList);
     }
 
     @Override
