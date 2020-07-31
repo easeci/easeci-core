@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -173,48 +172,55 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse startupExtension(ActionRequest actionRequest) {
-        this.pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid())
-                .ifPresentOrElse(instance -> {
+        Optional<Instance> instanceOptional = this.pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid());
+        if (instanceOptional.isEmpty()) {
+            log.error("===> Cannot find Instance by UUID=[{}]", actionRequest.getPluginUuid());
+            return ActionResponse.builder()
+                    .isSuccessfullyDone(false)
+                    .message("Cannot find any plugin with UUID=[" + actionRequest.getPluginUuid() + "] in container")
+                    .build();
+        }
 
+//        Firstly, check is plugin running right now, and if yes return without further processing
+        Optional<ActionResponse> actionResponse = instanceOptional.map(instance -> {
+            if (instance.isStarted() && instance.isRunning()) {
+                return ActionResponse.builder()
+                        .isSuccessfullyDone(false)
+                        .message("Plugin with UUID=[" + actionRequest.getPluginUuid() + "] is just correctly enabled, maybe try /restart ?")
+                        .build();
+            }
+            return null;
+        });
+        if (actionResponse.isPresent()) {
+            return actionResponse.get();
+        }
+
+        instanceOptional.ifPresent(instance -> {
                     Instance instanceReloaded = pluginLoader.reinstantiatePlugin(instance, (PluginStrategy) pluginConfig);
-
-//                    kawał kodu powielony z ExtensionSystem.java
-                    Standalone standalone = instanceReloaded.toStandalone();
-                    int identityHashCode = System.identityHashCode(standalone);
                     if (instanceReloaded.isStandalone()) {
-                        Thread thread = new Thread(() -> {
-                            System.out.println("Run");
-                            standalone.start();
-                        });
-                        thread.setDaemon(true);
+                        List<Standalone> standaloneList = Collections.singletonList(instanceReloaded.toStandalone());
+                        try {
+                            PluginThreadPool.getInstance().run(standaloneList);
+                        } catch (PluginSystemCriticalException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        int identityHashCode = System.identityHashCode(instanceReloaded.getInstance());
+                        log.info("===> [Extension plugin] Correctly found Instance by hashCode[{}], plugin: {}", identityHashCode, instanceReloaded.getPlugin().toShortString());
+                    }
+                    pluginConfig.enable(actionRequest.getPluginUuid());
+                });
 
-                        instanceReloaded.setStarted(true);
-                        instanceReloaded.assignThread(thread);
-
-                        thread.start();
-
-                        /*
-                        * TODO!!!
-                        *  W tym miejscu jeszcze musi dojść modyfikacja konfiguracji w plugins-config.json
-                        *  trzeba dać enabled = true
-                        * */
-
-                        log.info("===> [Standalone plugin] Correctly found Instance by hashCode[{}], plugin: {} assigned to running in Thread: {}",
-                                identityHashCode, instanceReloaded.getPlugin().toShortString(), instanceReloaded.getThread().toString());
-                    } else log.info("===> [Extension plugin] Correctly found Instance by hashCode[{}], plugin: {}", identityHashCode, instanceReloaded.getPlugin().toShortString());
-                }, () -> log.error("===> Cannot find Instance by UUID=[{}]", actionRequest.getPluginUuid()));
-
-        return null;
+        return ActionResponse.builder()
+                .isSuccessfullyDone(true)
+                .message("Plugin with UUID=[" + actionRequest.getPluginUuid() + "] is correctly enabled")
+                .build();
     }
 
     @Override
     public ActionResponse restart(ActionRequest actionRequest) {
 //        TODO
         return null;
-    }
-
-    public Optional<Instance> findInstanceByIdentityHashCode(int hashCode) {
-        return this.pluginContainer.findByIdentityHashCode(hashCode);
     }
 
     private String getReport(Set<Plugin> resolve) {

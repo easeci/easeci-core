@@ -98,8 +98,24 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public boolean enable(UUID pluginUuid) {
-//        TODO
-        return false;
+        return this.pluginsConfigFile.getConfigDescriptions()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(configDescription -> configDescription.getUuid().equals(pluginUuid))
+                .map(configDescription -> {
+                    log.info("=====> Found plugin to enable: {}", configDescription.toString());
+                    configDescription.setEnabled(true);
+                    try {
+                        this.save();
+                    } catch (PluginSystemCriticalException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                    return true;
+                })
+                .findAny()
+                .orElse(false);
     }
 
     @Override
