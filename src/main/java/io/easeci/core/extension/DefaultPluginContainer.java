@@ -104,7 +104,7 @@ class DefaultPluginContainer implements PluginContainer {
     }
 
     @Override
-    public PluginContainerState state(ExtensionType extensionType) {
+    public PluginContainerState state() {
         return new PluginContainerState(mapContainer());
     }
 

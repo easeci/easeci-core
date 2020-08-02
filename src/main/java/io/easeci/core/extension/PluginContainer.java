@@ -79,11 +79,9 @@ interface PluginContainer {
 
     /**
      * Get information of current state of container
-     * @param extensionType is type of plugin. Based on the type,
-     *                      the status for the appropriate plugin type will be returned.
      * @return POJO representation of container's information.
      * */
-    PluginContainerState state(ExtensionType extensionType);
+    PluginContainerState state();
 
     /**
      * @return size of current container's key set
