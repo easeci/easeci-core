@@ -25,7 +25,7 @@ public class ExtensionSystem implements ExtensionControllable {
     private final static Class<Standalone> STANDALONE_CLASS = Standalone.class;
     private static ExtensionSystem extensionSystem;
     private ExtensionsManager extensionsManager;
-    private PluginThreadPool pluginThreadPool;
+    @Getter private PluginThreadPool pluginThreadPool;
     @Getter private boolean started = false;
 
     public static ExtensionSystem getInstance() throws PluginSystemCriticalException {
@@ -78,8 +78,8 @@ public class ExtensionSystem implements ExtensionControllable {
     }
 
     @Override
-    public PluginContainerState state(ExtensionType extensionType) {
-        return ((ExtensionControllable) this.extensionsManager).state(extensionType);
+    public PluginContainerState state() {
+        return ((ExtensionControllable) this.extensionsManager).state();
     }
 
     @Override

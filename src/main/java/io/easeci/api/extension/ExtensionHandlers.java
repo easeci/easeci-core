@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
-import io.easeci.extension.ExtensionType;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
-import ratpack.exec.Promise;
 
 import java.util.List;
 
@@ -37,10 +35,9 @@ public class ExtensionHandlers implements InternalHandlers {
     private EndpointDeclaration getState() {
         return EndpointDeclaration.builder()
                 .httpMethod(GET)
-                .endpointUri(MAPPING + "state/:extensionType")
-                .handler(ctx -> Promise.value(ctx.getPathTokens().get("extensionType").toUpperCase())
-                        .map(ExtensionType::valueOf)
-                        .map(extensionType -> this.controllable.state(extensionType))
+                .endpointUri(MAPPING + "state")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> this.controllable.state())
                         .map(pluginContainerState -> objectMapper.writeValueAsBytes(pluginContainerState))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();

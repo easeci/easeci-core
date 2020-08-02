@@ -93,8 +93,8 @@ class ExtensionsManager implements ExtensionControllable {
     }
 
     @Override
-    public PluginContainerState state(ExtensionType extensionType) {
-        return this.pluginContainer.state(extensionType);
+    public PluginContainerState state() {
+        return this.pluginContainer.state();
     }
 
     @Override

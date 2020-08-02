@@ -36,7 +36,7 @@ class ExtensionSystemTest {
     void extensionSystemInitTest() throws PluginSystemCriticalException {
         ExtensionSystem instance = ExtensionSystem.getInstance();
 
-        assertEquals(1, instance.getThreadPoolMaxSize());
+        assertEquals(1, instance.getPluginThreadPool().getThreadPoolMaxSize());
     }
 
     @Test
