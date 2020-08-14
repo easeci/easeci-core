@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
+import io.easeci.core.extension.registry.PluginUpdate;
+import io.easeci.core.extension.registry.RegistryProxy;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
+import ratpack.path.PathTokens;
 
 import java.util.List;
 
@@ -15,10 +18,12 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 public class ExtensionHandlers implements InternalHandlers {
     private final static String MAPPING = "plugin/";
     private ExtensionControllable controllable;
+    private PluginUpdate pluginUpdate;
     private ObjectMapper objectMapper;
 
     public ExtensionHandlers() throws PluginSystemCriticalException {
         this.controllable = ExtensionSystem.getInstance();
+        this.pluginUpdate = new RegistryProxy();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -28,7 +33,8 @@ public class ExtensionHandlers implements InternalHandlers {
                 getState(),
                 shutdownExtension(),
                 enableExtension(),
-                restartExtension()
+                restartExtension(),
+                checkForUpdate()
         );
     }
 
@@ -77,5 +83,21 @@ public class ExtensionHandlers implements InternalHandlers {
                         .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
+    }
+
+    private EndpointDeclaration checkForUpdate() {
+        final String PLUGIN_NAME = "pluginName",
+                  PLUGIN_VERSION = "pluginVersion";
+        return EndpointDeclaration.builder()
+                .httpMethod(GET)
+                .endpointUri(MAPPING + "update/check/:" + PLUGIN_NAME + "/:" + PLUGIN_VERSION)
+                .handler(ctx -> {
+                    PathTokens pathTokens = ctx.getPathTokens();
+                    String requestedPluginName = pathTokens.get(PLUGIN_NAME);
+                    String requestedPluginVersion = pathTokens.get(PLUGIN_VERSION);
+                    this.pluginUpdate.checkForUpdate(requestedPluginName, requestedPluginVersion)
+                                     .map(pluginUpdateCheckResponse -> this.objectMapper.writeValueAsBytes(pluginUpdateCheckResponse))
+                                     .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes));
+                }).build();
     }
 }
