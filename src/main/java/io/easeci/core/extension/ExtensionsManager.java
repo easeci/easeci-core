@@ -219,8 +219,13 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse restart(ActionRequest actionRequest) {
-//        TODO
-        return null;
+        log.info("===> [Extension plugin] Restarting of plugin: {}", actionRequest.toString());
+        this.shutdownExtension(actionRequest);
+        ActionResponse actionResponse = this.startupExtension(actionRequest);
+        if (actionResponse.getIsSuccessfullyDone()) {
+            actionResponse.setMessage("Plugin with UUID=[" + actionRequest.getPluginUuid() + "] is correctly restarted");
+        }
+        return actionResponse;
     }
 
     private String getReport(Set<Plugin> resolve) {
