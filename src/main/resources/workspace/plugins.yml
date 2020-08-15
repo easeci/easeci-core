@@ -9,6 +9,8 @@ plugins:
   registry:
     timeout: 1000
     url: http://localhost:8080
+  details:
+    fetch-documentation: true
 
 extensions:
   - plugin:

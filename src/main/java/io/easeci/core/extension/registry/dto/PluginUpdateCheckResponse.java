@@ -9,5 +9,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class PluginUpdateCheckResponse extends BaseRegistryResponse {
     private boolean isNewerVersionAvailable;
-    private List<PerformerVersionBasic> newerPerformerVersions;
+    private List<PluginVersionBasic> newerPerformerVersions;
 }
