@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
+import io.easeci.core.extension.registry.PluginDetails;
 import io.easeci.core.extension.registry.PluginUpdate;
 import io.easeci.core.extension.registry.RegistryProxy;
 import io.easeci.server.EndpointDeclaration;
@@ -19,11 +20,14 @@ public class ExtensionHandlers implements InternalHandlers {
     private final static String MAPPING = "plugin/";
     private ExtensionControllable controllable;
     private PluginUpdate pluginUpdate;
+    private PluginDetails pluginDetails;
     private ObjectMapper objectMapper;
 
     public ExtensionHandlers() throws PluginSystemCriticalException {
         this.controllable = ExtensionSystem.getInstance();
-        this.pluginUpdate = new RegistryProxy();
+        final RegistryProxy registryProxy = new RegistryProxy();
+        this.pluginUpdate = registryProxy;
+        this.pluginDetails = registryProxy;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -34,7 +38,8 @@ public class ExtensionHandlers implements InternalHandlers {
                 shutdownExtension(),
                 enableExtension(),
                 restartExtension(),
-                checkForUpdate()
+                checkForUpdate(),
+                fetchDetails()
         );
     }
 
@@ -98,6 +103,22 @@ public class ExtensionHandlers implements InternalHandlers {
                     this.pluginUpdate.checkForUpdate(requestedPluginName, requestedPluginVersion)
                                      .map(pluginUpdateCheckResponse -> this.objectMapper.writeValueAsBytes(pluginUpdateCheckResponse))
                                      .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes));
+                }).build();
+    }
+
+    private EndpointDeclaration fetchDetails() {
+        final String PLUGIN_NAME = "pluginName",
+                  PLUGIN_VERSION = "pluginVersion";
+        return EndpointDeclaration.builder()
+                .httpMethod(GET)
+                .endpointUri(MAPPING + "details/:" + PLUGIN_NAME + "/:" + PLUGIN_VERSION)
+                .handler(ctx -> {
+                    PathTokens pathTokens = ctx.getPathTokens();
+                    String requestedPluginName = pathTokens.get(PLUGIN_NAME);
+                    String requestedPluginVersion = pathTokens.get(PLUGIN_VERSION);
+                    this.pluginDetails.fetchDetails(requestedPluginName, requestedPluginVersion)
+                            .map(pluginDetailsResponse -> this.objectMapper.writeValueAsBytes(pluginDetailsResponse))
+                            .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes));
                 }).build();
     }
 }

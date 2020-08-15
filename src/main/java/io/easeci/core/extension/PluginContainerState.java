@@ -13,20 +13,6 @@ public class PluginContainerState {
 }
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class PluginState {
-    private String implementsValue;
-    private String pluginName;
-    private String pluginVersion;
-    private ExtensionType extensionType;
-    private boolean isRunning;
-    private String runDate;
-    private ConfigDescription configDescription;
-}
-
-@Data
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")
 class PluginStateProxy {
