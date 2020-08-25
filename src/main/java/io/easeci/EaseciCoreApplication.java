@@ -1,5 +1,6 @@
 package io.easeci;
 
+import io.easeci.api.client.ClientHandlers;
 import io.easeci.api.extension.ExtensionHandlers;
 import io.easeci.api.log.LogHandler;
 import io.easeci.core.bootstrap.BootstrapperFactory;
@@ -23,7 +24,7 @@ public class EaseciCoreApplication {
 
         ExtensionSystem.getInstance().startStandalonePlugins();
 
-        ServerBootstrapper.instantiate(List.of(new ExtensionHandlers(), new LogHandler()), BaseExternalHandlers.get());
+        ServerBootstrapper.instantiate(List.of(new ExtensionHandlers(), new LogHandler(), new ClientHandlers()), BaseExternalHandlers.get());
         ServerBootstrapper.getInstance().run();
     }
 }
