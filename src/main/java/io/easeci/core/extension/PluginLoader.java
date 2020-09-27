@@ -26,5 +26,17 @@ interface PluginLoader {
      * */
     Set<Plugin> loadPlugins(Set<Plugin> pluginSet, PluginStrategy pluginStrategy);
 
+    /**
+     * Use this method in order to shut down and create new instance of specified plugin.
+     * Whole initialization process will be execute again, new object created by reflection etc.
+     * Old instance should be destroyed by Garbage Collector
+     * when there is not references to this object but this is not guaranteed by EaseCI Core.
+     * @param instance is a object obtained from PluginContainer. That hold reference to plugin's
+     *                 entry object and important information about plugin in system.
+     *                 You need to provide this one to recreate/reinstantiate this.
+     * @param pluginStrategy is object required for checking if plugin is enabled or not.
+     *                       PluginStrategy has information about current plugin state
+     *                       that is persisted in plugins-config.json file.
+     * */
     Instance reinstantiatePlugin(Instance instance, PluginStrategy pluginStrategy);
 }
