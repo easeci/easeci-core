@@ -3,13 +3,15 @@ package io.easeci.core.extension;
 import io.easeci.extension.ExtensionType;
 import io.easeci.extension.Standalone;
 import lombok.*;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.FOUR;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.ONE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static java.util.Objects.nonNull;
 
-@Slf4j
 @Builder
 @ToString(exclude = "instance")
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -28,9 +30,9 @@ public class Instance {
     public void assignThread(Thread thread) {
         if (this.thread == null) {
             this.thread = thread;
-            log.info("Thread " + thread.getName() + " is assigned now to plugin: " + plugin.toShortString());
+            logit(PLUGIN_EVENT, "Thread " + thread.getName() + " is assigned now to plugin: " + plugin.toShortString(), ONE);
         }
-        else log.error("====> Instance has thread assigned! Cannot change.");
+        else logit(PLUGIN_EVENT, "Instance has thread assigned! Cannot change.", FOUR);
     }
 
     public boolean isRunning() {

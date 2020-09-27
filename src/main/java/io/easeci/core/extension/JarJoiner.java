@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.core.log.ApplicationLevelLogFacade;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -7,9 +8,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
+
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 
 /**
  * Joins external .jar files and connect it with current application process
@@ -19,7 +21,7 @@ class JarJoiner {
 
     Plugin addToClasspath(Plugin plugin) {
         if (!plugin.isLoadable()) {
-            log.info("===> Plugin {}, v{} is missing on local storage", plugin.getName(), plugin.getVersion());
+            logit(PLUGIN_EVENT, "Plugin " + plugin.getName() + ", v" + plugin.getVersion() + " is missing on local storage", THREE);
             return plugin;
         }
         try {

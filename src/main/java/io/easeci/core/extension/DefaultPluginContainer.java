@@ -1,16 +1,17 @@
 package io.easeci.core.extension;
 
 import io.easeci.extension.ExtensionType;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
-@Slf4j
 class DefaultPluginContainer implements PluginContainer {
     private Map<String, List<Instance>> container;
     private PluginStrategy pluginStrategy;
@@ -28,7 +29,7 @@ class DefaultPluginContainer implements PluginContainer {
             this.container.put(interfaceName, new ArrayList<>(Collections.singletonList(instance)));
         } else {
             if (objectList.contains(instance)) {
-                log.error("===> Cannot add two the same plugin implementations for this one: {}", instance.getPlugin());
+                logit(PLUGIN_EVENT, "Cannot add two the same plugin implementations for this one: " + instance.getPlugin().toString(), THREE);
                 return;
             }
             objectList.add(instance);

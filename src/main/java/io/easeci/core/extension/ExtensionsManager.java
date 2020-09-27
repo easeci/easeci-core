@@ -8,7 +8,6 @@ import io.easeci.extension.Standalone;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URL;
@@ -18,11 +17,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.*;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-@Slf4j
 class ExtensionsManager implements ExtensionControllable {
     private static ExtensionsManager extensionsManager;
 
@@ -38,7 +39,7 @@ class ExtensionsManager implements ExtensionControllable {
     private PluginDownloader pluginDownloader;
 
     private ExtensionsManager(Path pluginYml, Path pluginConfigYml) throws PluginSystemCriticalException {
-        log.info("==> ExtensionManager instance creation process invoked");
+        logit(PLUGIN_EVENT, "ExtensionManager instance creation process invoked", TWO);
         this.pluginYml = pluginYml;
         this.infrastructureInit = this.instantiateExtensionInfrastructure();
         this.pluginConfig = new DefaultPluginConfig(pluginConfigYml);
@@ -82,13 +83,13 @@ class ExtensionsManager implements ExtensionControllable {
     }
 
     void enableExtensions() {
-        log.info("==> Declared plugins enabling started");
+        logit(PLUGIN_EVENT, "Declared plugins enabling started", TWO);
         Set<Plugin> resolvedPlugins = pluginResolver.resolve(pluginYml, infrastructureInit);
         Set<Plugin> pluginsNotResolved = pluginLoader.loadPlugins(resolvedPlugins, (PluginStrategy) pluginConfig);
         if (!pluginsNotResolved.isEmpty() && isDownloadProcessEnabled()) {
             downloadInFly(pluginsNotResolved);
         } else if (pluginsNotResolved.isEmpty()) {
-            log.info("====> All plugins was loaded correctly.\nReport:\n {}", getReport(resolvedPlugins));
+            logit(PLUGIN_EVENT, "All plugins was loaded correctly.\nReport:\n" + getReport(resolvedPlugins), FOUR);
         }
     }
 
@@ -99,7 +100,7 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse shutdownExtension(ActionRequest actionRequest) {
-        log.info("===> Trying to finish plugin identified by UUID: " + actionRequest.getPluginUuid());
+        logit(PLUGIN_EVENT, "Trying to finish plugin identified by UUID: " + actionRequest.getPluginUuid(), THREE);
         return pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid())
                 .map(instance -> zip(
                         Stream.of((instance.isStandalone() ? interruptStandalonePlugin() : interruptNotStandalonePlugin()), modifyConfigFile())
@@ -113,7 +114,7 @@ class ExtensionsManager implements ExtensionControllable {
 
     private Function<Instance, ActionResponse> interruptStandalonePlugin() {
         return instance -> {
-            log.info("===> Stopping standalone plugin work " + instance.getPlugin().toShortString());
+            logit(PLUGIN_EVENT, "Stopping standalone plugin work " + instance.getPlugin().toShortString(), THREE);
             instance.toStandalone().stop();
             boolean instanceCleared = instance.clear();
             if (instanceCleared) {
@@ -127,7 +128,7 @@ class ExtensionsManager implements ExtensionControllable {
 
     private Function<Instance, ActionResponse> interruptNotStandalonePlugin() {
         return instance -> {
-            log.info("===> Stopping other than standalone plugin work " + instance.getPlugin().toShortString());
+            logit(PLUGIN_EVENT, "Stopping other than standalone plugin work " + instance.getPlugin().toShortString(), THREE);
             boolean instanceCleared = instance.clear();
             if (instanceCleared) {
                 return ActionResponse.of(true,
@@ -174,7 +175,7 @@ class ExtensionsManager implements ExtensionControllable {
     public ActionResponse startupExtension(ActionRequest actionRequest) {
         Optional<Instance> instanceOptional = this.pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid());
         if (instanceOptional.isEmpty()) {
-            log.error("===> Cannot find Instance by UUID=[{}]", actionRequest.getPluginUuid());
+            logit(PLUGIN_EVENT, "Cannot find Instance by UUID=[{ " + actionRequest.getPluginUuid() + "}]", THREE);
             return ActionResponse.builder()
                     .isSuccessfullyDone(false)
                     .message("Cannot find any plugin with UUID=[" + actionRequest.getPluginUuid() + "] in container")
@@ -206,7 +207,8 @@ class ExtensionsManager implements ExtensionControllable {
                         }
                     } else {
                         int identityHashCode = System.identityHashCode(instanceReloaded.getInstance());
-                        log.info("===> [Extension plugin] Correctly found Instance by hashCode[{}], plugin: {}", identityHashCode, instanceReloaded.getPlugin().toShortString());
+                        logit(PLUGIN_EVENT, "[Extension plugin] Correctly found Instance by hashCode[{"
+                                + identityHashCode + "}], plugin: {" + instanceReloaded.getPlugin().toShortString() + "}", THREE);
                     }
                     pluginConfig.enable(actionRequest.getPluginUuid());
                 });
@@ -219,7 +221,7 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse restart(ActionRequest actionRequest) {
-        log.info("===> [Extension plugin] Restarting of plugin: {}", actionRequest.toString());
+        logit(PLUGIN_EVENT, "[Extension plugin] Restarting of plugin: " + actionRequest.toString(), THREE);
         this.shutdownExtension(actionRequest);
         ActionResponse actionResponse = this.startupExtension(actionRequest);
         if (actionResponse.getIsSuccessfullyDone()) {
@@ -240,7 +242,7 @@ class ExtensionsManager implements ExtensionControllable {
     }
 
     private void downloadInFly(Set<Plugin> pluginSet) {
-        log.info("===> Downloading of plugins just started for items:\n{}", getReport(pluginSet));
+        logit(PLUGIN_EVENT, "Downloading of plugins just started for items:\n" + getReport(pluginSet), THREE);
         pluginSet.stream()
                 .filter(Plugin::isDownloadable)
                 .filter(plugin -> !plugin.getJarArchive().isStoredLocally())
@@ -285,12 +287,12 @@ class ExtensionsManager implements ExtensionControllable {
     private void loadOnFly(Wrapper wrapper, Throwable throwable) {
         Set<Plugin> pluginsNotLoaded = pluginLoader.loadPlugins(Set.of(wrapper.plugin), (PluginStrategy) pluginConfig);
         if (!pluginsNotLoaded.isEmpty())
-            log.info("===> Downloaded but not loaded: " + pluginsNotLoaded);
+            logit(PLUGIN_EVENT, "Downloaded but not loaded: " + pluginsNotLoaded, THREE);
 
         ActionResponse actionResponse = this.startupExtension(wrapper.actionRequest);
 
         if (actionResponse.getIsSuccessfullyDone())
-            log.info("===> Plugin {} correctly installed in EaseCI system", wrapper.plugin.toShortString());
+            logit(PLUGIN_EVENT, "Plugin " + wrapper.plugin.toShortString() + " correctly installed in EaseCI system", THREE);
 
         if (nonNull(throwable))
             throwable.printStackTrace();

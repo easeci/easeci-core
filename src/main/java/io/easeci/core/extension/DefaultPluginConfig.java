@@ -3,9 +3,9 @@ package io.easeci.core.extension;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.FileUtils;
+import io.easeci.core.log.ApplicationLevelLogFacade;
 import io.easeci.extension.ExtensionType;
 import lombok.*;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,10 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.FIVE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static java.util.Objects.isNull;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 
-@Slf4j
 class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final Path pluginConfigYmlPath;
@@ -71,7 +74,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
         try {
             String content = JSON_MAPPER.writeValueAsString(this.pluginsConfigFile);
             Path path = FileUtils.fileChange(this.pluginConfigYmlPath.toString(), content);
-            log.info("===> PluginsConfigFile saved in: {}", path.toString());
+            logit(ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT, "===> PluginsConfigFile saved in: {}" + path.toString(), THREE);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return this.pluginsConfigFile;
@@ -104,10 +107,10 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
                 .flatMap(Collection::stream)
                 .filter(configDescription -> configDescription.getUuid().equals(pluginUuid))
                 .map(configDescription -> {
-                    log.info("=====> Found plugin to enable: {}", configDescription.toString());
                     configDescription.setEnabled(true);
                     try {
                         this.save();
+                        logit(PLUGIN_EVENT, "Plugin " + configDescription.toString() + " just enabled in EaseCI system.", THREE);
                     } catch (PluginSystemCriticalException e) {
                         e.printStackTrace();
                         return false;
@@ -140,7 +143,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
                 .filter(configDescription -> isPluginEnabled().test(configDescription))
                 .findAny()
                 .map(configDescription -> {
-                    log.info("=====> Found plugin to disable: {}", configDescription.toString());
+                    logit(PLUGIN_EVENT, "Found plugin to disable: {}" + configDescription.toString(), FIVE);
                     configDescription.setEnabled(false);
                     try {
                         this.save();
@@ -156,7 +159,7 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
             if (config.getEnabled()) {
                 return true;
             } else {
-                log.info("=====> Plugin {} is not enabled now!", config.toString());
+                logit(PLUGIN_EVENT, "Plugin {} is not enabled now!" + config.toString(), FIVE);
                 return false;
             }
         };
@@ -223,7 +226,6 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     }
 }
 
-@Slf4j
 @Getter
 @ToString
 @EqualsAndHashCode

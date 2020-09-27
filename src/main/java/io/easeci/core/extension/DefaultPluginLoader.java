@@ -3,7 +3,6 @@ package io.easeci.core.extension;
 import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -13,7 +12,6 @@ import java.util.stream.Collectors;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class DefaultPluginLoader implements PluginLoader {
     private PluginContainer pluginContainer;

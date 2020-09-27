@@ -3,17 +3,19 @@ package io.easeci.core.extension;
 import io.easeci.commons.YamlUtils;
 import io.easeci.extension.Standalone;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.ONE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static java.util.Objects.isNull;
 
-@Slf4j
 public class PluginThreadPool {
     private static PluginThreadPool instance;
     @Getter private Integer threadPoolMaxSize;
@@ -43,7 +45,7 @@ public class PluginThreadPool {
                 .peek(standalone -> {
                     int activeCount = instance.threadPoolExecutor.getActiveCount();
                     if (activeCount > instance.threadPoolMaxSize) {
-                        log.error("=> Cannot assign new thread for new task. The thread pool is full.");
+                        logit(PLUGIN_EVENT, "Cannot assign new thread for new task. The thread pool is full.", ONE);
                         return;
                     }
                     Thread thread = new Thread(standalone::start);
@@ -56,11 +58,12 @@ public class PluginThreadPool {
                                 if (instance.isStandalone()) {
                                     instance.setStarted(true);
                                     instance.assignThread(thread);
-                                    log.info("===> [Standalone plugin] Correctly found Instance by hashCode[{}], plugin: {} assigned to running in Thread: {}",
-                                            identityHashCode, instance.getPlugin().toShortString(), instance.getThread().toString());
+                                    logit(PLUGIN_EVENT, "[Standalone plugin] Correctly found Instance by hashCode["
+                                            + identityHashCode + "], plugin: " + instance.getPlugin().toShortString()
+                                            + " assigned to running in Thread: " + instance.getThread().toString(), THREE);
                                 } else
-                                    log.info("===> [Extension plugin] Correctly found Instance by hashCode[{}], plugin: {}", identityHashCode, instance.getPlugin().toShortString());
-                            }, () -> log.error("===> Cannot find Instance by hashCode[{}] of plugin object", identityHashCode));
+                                    logit(PLUGIN_EVENT, "[Extension plugin] Correctly found Instance by hashCode[" + identityHashCode + "], plugin: " + instance.getPlugin().toShortString(), THREE);
+                            }, () -> logit(PLUGIN_EVENT,"Cannot find Instance by hashCode[" + identityHashCode + "] of plugin object", THREE));
                 }).collect(Collectors.toList());
     }
 }
