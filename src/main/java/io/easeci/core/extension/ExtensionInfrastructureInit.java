@@ -4,7 +4,6 @@ import io.easeci.commons.DirUtils;
 import io.easeci.commons.FileUtils;
 import io.easeci.commons.YamlUtils;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,10 +13,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 
-@Slf4j
 class ExtensionInfrastructureInit implements InfrastructureInit {
     private String current = System.getProperty("user.dir");
     private String workspace = getWorkspaceLocation();
@@ -75,10 +76,10 @@ class ExtensionInfrastructureInit implements InfrastructureInit {
     @Override
     public void prepareInfrastructure() throws Exception {
         if (isInitialized()) {
-            log.info("===> Infrastructure for plugin management is already correctly initialized");
+            logit(PLUGIN_EVENT, "Infrastructure for plugin management is already correctly initialized", THREE);
             return;
         }
-        log.info("===> Infrastructure for plugin management not exist or is malformed, started to prepare infrastructure");
+        logit(PLUGIN_EVENT, "Infrastructure for plugin management not exist or is malformed, started to prepare infrastructure", THREE);
         Path pluginsYmlLocation = getPluginsYmlLocation();
         if (!FileUtils.isExist(pluginsYmlLocation.toString())) {
             createMinimalisticPluginYml(getPluginsYmlLocation(), List.of("<current>/plugins", "<workspace>/plugins"));

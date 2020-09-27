@@ -17,9 +17,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
 import static io.easeci.core.extension.Utils.likelyLocations;
 import static io.easeci.core.extension.Utils.pluginFileName;
 import static io.easeci.commons.YamlUtils.ymlGet;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.ONE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -32,7 +35,7 @@ class DefaultPluginResolver implements PluginResolver {
     public Set<Plugin> resolve(Path pluginYml, PluginInfrastructureInfo infrastructureInfo) {
         if (isNull(pluginYml) || !FileUtils.isExist(pluginYml.toString())
                 || isNull(infrastructureInfo) || isNull(infrastructureInfo.getPluginDirectories())) {
-            log.error("=> Cannot execute resolve() method because of method's arguments are not correct");
+            logit(PLUGIN_EVENT, "Cannot execute resolve() method because of method's arguments are not correct", ONE);
             return Collections.emptySet();
         }
         return PluginsFile.create(pluginYml).getPluginsList()

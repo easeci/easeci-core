@@ -3,7 +3,6 @@ package io.easeci.core.extension;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.*;
 import org.asynchttpclient.netty.request.NettyRequest;
 
@@ -19,12 +18,15 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.PLUGIN_EVENT;
 import static io.easeci.core.extension.Utils.completePluginDownloadUrl;
 import static io.easeci.core.extension.Utils.pluginFileName;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.FOUR;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
-@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class DefaultPluginDownloader extends PluginDownloader {
     private URL registryUrl;
@@ -67,7 +69,7 @@ class DefaultPluginDownloader extends PluginDownloader {
 
                 @Override
                 public void onRequestSend(NettyRequest request) {
-                    log.info("===> Request to registry: {}", "http://localhost:8080/api/v1/download/" + plugin.getName() + "/" + plugin.getVersion());
+                    logit(PLUGIN_EVENT, "Request to registry: " + registryUrl.toString(), THREE);
                 }
 
                 @Override
@@ -78,7 +80,7 @@ class DefaultPluginDownloader extends PluginDownloader {
 
                 @Override
                 public File onCompleted(Response response) throws Exception {
-                    log.info("===> {} plugin downloading is complete", plugin.toShortString());
+                    logit(PLUGIN_EVENT, plugin.toShortString() + " plugin downloading is complete", THREE);
                     return futureFile;
                 }
 
@@ -94,12 +96,12 @@ class DefaultPluginDownloader extends PluginDownloader {
 
                 @Override
                 public void onTcpConnectFailure(InetSocketAddress remoteAddress, Throwable cause) {
-                    log.info("===> Cannot connect registry! URL: {}", remoteAddress.toString());
+                    logit(PLUGIN_EVENT, "Cannot connect registry! URL: " + remoteAddress.toString(), THREE);
                 }
 
                 @Override
                 public void onHostnameResolutionFailure(String name, Throwable cause) {
-                    log.info("===> Error occurred while hostname resolving of name: {}", name);
+                    logit(PLUGIN_EVENT, "Error occurred while hostname resolving of name: " + name, THREE);
                 }
             };
         } catch (IOException e) {
@@ -116,7 +118,7 @@ class DefaultPluginDownloader extends PluginDownloader {
     private Path createEmptyFile(Plugin plugin) throws IOException {
         String jarFileName = pluginFileName(plugin.getName(), plugin.getVersion());
         Path fullFilePath = Paths.get(targetPath.toString().concat("/").concat(jarFileName));
-        log.info("====> New plugin file created here: {}", fullFilePath);
+        logit(PLUGIN_EVENT, "New plugin file created here: " + fullFilePath, FOUR);
         return Files.createFile(fullFilePath);
     }
 
