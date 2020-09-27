@@ -88,18 +88,6 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     }
 
     @Override
-    public boolean update(ConfigDescription configDescription) {
-//        TODO
-        return false;
-    }
-
-    @Override
-    public boolean remove(ConfigDescription configDescription) {
-//        TODO
-        return false;
-    }
-
-    @Override
     public boolean enable(UUID pluginUuid) {
         return this.pluginsConfigFile.getConfigDescriptions()
                 .values()
@@ -163,12 +151,6 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
                 return false;
             }
         };
-    }
-
-    @Override
-    public boolean disableAll(String interfaceName) {
-//        TODO
-        return false;
     }
 
     @Override
