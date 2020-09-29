@@ -48,9 +48,11 @@ EaseCI can be run with few ways.
 - Firstly build your docker image or download one from Docker Hub (available in future)<br>
 <code>docker build --tag easeci:1.0 .</code>
 - Run a new container from created image before<br>
-<code>docker run -td -p 5050:5050 <image_name></code>
+<code>docker run -td -p 5050:5050 <image></code>
 - Test application working, check plugin state for example<br>
 <code>curl -X GET localhost:5050/plugin/state</code>
+- In working with EaseCI, it's convenient to use data volume<br>
+<code>docker run --rm -td -p 5050:5050 --name easeci -v $HOME/docker/workspace:/usr/lib/easeci/workspace <image></code>  
 #### Virtual Machine (by Vagrant and Virtualbox)
 - You must have installed Vagrant and Virtualbox
 - Next clone source code <code>git clone --depth=5 --branch=master https://github.com/easeci/easeci-core-java.git </code>
