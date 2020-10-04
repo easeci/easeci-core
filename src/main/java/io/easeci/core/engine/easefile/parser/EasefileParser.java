@@ -1,7 +1,7 @@
-package io.easeci.domain.pipeline.parser;
+package io.easeci.core.engine.easefile.parser;
 
-import io.easeci.domain.pipeline.EasefileInput;
-import io.easeci.domain.pipeline.parser.analyse.StaticAnalyseException;
+import io.easeci.core.engine.easefile.EasefileInput;
+import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
 
 /**
  * Functional interface that provide entry point for

@@ -1,4 +1,4 @@
-package io.easeci.domain.pipeline.parser.analyse;
+package io.easeci.core.engine.easefile.parser.analyse;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
