@@ -1,5 +1,7 @@
 package io.easeci.core.workspace;
 
+import io.easeci.core.workspace.easefiles.EasefileManager;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +20,11 @@ public class LocationUtils {
 
     public static String getWorkspaceLocation() {
         return (String) ymlGet(getRunFile().toPath(), "easeci.workspace.path").getValue();
+    }
+
+    public static String getEasefilesStorageLocation() {
+        return ((String) ymlGet(getRunFile().toPath(), "easeci.workspace.path").getValue())
+                .concat(EasefileManager.EASEFILES_DIRECTORY);
     }
 
     public static Path getGeneralYmlLocation() {
