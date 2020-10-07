@@ -24,6 +24,9 @@ public class FileTreeWalker {
     }
 
     private FileTree walk(Path pathDirectory, Node node, boolean recursively) throws IOException {
+        if (!Files.exists(pathDirectory)) {
+            return FileTree.notExisting(pathDirectory);
+        }
         if (!Files.isDirectory(pathDirectory)) {
             return FileTree.empty(pathDirectory);
         }
