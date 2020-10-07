@@ -36,4 +36,6 @@ public abstract class EasefileManager {
      * @return List<Path> that contains all directories and pipeline Easefiles stored in workspace
      * */
     abstract FileTree scan();
+
+    public abstract FileTree scan(Path path);
 }

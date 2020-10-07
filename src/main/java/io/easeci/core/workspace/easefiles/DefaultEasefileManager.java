@@ -25,7 +25,7 @@ public class DefaultEasefileManager extends EasefileManager {
     }
 
     @Override
-    FileTree scan() {
+    public FileTree scan() {
         Path easefilesStorageLocation = Paths.get(getEasefilesStorageLocation());
         FileTreeWalker fileTreeWalker = new FileTreeWalker(easefilesStorageLocation);
         try {
@@ -37,4 +37,23 @@ public class DefaultEasefileManager extends EasefileManager {
         }
     }
 
+    @Override
+    public FileTree scan(Path path) {
+        String easefilesStorageLocation = getEasefilesStorageLocation();
+        if (!path.toString().startsWith(easefilesStorageLocation)) {
+            logit(WORKSPACE_EVENT, "Forbidden to scan file tree for path "
+                                 + path.toString() + ". Enable scan paths starts with: "
+                                 + easefilesStorageLocation);
+            return FileTree.empty(path);
+        } else {
+            FileTreeWalker fileTreeWalker = new FileTreeWalker(Paths.get(easefilesStorageLocation));
+            try {
+                return fileTreeWalker.dumpOne();
+            } catch (IOException e) {
+                e.printStackTrace();
+                logit(WORKSPACE_EVENT, "Exception occurred while trying to scan and walkthrough directory: " + easefilesStorageLocation);
+                return FileTree.empty(path);
+            }
+        }
+    }
 }
