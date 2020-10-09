@@ -1,5 +1,7 @@
 package io.easeci.core.workspace.easefiles;
 
+import io.easeci.commons.FileUtils;
+import io.easeci.core.log.ApplicationLevelLogFacade;
 import io.easeci.core.workspace.easefiles.filetree.FileTree;
 import io.easeci.core.workspace.easefiles.filetree.FileTreeWalker;
 
@@ -54,6 +56,36 @@ public class DefaultEasefileManager extends EasefileManager {
                 logit(WORKSPACE_EVENT, "Exception occurred while trying to scan and walkthrough directory: " + easefilesStorageLocation);
                 return FileTree.empty(path);
             }
+        }
+    }
+
+    @Override
+    public String load(Path path) {
+        return FileUtils.fileLoad(path.toString());
+    }
+
+    @Override
+    public Path save(Path path, String easefileAsString) {
+        isExistCheck(path);
+        return FileUtils.fileSave(path.toString(), easefileAsString, false);
+    }
+
+    @Override
+    public Path update(Path path, String easefileNewContent) {
+        isExistCheck(path);
+        return FileUtils.fileChange(path.toString(), easefileNewContent);
+    }
+
+    @Override
+    public boolean delete(Path path) {
+        return FileUtils.fileDelete(path.toString());
+    }
+
+    private void isExistCheck(Path path) {
+        if (FileUtils.isExist(path.toString())) {
+            String msg = "Pipeline file just exists for path: " + path;
+            logit(WORKSPACE_EVENT, msg);
+            throw new IllegalStateException(msg);
         }
     }
 }
