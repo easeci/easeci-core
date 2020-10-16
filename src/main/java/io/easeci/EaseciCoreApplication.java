@@ -1,6 +1,7 @@
 package io.easeci;
 
 import io.easeci.api.client.ClientHandlers;
+import io.easeci.api.easefile.EasefileManagementHandlers;
 import io.easeci.api.extension.ExtensionHandlers;
 import io.easeci.api.log.LogHandler;
 import io.easeci.core.bootstrap.BootstrapperFactory;
@@ -22,9 +23,9 @@ public class EaseciCoreApplication {
         ExtensionSystem.getInstance().get("io.easeci.extension.bootstrap.OnStartup", OnStartup.class)
                 .ifPresentOrElse(OnStartup::action, () -> EaseciCoreApplication.log.error("===> Could not find {} implementation in system", OnStartup.class));
 
-        ExtensionSystem.getInstance().startStandalonePlugins();
 
-        ServerBootstrapper.instantiate(List.of(new ExtensionHandlers(), new LogHandler(), new ClientHandlers()), BaseExternalHandlers.get());
+        ServerBootstrapper.instantiate(List.of(new ExtensionHandlers(), new LogHandler(),
+                new ClientHandlers(), new EasefileManagementHandlers()), BaseExternalHandlers.get());
         ServerBootstrapper.getInstance().run();
     }
 }

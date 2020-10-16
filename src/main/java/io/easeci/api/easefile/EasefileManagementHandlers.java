@@ -28,7 +28,8 @@ public class EasefileManagementHandlers implements InternalHandlers {
         return List.of(
                 getRootEasefileDirectory(),
                 scanWorkspaceDirectoryTree(),
-                scanPathDirectoryTree()
+                scanPathDirectoryTree(),
+                createDirectory()
         );
     }
 
@@ -73,7 +74,18 @@ public class EasefileManagementHandlers implements InternalHandlers {
     }
 
     public EndpointDeclaration createDirectory() {
-        return null;
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(MAPPING + "workspace/directory")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> {
+                            DirectoryRequest directoryRequest = objectMapper.readValue(typedData.getBytes(), DirectoryRequest.class);
+                            return easefileManager.createDirectory(Paths.get(directoryRequest.getPath()));
+                        }).map(tuple -> DirectoryResponse.of(tuple._1, tuple._2, tuple._3))
+                        .mapError(this::directoryErrorMapping)
+                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
     }
 
     public EndpointDeclaration deleteDirectory() {
@@ -101,5 +113,12 @@ public class EasefileManagementHandlers implements InternalHandlers {
             return EasefileWorkspaceResponse.withError("Data in request body is not correct.");
         }
         return EasefileWorkspaceResponse.withError("Not expected, unrecognized exception occurred while processing request");
+    }
+
+    private DirectoryResponse directoryErrorMapping(Throwable throwable) {
+        if (throwable instanceof UnrecognizedPropertyException) {
+            return DirectoryResponse.withError("Data in request body is not correct.");
+        }
+        return DirectoryResponse.withError("Not expected, unrecognized exception occurred while processing request");
     }
 }

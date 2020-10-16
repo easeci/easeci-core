@@ -1,20 +1,22 @@
 package io.easeci.api.easefile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.easeci.api.Errorable;
 import io.easeci.core.workspace.easefiles.filetree.FileTree;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.nio.file.Path;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EasefileWorkspaceResponse {
-    private String errorMessage;
+public class EasefileWorkspaceResponse extends Errorable {
     private Path rootPath;
     private FileTree fileTree;
 
     private EasefileWorkspaceResponse(String errorMessage) {
-        this.errorMessage = errorMessage;
+        super.setErrorMessage(errorMessage);
     }
 
     public EasefileWorkspaceResponse(Path rootPath) {
