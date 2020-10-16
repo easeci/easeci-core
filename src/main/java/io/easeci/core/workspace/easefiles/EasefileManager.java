@@ -4,6 +4,7 @@ import io.easeci.commons.DirUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Spliterator;
 
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
@@ -17,7 +18,7 @@ import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
  * @author Karol Meksuła
  * 2020-10-06
  * */
-public abstract class EasefileManager implements FileScanner, EasefileIO {
+public abstract class EasefileManager implements FileScanner, EasefileIO, DirectoriesIO {
     public final static String EASEFILES_DIRECTORY = "/easefiles/",
                                 EASEFILE_SEPARATOR = "_",
                                    EASEFILE_PREFIX = "Easefile";
@@ -40,5 +41,27 @@ public abstract class EasefileManager implements FileScanner, EasefileIO {
     public Path getRootEasefilePath() {
         final String workspaceLocation = getWorkspaceLocation();
         return Paths.get(workspaceLocation.concat(EASEFILES_DIRECTORY));
+    }
+
+    /**
+     * Return one path back.
+     * For example:
+     * input: /var/html/website
+     * output: /var/html
+     * */
+    public static Path pathBackward(Path path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Cannot process path with null pointer");
+        }
+        Spliterator<Path> pathSpliterator = path.spliterator()
+                                                .trySplit();
+        long pathParts = 0;
+        if (pathSpliterator != null) {
+            pathParts = pathSpliterator.estimateSize();
+        }
+        if (pathParts == 1) {
+            return Paths.get("/");
+        }
+        return Paths.get("/" + path.subpath(0, (int) pathParts - 1));
     }
 }

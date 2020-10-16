@@ -3,8 +3,12 @@ package io.easeci.core.workspace.easefiles;
 import io.easeci.commons.FileUtils;
 import io.easeci.core.workspace.easefiles.filetree.FileTree;
 import io.easeci.core.workspace.easefiles.filetree.FileTreeWalker;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -87,5 +91,26 @@ public class DefaultEasefileManager extends EasefileManager {
             logit(WORKSPACE_EVENT, msg);
             throw new IllegalStateException(msg);
         }
+    }
+
+    @Override
+    public Tuple3<Path, Boolean, String> createDirectory(Path path) {
+        if (Files.notExists(path)) {
+            Path pathBackward = pathBackward(path);
+            if (Files.exists(pathBackward(path))) {
+                try {
+                    return Tuple.of(Files.createDirectory(path), true, "");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return Tuple.of(path, false, "Directory " + pathBackward.toString() + " not exists. Cannot create.");
+        }
+        return Tuple.of(path, false, "Directory " + path.toString() + " just exists. Cannot create.");
+    }
+
+    @Override
+    public boolean deleteDirectory(Path path, boolean force) {
+        return false;
     }
 }
