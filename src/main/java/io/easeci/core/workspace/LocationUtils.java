@@ -27,6 +27,15 @@ public class LocationUtils {
                 .concat(EasefileManager.EASEFILES_DIRECTORY);
     }
 
+    public static String getEasefilesStorageLocationNoSlashAtEnd() {
+        String location = ((String) ymlGet(getRunFile().toPath(), "easeci.workspace.path").getValue())
+                .concat(EasefileManager.EASEFILES_DIRECTORY);
+        if (location.charAt(location.length() - 1) == '/') {
+            return location.substring(location.length() - 1);
+        }
+        return location;
+    }
+
     public static Path getGeneralYmlLocation() {
         return Paths.get(getWorkspaceLocation()
                 .concat("/general.yml"));

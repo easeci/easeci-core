@@ -3,6 +3,7 @@ package io.easeci.core.workspace.easefiles;
 import io.easeci.commons.DirUtils;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
@@ -34,5 +35,10 @@ public abstract class EasefileManager implements FileScanner, EasefileIO {
             return path;
         }
         return Path.of(easefilesDirLocation);
+    }
+
+    public Path getRootEasefilePath() {
+        final String workspaceLocation = getWorkspaceLocation();
+        return Paths.get(workspaceLocation.concat(EASEFILES_DIRECTORY));
     }
 }

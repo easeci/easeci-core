@@ -1,7 +1,6 @@
 package io.easeci.core.workspace.easefiles;
 
 import io.easeci.commons.FileUtils;
-import io.easeci.core.log.ApplicationLevelLogFacade;
 import io.easeci.core.workspace.easefiles.filetree.FileTree;
 import io.easeci.core.workspace.easefiles.filetree.FileTreeWalker;
 
@@ -12,6 +11,7 @@ import java.nio.file.Paths;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getEasefilesStorageLocation;
+import static io.easeci.core.workspace.LocationUtils.getEasefilesStorageLocationNoSlashAtEnd;
 import static java.util.Objects.isNull;
 
 public class DefaultEasefileManager extends EasefileManager {
@@ -41,8 +41,8 @@ public class DefaultEasefileManager extends EasefileManager {
 
     @Override
     public FileTree scan(Path path) {
-        String easefilesStorageLocation = getEasefilesStorageLocation();
-        if (!path.toString().startsWith(easefilesStorageLocation)) {
+        String easefilesStorageLocation = getEasefilesStorageLocationNoSlashAtEnd();
+        if ((!path.toString().startsWith(easefilesStorageLocation)) || !path.toString().equals(easefilesStorageLocation)) {
             logit(WORKSPACE_EVENT, "Forbidden to scan file tree for path "
                                  + path.toString() + ". Enable scan paths starts with: "
                                  + easefilesStorageLocation);
