@@ -29,7 +29,8 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 getRootEasefileDirectory(),
                 scanWorkspaceDirectoryTree(),
                 scanPathDirectoryTree(),
-                createDirectory()
+                createDirectory(),
+                deleteDirectory()
         );
     }
 
@@ -76,12 +77,12 @@ public class EasefileManagementHandlers implements InternalHandlers {
     public EndpointDeclaration createDirectory() {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.POST)
-                .endpointUri(MAPPING + "workspace/directory")
+                .endpointUri(MAPPING + "workspace/directory/create")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
                             DirectoryRequest directoryRequest = objectMapper.readValue(typedData.getBytes(), DirectoryRequest.class);
                             return easefileManager.createDirectory(Paths.get(directoryRequest.getPath()));
-                        }).map(tuple -> DirectoryResponse.of(tuple._1, tuple._2, tuple._3))
+                        }).map(tuple -> DirectoryResponse.of(tuple._1, tuple._2, null, tuple._3))
                         .mapError(this::directoryErrorMapping)
                         .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
@@ -89,7 +90,18 @@ public class EasefileManagementHandlers implements InternalHandlers {
     }
 
     public EndpointDeclaration deleteDirectory() {
-        return null;
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(MAPPING + "workspace/directory/delete")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> {
+                            DirectoryRequest directoryRequest = objectMapper.readValue(typedData.getBytes(), DirectoryRequest.class);
+                            return easefileManager.deleteDirectory(Paths.get(directoryRequest.getPath()), directoryRequest.isForce());
+                        }).map(tuple -> DirectoryResponse.of(tuple._1, tuple._2))
+                        .mapError(this::directoryErrorMapping)
+                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
     }
 
     public EndpointDeclaration getEasefileContent() {

@@ -46,7 +46,7 @@ public class DefaultEasefileManager extends EasefileManager {
     @Override
     public FileTree scan(Path path) {
         String easefilesStorageLocation = getEasefilesStorageLocationNoSlashAtEnd();
-        if ((!path.toString().startsWith(easefilesStorageLocation)) || !path.toString().equals(easefilesStorageLocation)) {
+        if (!hasAccessRight(path)) {
             logit(WORKSPACE_EVENT, "Forbidden to scan file tree for path "
                                  + path.toString() + ". Enable scan paths starts with: "
                                  + easefilesStorageLocation);
@@ -95,11 +95,14 @@ public class DefaultEasefileManager extends EasefileManager {
 
     @Override
     public Tuple3<Path, Boolean, String> createDirectory(Path path) {
+        if (!hasAccessRight(path)) {
+            return Tuple.of(path, false, "Access denied");
+        }
         if (Files.notExists(path)) {
             Path pathBackward = pathBackward(path);
             if (Files.exists(pathBackward(path))) {
                 try {
-                    return Tuple.of(Files.createDirectory(path), true, "");
+                    return Tuple.of(Files.createDirectory(path), true, null);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -110,7 +113,39 @@ public class DefaultEasefileManager extends EasefileManager {
     }
 
     @Override
-    public boolean deleteDirectory(Path path, boolean force) {
-        return false;
+    public Tuple2<Boolean, String> deleteDirectory(Path path, boolean force) {
+        if (!hasAccessRight(path)) {
+            return Tuple.of(false, "Access denied");
+        }
+        if (Files.isDirectory(path)) {
+            if (force) {
+
+                try {
+                    org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
+                    return Tuple.of(true, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return Tuple.of(false, "Exception occurred while trying to force remove directory: " + path.toString());
+                }
+            } else {
+                try {
+                    long contentAmounts = Files.list(path).count();
+                    if (contentAmounts == 0) {
+                        return Tuple.of(Files.deleteIfExists(path), null);
+                    } else {
+                        return Tuple.of(false, "Cannot remove directory that is not empty. You can use 'force' flag to remove directory with content");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return Tuple.of(false, "Some exception occurred while trying to remove directory: " + path.toString());
+                }
+            }
+        }
+        return Tuple.of(false, "Directory not exist or you has no access rights: " + path.toString());
+    }
+
+    private boolean hasAccessRight(Path requestedPath) {
+        String easefilesStorageLocation = getEasefilesStorageLocationNoSlashAtEnd();
+        return requestedPath.toString().startsWith(easefilesStorageLocation) || requestedPath.toString().equals(easefilesStorageLocation);
     }
 }
