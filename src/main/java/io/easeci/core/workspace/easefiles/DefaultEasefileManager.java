@@ -16,7 +16,9 @@ import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPAC
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getEasefilesStorageLocation;
 import static io.easeci.core.workspace.LocationUtils.getEasefilesStorageLocationNoSlashAtEnd;
+import static io.easeci.core.workspace.easefiles.EasefileStatus.*;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 public class DefaultEasefileManager extends EasefileManager {
     private static DefaultEasefileManager easefileManager;
@@ -65,6 +67,9 @@ public class DefaultEasefileManager extends EasefileManager {
 
     @Override
     public EasefileOut load(Path path) {
+        if (!hasAccessRight(path)) {
+            return EasefileOut.of(EDIT_FAILED, null, "Access denied");
+        }
         String content = FileUtils.fileLoad(path.toString());
         EasefileStatus status = EasefileStatus.LOADING_ERROR;
         String errorMessage = null;
@@ -77,19 +82,51 @@ public class DefaultEasefileManager extends EasefileManager {
     }
 
     @Override
-    public Path save(Path path, String easefileAsString) {
-        isExistCheck(path);
-        return FileUtils.fileSave(path.toString(), easefileAsString, false);
+    public EasefileOut save(Path path, String easefileAsString) {
+        if (!hasAccessRight(path)) {
+            return EasefileOut.of(EDIT_FAILED, null, "Access denied");
+        }
+        if (!Files.exists(pathBackward(path))) {
+            return EasefileOut.of(SAVE_FAILED, null, "Indicated directory for save file not exists");
+        } else {
+            try {
+                isExistCheck(path);
+                Path savedPath = FileUtils.fileSave(path.toString(), easefileAsString, false);
+                if (nonNull(savedPath)) {
+                    EasefileStatus status = Files.exists(savedPath) ? SAVED_CORRECTLY : SAVE_FAILED;
+                    return EasefileOut.of(status, null, null, savedPath);
+                } else {
+                    return EasefileOut.of(SAVE_FAILED, null, "File was not saved");
+                }
+            } catch (IllegalStateException e) {
+                return EasefileOut.of(EasefileStatus.JUST_EXISTS, null, "File just exists: " + path.toString());
+            }
+        }
     }
 
     @Override
-    public Path update(Path path, String easefileNewContent) {
-        isExistCheck(path);
-        return FileUtils.fileChange(path.toString(), easefileNewContent);
+    public EasefileOut update(Path path, String easefileNewContent) {
+        if (!hasAccessRight(path)) {
+            return EasefileOut.of(EDIT_FAILED, null, "Access denied");
+        }
+        if (!Files.exists(path)) {
+            return EasefileOut.of(EDIT_FAILED, null, "Requested file path not exists, cannot edit");
+        } else {
+            Path editedPath = FileUtils.fileChange(path.toString(), easefileNewContent);
+            if (nonNull(editedPath) && editedPath.equals(path)) {
+                EasefileStatus status = Files.exists(editedPath) ? EDITED_CORRECTLY : EDIT_FAILED;
+                return EasefileOut.of(status, null, null, editedPath);
+            } else {
+                return EasefileOut.of(EDIT_FAILED, null, "File was not edited");
+            }
+        }
     }
 
     @Override
     public boolean delete(Path path) {
+        if (!hasAccessRight(path)) {
+            return false;
+        }
         return FileUtils.fileDelete(path.toString());
     }
 
@@ -127,7 +164,6 @@ public class DefaultEasefileManager extends EasefileManager {
         }
         if (Files.isDirectory(path)) {
             if (force) {
-
                 try {
                     org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
                     return Tuple.of(true, null);

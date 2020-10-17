@@ -3,6 +3,7 @@ package io.easeci.api.easefile;
 import lombok.Data;
 
 @Data
-public class EasefileRequest {
+public class AddEasefileRequest {
     private String path;
+    private String encodedEasefileContent;
 }

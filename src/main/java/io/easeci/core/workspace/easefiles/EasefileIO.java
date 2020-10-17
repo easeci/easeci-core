@@ -12,7 +12,8 @@ public interface EasefileIO {
     /**
      * @param path is a path where Easefile is placed on storage.
      * Use this method to read pipeline Easefile from storage.
-     * @return string representation of loaded Easefile
+     * @return EasefileOut that has status, errorMessage or file
+     *         content as String representation of loaded Easefile
      * */
     EasefileOut load(Path path);
 
@@ -20,18 +21,20 @@ public interface EasefileIO {
      * @param path is a path where Easefile is placed on storage.
      * @param easefileAsString is a content string representation of Easefile.
      * Use this method to read pipeline Easefile from storage.
-     * @return path pointing where Easefile has just saved.
+     * @return EasefileOut that has status, errorMessage or file
+     *         content as String representation of loaded Easefile
      * */
-    Path save(Path path, String easefileAsString);
+    EasefileOut save(Path path, String easefileAsString);
 
     /**
      * @param path is a path where Easefile is placed on storage.
      * @param easefileNewContent is a string representation of content to replace with.
      * Use this method to update pipeline Easefile existing
      * in storage and replace content with new one.
-     * @return path pointing where Easefile has just updated.
+     * @return EasefileOut that has status, errorMessage or file
+     *         content as String representation of loaded Easefile
      * */
-    Path update(Path path, String easefileNewContent);
+    EasefileOut update(Path path, String easefileNewContent);
 
     /**
      * @param path is a path where Easefile is placed on storage.

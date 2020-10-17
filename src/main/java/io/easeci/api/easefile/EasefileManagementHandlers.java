@@ -36,7 +36,10 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 scanPathDirectoryTree(),
                 createDirectory(),
                 deleteDirectory(),
-                getEasefileContent()
+                getEasefileContent(),
+                addEasefile(),
+                updateEasefile(),
+                deleteEasefile()
         );
     }
 
@@ -116,17 +119,16 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "load")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            EasefileRequest easefileRequest = objectMapper.readValue(typedData.getBytes(), EasefileRequest.class);
+                            GetEasefileRequest easefileRequest = objectMapper.readValue(typedData.getBytes(), GetEasefileRequest.class);
                             return easefileManager.load(Paths.get(easefileRequest.getPath()));
-                        })
-                        .map(this::mapResponse)
+                        }).map(this::mapGetResponse)
                         .mapError(this::easefileErrorMapping)
                         .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
 
-    private EasefileResponse mapResponse(EasefileOut easefileOut) {
+    private EasefileResponse mapGetResponse(EasefileOut easefileOut) {
         if (nonNull(easefileOut.getErrorMessage())) {
             return EasefileResponse.withError(easefileOut.getErrorMessage(), easefileOut.getEasefileStatus());
         }
@@ -136,15 +138,66 @@ public class EasefileManagementHandlers implements InternalHandlers {
     }
 
     public EndpointDeclaration addEasefile() {
-        return null;
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(MAPPING + "save")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> {
+                            AddEasefileRequest addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequest.class);
+                            String decodedEasefileContent = decode(addEasefileRequest.getEncodedEasefileContent());
+                            return easefileManager.save(Paths.get(addEasefileRequest.getPath()), decodedEasefileContent);
+                        }).map(this::mapSaveResponse)
+                        .mapError(this::addEasefileErrorMapping)
+                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    private String decode(String encodedData) {
+        byte[] decoded = Base64.getDecoder().decode(encodedData);
+        return new String(decoded, Charset.defaultCharset());
+    }
+
+    private AddEasefileResponse mapSaveResponse(EasefileOut easefileOut) {
+        if (nonNull(easefileOut.getErrorMessage())) {
+            return AddEasefileResponse.withError(easefileOut.getErrorMessage(), easefileOut.getEasefileStatus());
+        }
+        return AddEasefileResponse.of(easefileOut.getFilePath(), easefileOut.getEasefileStatus());
     }
 
     public EndpointDeclaration updateEasefile() {
-        return null;
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(MAPPING + "edit")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> {
+                            AddEasefileRequest addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequest.class);
+                            String decodedEasefileContent = decode(addEasefileRequest.getEncodedEasefileContent());
+                            return easefileManager.update(Paths.get(addEasefileRequest.getPath()), decodedEasefileContent);
+                        }).map(this::mapSaveResponse)
+                        .mapError(this::addEasefileErrorMapping)
+                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
     }
 
     public EndpointDeclaration deleteEasefile() {
-        return null;
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(MAPPING + "delete")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> {
+                            AddEasefileRequest addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequest.class);
+                            return easefileManager.delete(Paths.get(addEasefileRequest.getPath()));
+                        }).map(this::mapDeleteResponse)
+                        .mapError(this::addEasefileErrorMapping)
+                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    private AddEasefileResponse mapDeleteResponse(Boolean deleteResult) {
+        return AddEasefileResponse.of(deleteResult ? EasefileStatus.REMOVED_CORRECTLY : EasefileStatus.REMOVE_FAILED);
     }
 
     private EasefileWorkspaceResponse errorMapping(Throwable throwable) {
@@ -169,5 +222,15 @@ public class EasefileManagementHandlers implements InternalHandlers {
             return EasefileResponse.withError("Data in request body is not correct.", EasefileStatus.REQUEST_ERROR);
         }
         return EasefileResponse.withError("Not expected, unrecognized exception occurred while processing request", EasefileStatus.REQUEST_ERROR);
+    }
+
+    private AddEasefileResponse addEasefileErrorMapping(Throwable throwable) {
+        if (throwable instanceof RuntimeException) {
+            return AddEasefileResponse.withError("File not exists or you has no access rights", EasefileStatus.NOT_EXISTS);
+        }
+        if (throwable instanceof UnrecognizedPropertyException) {
+            return AddEasefileResponse.withError("Data in request body is not correct.", EasefileStatus.REQUEST_ERROR);
+        }
+        return AddEasefileResponse.withError("Not expected, unrecognized exception occurred while processing request", EasefileStatus.REQUEST_ERROR);
     }
 }
