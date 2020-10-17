@@ -28,10 +28,9 @@ public class LocationUtils {
     }
 
     public static String getEasefilesStorageLocationNoSlashAtEnd() {
-        String location = ((String) ymlGet(getRunFile().toPath(), "easeci.workspace.path").getValue())
-                .concat(EasefileManager.EASEFILES_DIRECTORY);
+        String location = getEasefilesStorageLocation();
         if (location.charAt(location.length() - 1) == '/') {
-            return location.substring(location.length() - 1);
+            return location.substring(0, location.length() - 1);
         }
         return location;
     }

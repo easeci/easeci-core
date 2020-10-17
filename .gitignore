@@ -33,3 +33,4 @@ out/
 
 .run.yml
 workspace/
+plugins/

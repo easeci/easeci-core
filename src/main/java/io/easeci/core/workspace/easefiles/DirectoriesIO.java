@@ -1,5 +1,6 @@
 package io.easeci.core.workspace.easefiles;
 
+import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 
 import java.nio.file.Path;
@@ -30,8 +31,9 @@ public interface DirectoriesIO {
      *              If flag is true, method will remove directory with content,
      *              If flag is false, method will not remove directory
      * @return boolean value
-     *          true - when directory was removed
-     *          false - when directory was not removed correctly
+     *            true - when directory was removed
+     *            false - when directory was not removed correctly
+     *        Second parameter is error message
      * */
-    boolean deleteDirectory(Path path, boolean force);
+    Tuple2<Boolean, String> deleteDirectory(Path path, boolean force);
 }

@@ -14,7 +14,17 @@ import java.nio.file.Path;
 public class DirectoryResponse extends Errorable {
     private Path directoryPath;
     private Boolean isDirectoryCreated;
+    private Boolean isDirectoryRemoved;
     private String errorMessage;
+
+    private DirectoryResponse(boolean isDirectoryRemoved, String errorMessage) {
+        this.isDirectoryRemoved = isDirectoryRemoved;
+        this.errorMessage = errorMessage;
+    }
+
+    public static DirectoryResponse of(boolean isDirectoryRemoved, String errorMessage) {
+        return new DirectoryResponse(isDirectoryRemoved, errorMessage);
+    }
 
     public static DirectoryResponse withError(String errorMessage) {
         DirectoryResponse directoryResponse = new DirectoryResponse();
