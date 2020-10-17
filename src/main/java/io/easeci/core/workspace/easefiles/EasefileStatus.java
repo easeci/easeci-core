@@ -1,4 +1,8 @@
 package io.easeci.core.workspace.easefiles;
 
-public class EasefileStatus {
+public enum  EasefileStatus {
+    REQUEST_ERROR,
+    LOADING_ERROR,
+    NOT_EXISTS,
+    CORRECTLY_LOADED
 }

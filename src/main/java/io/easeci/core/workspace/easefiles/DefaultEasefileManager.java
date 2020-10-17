@@ -64,8 +64,16 @@ public class DefaultEasefileManager extends EasefileManager {
     }
 
     @Override
-    public String load(Path path) {
-        return FileUtils.fileLoad(path.toString());
+    public EasefileOut load(Path path) {
+        String content = FileUtils.fileLoad(path.toString());
+        EasefileStatus status = EasefileStatus.LOADING_ERROR;
+        String errorMessage = null;
+        if (content.length() > 0) {
+            status = EasefileStatus.CORRECTLY_LOADED;
+        } else {
+            errorMessage = "Cannot load file, content is empty";
+        }
+        return EasefileOut.of(status, content, errorMessage);
     }
 
     @Override

@@ -14,7 +14,7 @@ public interface EasefileIO {
      * Use this method to read pipeline Easefile from storage.
      * @return string representation of loaded Easefile
      * */
-    String load(Path path);
+    EasefileOut load(Path path);
 
     /**
      * @param path is a path where Easefile is placed on storage.
