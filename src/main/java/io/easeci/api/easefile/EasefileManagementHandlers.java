@@ -4,13 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import io.easeci.core.workspace.easefiles.DefaultEasefileManager;
 import io.easeci.core.workspace.easefiles.EasefileManager;
+import io.easeci.core.workspace.easefiles.EasefileOut;
+import io.easeci.core.workspace.easefiles.EasefileStatus;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import ratpack.http.HttpMethod;
 
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 
+import static java.util.Objects.nonNull;
 import static ratpack.http.MediaType.APPLICATION_JSON;
 
 public class EasefileManagementHandlers implements InternalHandlers {
@@ -30,7 +35,8 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 scanWorkspaceDirectoryTree(),
                 scanPathDirectoryTree(),
                 createDirectory(),
-                deleteDirectory()
+                deleteDirectory(),
+                getEasefileContent()
         );
     }
 
@@ -105,7 +111,28 @@ public class EasefileManagementHandlers implements InternalHandlers {
     }
 
     public EndpointDeclaration getEasefileContent() {
-        return null;
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(MAPPING + "load")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> {
+                            EasefileRequest easefileRequest = objectMapper.readValue(typedData.getBytes(), EasefileRequest.class);
+                            return easefileManager.load(Paths.get(easefileRequest.getPath()));
+                        })
+                        .map(this::mapResponse)
+                        .mapError(this::easefileErrorMapping)
+                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    private EasefileResponse mapResponse(EasefileOut easefileOut) {
+        if (nonNull(easefileOut.getErrorMessage())) {
+            return EasefileResponse.withError(easefileOut.getErrorMessage(), easefileOut.getEasefileStatus());
+        }
+        byte[] encodedContent = Base64.getEncoder().encode(easefileOut.getEasefileContent().getBytes());
+        String encodedContentAsString = new String(encodedContent, Charset.defaultCharset());
+        return EasefileResponse.of(easefileOut.getEasefileStatus(), easefileOut.getErrorMessage(), encodedContentAsString);
     }
 
     public EndpointDeclaration addEasefile() {
@@ -132,5 +159,15 @@ public class EasefileManagementHandlers implements InternalHandlers {
             return DirectoryResponse.withError("Data in request body is not correct.");
         }
         return DirectoryResponse.withError("Not expected, unrecognized exception occurred while processing request");
+    }
+
+    private EasefileResponse easefileErrorMapping(Throwable throwable) {
+        if (throwable instanceof RuntimeException) {
+            return EasefileResponse.withError("File not exists or you has no access rights", EasefileStatus.NOT_EXISTS);
+        }
+        if (throwable instanceof UnrecognizedPropertyException) {
+            return EasefileResponse.withError("Data in request body is not correct.", EasefileStatus.REQUEST_ERROR);
+        }
+        return EasefileResponse.withError("Not expected, unrecognized exception occurred while processing request", EasefileStatus.REQUEST_ERROR);
     }
 }
