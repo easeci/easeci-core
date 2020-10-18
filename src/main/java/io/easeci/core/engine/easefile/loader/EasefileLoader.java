@@ -6,16 +6,13 @@ package io.easeci.core.engine.easefile.loader;
  * @author Karol Meksuła
  * 2020-10-04
  * */
-public interface EasefileLoader<T> {
+public interface EasefileLoader {
 
     /**
      * Invoke this when you want to receive whole
      * content of your Easefile.
-     * @param reference is an information where Easefile can be found
-     *                  May it be String.class, Path.class, URL.class etc.
-     *                  It depends on specific implementation of this contract.
      * @return string representation of Easefile's content
      * */
-    String provide(T reference);
+    String provide();
 }
 
