@@ -5,4 +5,5 @@ include 'welcome-logo'
 include 'time-printer'
 include 'welcome-page'
 include 'domain'
+include 'git'
 

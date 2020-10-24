@@ -1,6 +1,7 @@
 package io.easeci.api.extension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.core.extension.DirectivesCollector;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
@@ -9,6 +10,7 @@ import io.easeci.core.registry.PluginUpdate;
 import io.easeci.core.registry.RegistryProxy;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
+import ratpack.exec.Promise;
 import ratpack.path.PathTokens;
 
 import java.util.List;
@@ -19,12 +21,15 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 public class ExtensionHandlers implements InternalHandlers {
     private final static String MAPPING = "plugin/";
     private ExtensionControllable controllable;
+    private DirectivesCollector directivesCollector;
     private PluginUpdate pluginUpdate;
     private PluginDetails pluginDetails;
     private ObjectMapper objectMapper;
 
     public ExtensionHandlers() throws PluginSystemCriticalException {
-        this.controllable = ExtensionSystem.getInstance();
+        ExtensionSystem extensionSystem = ExtensionSystem.getInstance();
+        this.controllable = extensionSystem;
+        this.directivesCollector = extensionSystem;
         final RegistryProxy registryProxy = new RegistryProxy();
         this.pluginUpdate = registryProxy;
         this.pluginDetails = registryProxy;
@@ -39,7 +44,8 @@ public class ExtensionHandlers implements InternalHandlers {
                 enableExtension(),
                 restartExtension(),
                 checkForUpdate(),
-                fetchDetails()
+                fetchDetails(),
+                fetchAllAvailableDirectives()
         );
     }
 
@@ -120,5 +126,16 @@ public class ExtensionHandlers implements InternalHandlers {
                             .map(pluginDetailsResponse -> this.objectMapper.writeValueAsBytes(pluginDetailsResponse))
                             .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes));
                 }).build();
+    }
+
+    // find all directives from all installed plugins in EaseCI system
+    private EndpointDeclaration fetchAllAvailableDirectives() {
+        return EndpointDeclaration.builder()
+                .httpMethod(GET)
+                .endpointUri(MAPPING + "directives")
+                .handler(ctx -> Promise.value(directivesCollector.collectAll())
+                        .map(directives -> this.objectMapper.writeValueAsBytes(directives))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
     }
 }

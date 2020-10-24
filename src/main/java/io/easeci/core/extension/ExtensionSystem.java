@@ -3,11 +3,13 @@ package io.easeci.core.extension;
 import io.easeci.api.extension.ActionRequest;
 import io.easeci.api.extension.ActionResponse;
 import io.easeci.extension.Standalone;
+import io.easeci.extension.command.Directive;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,7 +22,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ExtensionSystem implements ExtensionControllable {
+public class ExtensionSystem implements ExtensionControllable, DirectivesCollector {
     private final static String STANDALONE_INTERFACE = "io.easeci.extension.Standalone";
     private final static Class<Standalone> STANDALONE_CLASS = Standalone.class;
     private static ExtensionSystem extensionSystem;
@@ -95,5 +97,10 @@ public class ExtensionSystem implements ExtensionControllable {
     @Override
     public ActionResponse restart(ActionRequest actionRequest) {
         return ((ExtensionControllable) this.extensionsManager).restart(actionRequest);
+    }
+
+    @Override
+    public List<Directive> collectAll() {
+        return getAll("io.easeci.extension.command.Directive", Directive.class);
     }
 }

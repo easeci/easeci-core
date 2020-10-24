@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(staticName = "of")
 public class Command {
     private String commandName;
     private List<CommandParameter> commandParameterList;
