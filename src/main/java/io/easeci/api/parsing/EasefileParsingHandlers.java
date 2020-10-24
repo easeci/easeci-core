@@ -1,14 +1,12 @@
 package io.easeci.api.parsing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.easeci.api.easefile.DirectoryResponse;
 import io.easeci.core.engine.easefile.loader.EasefileLoaderFactory;
 import io.easeci.core.engine.easefile.parser.EasefileParser;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import ratpack.http.HttpMethod;
 
-import java.nio.file.Paths;
 import java.util.List;
 
 import static ratpack.http.MediaType.APPLICATION_JSON;

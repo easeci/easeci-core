@@ -3,10 +3,13 @@ package com.meksula;
 import io.easeci.extension.ExtensionType;
 import io.easeci.extension.Standalone;
 import io.easeci.extension.State;
+import io.easeci.extension.command.PluginDirective;
 import io.easeci.server.BaseExternalHandlers;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.EndpointExistsException;
 import ratpack.http.HttpMethod;
+
+import java.util.List;
 
 import static ratpack.http.MediaType.PLAIN_TEXT_UTF8;
 
@@ -51,6 +54,11 @@ public class WelcomePage implements Standalone {
 
     @Override
     public ExtensionType type() {
+        return null;
+    }
+
+    @Override
+    public List<PluginDirective> directivesExposed() {
         return null;
     }
 }
