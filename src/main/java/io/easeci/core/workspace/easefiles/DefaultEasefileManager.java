@@ -187,9 +187,4 @@ public class DefaultEasefileManager extends EasefileManager {
         }
         return Tuple.of(false, "Directory not exist or you has no access rights: " + path.toString());
     }
-
-    private boolean hasAccessRight(Path requestedPath) {
-        String easefilesStorageLocation = getEasefilesStorageLocationNoSlashAtEnd();
-        return requestedPath.toString().startsWith(easefilesStorageLocation) || requestedPath.toString().equals(easefilesStorageLocation);
-    }
 }

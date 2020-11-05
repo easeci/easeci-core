@@ -6,6 +6,7 @@ public class MainEasefileParser implements EasefileParser {
 
     @Override
     public EasefileParseResult parse(String easefileContent) throws StaticAnalyseException {
+        System.out.println(easefileContent);
         return null;
     }
 }

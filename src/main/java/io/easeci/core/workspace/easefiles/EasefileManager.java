@@ -9,6 +9,7 @@ import java.util.Spliterator;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
+import static io.easeci.core.workspace.LocationUtils.getEasefilesStorageLocationNoSlashAtEnd;
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 
 /**
@@ -63,5 +64,14 @@ public abstract class EasefileManager implements FileScanner, EasefileIO, Direct
             return Paths.get("/");
         }
         return Paths.get("/" + path.subpath(0, (int) pathParts - 1));
+    }
+
+    /**
+     * This function secures for operation on files out of workspace.
+     * If return 'false' operation must be forbidden.
+     * */
+    public static boolean hasAccessRight(Path requestedPath) {
+        String easefilesStorageLocation = getEasefilesStorageLocationNoSlashAtEnd();
+        return requestedPath.toString().startsWith(easefilesStorageLocation) || requestedPath.toString().equals(easefilesStorageLocation);
     }
 }
