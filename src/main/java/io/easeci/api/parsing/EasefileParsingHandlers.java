@@ -7,6 +7,7 @@ import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import ratpack.http.HttpMethod;
 
+import java.io.IOException;
 import java.util.List;
 
 import static ratpack.http.MediaType.APPLICATION_JSON;
@@ -43,7 +44,13 @@ public class EasefileParsingHandlers implements InternalHandlers {
     }
 
     private ParseProcessResponse errorMapping(Throwable throwable) {
-        return null;
+        if (throwable instanceof IOException) {
+            return ParseProcessResponse.withError("Cannot load Easefile from defined source");
+        }
+        if (throwable instanceof IllegalAccessException) {
+            return ParseProcessResponse.withError(throwable.getMessage());
+        }
+        return ParseProcessResponse.withError("Some unrecognized error occurred while trying to parse Easefile");
     }
 
     // Make only static analyse to check your Easefile's content
