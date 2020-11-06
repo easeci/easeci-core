@@ -16,7 +16,7 @@ class WorkspaceLoaderTest {
 
     @Test
     @DisplayName("Should correctly load Easefile to string without any exception")
-    void loadSuccessTest() throws IOException, IllegalAccessException {
+    void loadSuccessTest() throws IOException {
         Path path = buildPathFromResources("workspace/Easefile");
 
         WorkspaceLoader workspaceLoader = (WorkspaceLoader) WorkspaceLoader.of(path.toString());

@@ -20,6 +20,6 @@ public interface EasefileLoader {
      * @throws IllegalAccessException when there was attempt for read file out of workspace
      * @throws GitAPIException when some error occurred when trying to load Easefile from remote git repository
      * */
-    String provide() throws IOException, IllegalAccessException, GitAPIException;
+    String provide() throws IOException, IllegalAccessException, GitAPIException, EasefileContentMalformed;
 }
 
