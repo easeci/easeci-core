@@ -66,6 +66,10 @@ public class GitLoader implements EasefileLoader {
                 .filter(path -> Files.isRegularFile(path))
                 .filter(path -> path.toString().matches(EASEFILE_NAME_PATTERN))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Cannot find Easefile in this path: " + repositoryLocalPath.toString()));
+                .orElseThrow(() -> {
+                    CacheGarbageCollector cacheGarbageCollector = CacheManager.getInstance();
+                    cacheGarbageCollector.delayedCleanup(repositoryLocalPath);
+                    throw new IllegalStateException("Easefile not exists in repository");
+                });
     }
 }

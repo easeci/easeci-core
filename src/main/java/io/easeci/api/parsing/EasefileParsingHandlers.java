@@ -1,6 +1,7 @@
 package io.easeci.api.parsing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.core.engine.easefile.loader.EasefileContentMalformed;
 import io.easeci.core.engine.easefile.loader.EasefileLoaderFactory;
 import io.easeci.core.engine.easefile.parser.EasefileParser;
 import io.easeci.server.EndpointDeclaration;
@@ -53,6 +54,9 @@ public class EasefileParsingHandlers implements InternalHandlers {
         }
         if (throwable instanceof GitAPIException) {
             return ParseProcessResponse.withError("Error occurred while deal with remote git repository. Exception message: " + throwable.getMessage());
+        }
+        if (throwable instanceof EasefileContentMalformed) {
+            return ParseProcessResponse.withError(throwable.getMessage());
         }
         return ParseProcessResponse.withError("Some unrecognized error occurred while trying to parse Easefile");
     }
