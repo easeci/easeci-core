@@ -16,7 +16,7 @@ public class EasefileLoaderFactory {
             case EASEFILE:
                 return WorkspaceLoader.of(parseProcess.getLocalStoragePath());
             case GIT_REPOSITORY:
-                return WorkspaceLoader.of(parseProcess.getGitRepositoryUrl());
+                return GitLoader.of(parseProcess.getGitRepositoryUrl());
             default:
                 throw new IllegalArgumentException("Cannot infer EasefileLoader from source: " + parseProcess.getSource());
         }

@@ -17,6 +17,7 @@ public class LiveLoader implements EasefileLoader {
     @Override
     public String provide() throws IOException {
 //        1. Zapisz sobie backup tego pliku w jakimś katalogu /tmp
+//         -- można nawet nie usuwać, można sparametryzować
 //        2. Załaduj, odkoduj i zwróć treść
         return null;
     }

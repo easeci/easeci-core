@@ -5,6 +5,7 @@ import io.easeci.core.engine.easefile.loader.EasefileLoaderFactory;
 import io.easeci.core.engine.easefile.parser.EasefileParser;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import ratpack.http.HttpMethod;
 
 import java.io.IOException;
@@ -49,6 +50,9 @@ public class EasefileParsingHandlers implements InternalHandlers {
         }
         if (throwable instanceof IllegalAccessException) {
             return ParseProcessResponse.withError(throwable.getMessage());
+        }
+        if (throwable instanceof GitAPIException) {
+            return ParseProcessResponse.withError("Error occurred while deal with remote git repository. Exception message: " + throwable.getMessage());
         }
         return ParseProcessResponse.withError("Some unrecognized error occurred while trying to parse Easefile");
     }
