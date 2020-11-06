@@ -65,4 +65,9 @@ public class LocationUtils {
         return Paths.get(getWorkspaceLocation()
                 .concat("/plugins-config.json"));
     }
+
+    public static Path getCacheDirectoryLocation() {
+        return Paths.get(getWorkspaceLocation()
+                    .concat("/.cache"));
+    }
 }
