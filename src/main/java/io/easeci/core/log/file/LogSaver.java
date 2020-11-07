@@ -117,7 +117,7 @@ public abstract class LogSaver {
                 .concat(meta.getTitle())
                 .concat("\n~")
                 .concat(content)
-                .concat("\n\n")
+                .concat("\n")
                 .getBytes();
     }
 }

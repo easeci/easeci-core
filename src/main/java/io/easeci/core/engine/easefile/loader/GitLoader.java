@@ -13,6 +13,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.EASEFILE_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
+
 public class GitLoader implements EasefileLoader {
     private String gitRepositoryUrl;
 
@@ -28,6 +32,8 @@ public class GitLoader implements EasefileLoader {
 
         if (Files.exists(repositoryDestination.toPath())) {
             final Path easefile = findEasefile(repositoryDestination.toPath());
+            logit(EASEFILE_EVENT, "Loading content to parsing Easefile from git repository from remote: "
+                    + gitRepositoryUrl + ". That just exists in local workspace", THREE);
             return readFile(easefile.toFile());
         }
 
@@ -40,7 +46,8 @@ public class GitLoader implements EasefileLoader {
         final String easefileContent = readFile(easefile.toFile());
 
         CacheGarbageCollector cacheGarbageCollector = CacheManager.getInstance();
-        cacheGarbageCollector.delayedCleanup(repositoryDestination.toPath());
+        cacheGarbageCollector.cleanup(repositoryDestination.toPath());
+        logit(EASEFILE_EVENT, "Loading content to parsing Easefile from git repository from remote: " + gitRepositoryUrl, THREE);
         return easefileContent;
     }
 
@@ -68,7 +75,7 @@ public class GitLoader implements EasefileLoader {
                 .findFirst()
                 .orElseThrow(() -> {
                     CacheGarbageCollector cacheGarbageCollector = CacheManager.getInstance();
-                    cacheGarbageCollector.delayedCleanup(repositoryLocalPath);
+                    cacheGarbageCollector.cleanup(repositoryLocalPath);
                     throw new IllegalStateException("Easefile not exists in repository");
                 });
     }

@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.EASEFILE_EVENT;
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
+import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.easefiles.EasefileManager.hasAccessRight;
 
 public class WorkspaceLoader implements EasefileLoader {
@@ -25,6 +28,7 @@ public class WorkspaceLoader implements EasefileLoader {
             File file = path.toFile();
             return FileUtils.readFileToString(file, "UTF-8");
         }
+        logit(EASEFILE_EVENT, "Loading content to parsing Easefile from workspace from path: " + path, THREE);
         throw new IllegalAccessException("Cannot load file out of workspace. Access denied");
     }
 
