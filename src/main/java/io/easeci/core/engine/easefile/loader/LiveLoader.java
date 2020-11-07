@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Date;
 
+import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.EASEFILE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
@@ -66,10 +67,13 @@ public class LiveLoader implements EasefileLoader, Serializable {
             if (nonNull(this.localStoragePath)) {
                 Files.writeString(this.localStoragePath, decodedContent);
             }
+            logit(EASEFILE_EVENT, "Loading content to parsing Easefile live from request", THREE);
             return decodedContent;
         } catch (IllegalArgumentException exception) {
             exception.printStackTrace();
-            throw new EasefileContentMalformed("Content of Easefile to parse is malformed. Maybe not Base64 encoded?");
+            final String errorMessage = "Content of Easefile to parse is malformed. Maybe not Base64 encoded?";
+            logit(EASEFILE_EVENT, errorMessage, THREE);
+            throw new EasefileContentMalformed(errorMessage);
         }
     }
 }
