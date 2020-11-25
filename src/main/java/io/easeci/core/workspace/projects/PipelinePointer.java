@@ -4,14 +4,14 @@ import lombok.Data;
 
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 public class PipelinePointer {
     private Long id;
+    private Long projectId;
+    private UUID pipelineId;
     private Date createdDate;
-    // reloadingDate is setting when pipeline is recreating from changed Easefile
-    private Date reloadingDate;
-    private String easefileOfPipeline;
     private Path easefilePath;
     private Path pipelineFilePath;
     private String name;
