@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
@@ -17,8 +18,7 @@ import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.TWO;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getProjectsStructureFileLocation;
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
-import static io.easeci.core.workspace.projects.PipelineManagementException.PipelineManagementStatus.PIPELINE_ID_EXISTS;
-import static io.easeci.core.workspace.projects.PipelineManagementException.PipelineManagementStatus.PIPELINE_NAME_EXISTS;
+import static io.easeci.core.workspace.projects.PipelineManagementException.PipelineManagementStatus.*;
 import static io.easeci.core.workspace.projects.ProjectUtils.nextPipelinePointerId;
 import static io.easeci.core.workspace.projects.ProjectsFile.INITIAL_PROJECT_ID;
 import static java.util.Objects.isNull;
@@ -29,6 +29,7 @@ public class ProjectManager implements PipelinePointerIO {
     public final static String PROJECTS_FILE = PROJECTS_DIRECTORY + "projects-structure.json";
     private static ProjectManager projectManager;
     private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    // todo issue: multithreading can destroy this easily, two another thread could have got another content of file
     private static ProjectsFile projectsFile; // TODO this object must be synchronised in future in case [core #0018]
 
     private ProjectManager() {
@@ -143,12 +144,15 @@ public class ProjectManager implements PipelinePointerIO {
                            .flatMap(projectGroup -> projectGroup.getProjects().stream())
                            .filter(project -> project.getId().equals(projectId))
                            .findFirst()
-                           .orElseThrow(() -> new PipelineManagementException(PipelineManagementException.PipelineManagementStatus.PROJECT_NOT_EXISTS));
+                           .orElseThrow(() -> new PipelineManagementException(PROJECT_NOT_EXISTS));
     }
 
     @Override
-    public ProjectsFile deletePipelinePointer() {
-        return null;
+    public boolean deletePipelinePointer(Long projectId, Long pipelinePointerId) {
+        List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
+        PipelinePointer found = pipelinePointers.stream().filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
+                .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
+        return pipelinePointers.remove(found);
     }
 
     @Override
