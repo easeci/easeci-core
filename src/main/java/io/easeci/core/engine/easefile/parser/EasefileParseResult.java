@@ -18,4 +18,5 @@ public class EasefileParseResult {
         }
         this.errors.add(engineError);
     }
+
 }
