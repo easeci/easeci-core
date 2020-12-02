@@ -6,4 +6,8 @@ public class NodeUtils {
     public static String nodeName() {
         return "easeci-core-0001-master";
     }
+
+    public static String version() {
+        return "v0.1-dev";
+    }
 }

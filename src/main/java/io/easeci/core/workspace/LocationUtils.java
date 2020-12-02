@@ -70,4 +70,14 @@ public class LocationUtils {
         return Paths.get(getWorkspaceLocation()
                     .concat("/.cache"));
     }
+  
+    public static Path getProjectsDirectoryLocation() {
+        return Paths.get(getWorkspaceLocation()
+                    .concat("/projects"));
+    }
+
+    public static Path getProjectsStructureFileLocation() {
+        return Paths.get(getWorkspaceLocation()
+                    .concat("/projects/projects-structure.json"));
+    }
 }
