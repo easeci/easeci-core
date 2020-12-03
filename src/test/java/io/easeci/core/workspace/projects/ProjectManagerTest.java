@@ -41,10 +41,7 @@ class ProjectManagerTest {
 
         // find just saved pipeline
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        PipelinePointer justAddedPointer = projectsFile.getProjectGroups()
-                .get(0).getProjects()
-                .get(0).getPipelines()
-                .get(0);
+        PipelinePointer justAddedPointer = firstPipelinePointer(projectsFile);
 
         assertAll(() -> assertNotNull(pipelinePointerIO),
                   () -> assertNotNull(justAddedPointer),
@@ -73,10 +70,7 @@ class ProjectManagerTest {
 
         // find just saved pipeline
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        int pipelinesAmount = projectsFile.getProjectGroups()
-                .get(0).getProjects()
-                .get(0).getPipelines()
-                .size();
+        int pipelinesAmount = pipelinesAmount(projectsFile);
 
         assertAll(() -> assertTrue(isPipelinePointerCreated),
                   () -> assertEquals(1, pipelinesAmount));
@@ -97,10 +91,7 @@ class ProjectManagerTest {
 
         // find just saved pipeline
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        int pipelinesAmount = projectsFile.getProjectGroups()
-                .get(0).getProjects()
-                .get(0).getPipelines()
-                .size();
+        int pipelinesAmount = pipelinesAmount(projectsFile);
 
         assertAll(() -> assertTrue(isPipelinePointerCreated),
                   () -> assertEquals(1, pipelinesAmount));
@@ -174,6 +165,59 @@ class ProjectManagerTest {
                 .get(0).getProjects()
                 .get(0).getPipelines()
                 .size();
+    }
+
+    private PipelinePointer firstPipelinePointer(ProjectsFile projectsFile) {
+        return projectsFile.getProjectGroups()
+                .get(0).getProjects()
+                .get(0).getPipelines()
+                .get(0);
+    }
+
+    @Test
+    @DisplayName("Should correctly rename pipeline pointer when one just exists")
+    void renamePipelinePointerSuccessTest() {
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertTrue(isPipelinePointerCreated);
+
+        final String oldPipelineName = pipelineMeta.getName();
+        final String newPipelineName = "New pipeline name";
+        final Long pipelinePointerId = 0L;
+        final Long projectId = 0L;
+
+        boolean isRenamed = pipelinePointerIO.renamePipelinePointer(projectId, pipelinePointerId, newPipelineName);
+
+        PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
+
+        assertAll(() -> assertTrue(isRenamed),
+                () -> assertEquals(newPipelineName, pipelinePointerChanged.getName()),
+                () -> assertNotEquals(oldPipelineName, pipelinePointerChanged.getName()));
+    }
+
+    @Test
+    @DisplayName("Should correctly rename tag of pipeline pointer when one just exists")
+    void renameTagOfPipelinePointerSuccessTest() {
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertTrue(isPipelinePointerCreated);
+
+        final String oldTagName = pipelineMeta.getTag();
+        final String newTagName = "Tag v2.0";
+        final Long pipelinePointerId = 0L;
+        final Long projectId = 0L;
+
+        boolean isTagChanged = pipelinePointerIO.changeTag(projectId, pipelinePointerId, newTagName);
+
+        PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
+
+        assertAll(() -> assertTrue(isTagChanged),
+                () -> assertEquals(newTagName, pipelinePointerChanged.getTag()),
+                () -> assertNotEquals(oldTagName, pipelinePointerChanged.getTag()));
     }
 
     @AfterAll

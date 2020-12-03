@@ -36,9 +36,26 @@ public interface PipelinePointerIO {
      * */
     boolean deletePipelinePointer(Long projectId, Long pipelinePointerId) throws PipelineManagementException;
 
-    ProjectsFile renamePipelinePointer();
+    /**
+     * Rename PipelinePointer just existing in projects-structure.json
+     * @param projectId is numeric project's id
+     * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
+     * @param pipelinePointerName is new name of pipeline pointer
+     * @return boolean value. If it is true - pipeline was renamed correctly.
+     * */
+    boolean renamePipelinePointer(Long projectId, Long pipelinePointerId, String pipelinePointerName);
 
-    ProjectsFile changeTag();
+    /**
+     * Rename PipelinePointer's tag just existing in projects-structure.json
+     * @param projectId is numeric project's id
+     * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
+     * @param tagName is new tag of pipeline pointer
+     * @return boolean value. If it is true - pipeline was renamed correctly.
+     * @throws PipelineManagementException that inform us about validation result etc.
+     *                                     In exception we have error code included, so
+     *                                     we know what was wrong in the method flow and why pipeline's tag was not renamed
+     * */
+    boolean changeTag(Long projectId, Long pipelinePointerId, String tagName);
 
     ProjectsFile changeDescription();
 }

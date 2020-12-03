@@ -150,19 +150,40 @@ public class ProjectManager implements PipelinePointerIO {
     @Override
     public boolean deletePipelinePointer(Long projectId, Long pipelinePointerId) {
         List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
-        PipelinePointer found = pipelinePointers.stream().filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
+        PipelinePointer found = pipelinePointers.stream()
+                .filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
                 .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
-        return pipelinePointers.remove(found);
+        boolean isRemoved = pipelinePointers.remove(found);
+        if (isRemoved) {
+            logit(WORKSPACE_EVENT, "Pipeline Pointer with id: " + pipelinePointerId + " was successfully removed");
+        }
+        return isRemoved;
     }
 
     @Override
-    public ProjectsFile renamePipelinePointer() {
-        return null;
+    public boolean renamePipelinePointer(Long projectId, Long pipelinePointerId, String pipelinePointerName) {
+        List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
+        PipelinePointer found = pipelinePointers.stream()
+                .filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
+                .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
+        logit(WORKSPACE_EVENT, "Changing name of pipeline with id: "
+                + pipelinePointerId + ", old: " + found.getName() + ", new: " + pipelinePointerName);
+        found.setName(pipelinePointerName);
+        save();
+        return true;
     }
 
     @Override
-    public ProjectsFile changeTag() {
-        return null;
+    public boolean changeTag(Long projectId, Long pipelinePointerId, String tagName) {
+        List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
+        PipelinePointer found = pipelinePointers.stream()
+                .filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
+                .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
+        logit(WORKSPACE_EVENT, "Changing tag of pipeline with id: "
+                + pipelinePointerId + ", old: " + found.getTag() + ", new: " + tagName);
+        found.setTag(tagName);
+        save();
+        return true;
     }
 
     @Override
