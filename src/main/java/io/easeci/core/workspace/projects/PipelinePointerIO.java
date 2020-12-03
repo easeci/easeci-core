@@ -50,12 +50,22 @@ public interface PipelinePointerIO {
      * @param projectId is numeric project's id
      * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
      * @param tagName is new tag of pipeline pointer
-     * @return boolean value. If it is true - pipeline was renamed correctly.
+     * @return boolean value. If it is true - pipeline's tag was changed correctly.
      * @throws PipelineManagementException that inform us about validation result etc.
      *                                     In exception we have error code included, so
-     *                                     we know what was wrong in the method flow and why pipeline's tag was not renamed
+     *                                     we know what was wrong in the method flow and why pipeline's tag was not changed
      * */
     boolean changeTag(Long projectId, Long pipelinePointerId, String tagName);
 
-    ProjectsFile changeDescription();
+    /**
+     * Change PipelinePointer's description just existing in projects-structure.json
+     * @param projectId is numeric project's id
+     * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
+     * @param description is new description of pipeline pointer
+     * @return boolean value. If it is true - pipeline's description was renamed correctly.
+     * @throws PipelineManagementException that inform us about validation result etc.
+     *                                     In exception we have error code included, so
+     *                                     we know what was wrong in the method flow and why pipeline's description was not changed
+     * */
+    boolean changeDescription(Long projectId, Long pipelinePointerId, String description);
 }

@@ -16,4 +16,5 @@ public class PipelinePointer {
     private Path pipelineFilePath;
     private String name;
     private String tag;
+    private String description;
 }

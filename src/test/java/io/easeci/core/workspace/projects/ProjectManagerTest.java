@@ -220,6 +220,29 @@ class ProjectManagerTest {
                 () -> assertNotEquals(oldTagName, pipelinePointerChanged.getTag()));
     }
 
+    @Test
+    @DisplayName("Should correctly change description of pipeline pointer when one just exists")
+    void changeDescriptionOfPipelinePointerSuccessTest() {
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertTrue(isPipelinePointerCreated);
+
+        final String oldDescription = pipelineMeta.getDescription();
+        final String newDescription = "This is new description of this pipeline.";
+        final Long pipelinePointerId = 0L;
+        final Long projectId = 0L;
+
+        boolean isDescriptionChanged = pipelinePointerIO.changeTag(projectId, pipelinePointerId, newDescription);
+
+        PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
+
+        assertAll(() -> assertTrue(isDescriptionChanged),
+                () -> assertEquals(newDescription, pipelinePointerChanged.getTag()),
+                () -> assertNotEquals(oldDescription, pipelinePointerChanged.getTag()));
+    }
+
     @AfterAll
     static void cleanup() throws IOException {
         Files.deleteIfExists(getProjectsStructureFileLocation());
