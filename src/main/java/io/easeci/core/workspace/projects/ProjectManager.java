@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
@@ -111,6 +112,7 @@ public class ProjectManager implements PipelinePointerIO {
         pointer.setEasefilePath(pipelineMeta.getEasefilePath());
         pointer.setName(pipelineMeta.getName());
         pointer.setTag(pipelineMeta.getTag());
+        pointer.setDescription(pipelineMeta.getDescription());
 
         boolean isJoined = projectsFile.join(pointer);
         if (isJoined) {
@@ -162,33 +164,42 @@ public class ProjectManager implements PipelinePointerIO {
 
     @Override
     public boolean renamePipelinePointer(Long projectId, Long pipelinePointerId, String pipelinePointerName) {
-        List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
-        PipelinePointer found = pipelinePointers.stream()
-                .filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
-                .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
-        logit(WORKSPACE_EVENT, "Changing name of pipeline with id: "
-                + pipelinePointerId + ", old: " + found.getName() + ", new: " + pipelinePointerName);
-        found.setName(pipelinePointerName);
-        save();
-        return true;
+        return changeField(projectId, pipelinePointerId,
+                pipelinePointer -> {
+                    pipelinePointer.setName(pipelinePointerName);
+                    logit(WORKSPACE_EVENT, "Changing name of pipeline with id: "
+                            + pipelinePointerId + ", old: " + pipelinePointer.getName() + ", new: " + pipelinePointerName);
+                });
     }
 
     @Override
     public boolean changeTag(Long projectId, Long pipelinePointerId, String tagName) {
+        return changeField(projectId, pipelinePointerId,
+                pipelinePointer -> {
+                    pipelinePointer.setTag(tagName);
+                    logit(WORKSPACE_EVENT, "Changing tag of pipeline with id: "
+                            + pipelinePointerId + ", old: " + pipelinePointer.getTag() + ", new: " + tagName);
+                });
+    }
+
+    @Override
+    public boolean changeDescription(Long projectId, Long pipelinePointerId, String description) {
+        return changeField(projectId, pipelinePointerId,
+                pipelinePointer -> {
+                    pipelinePointer.setDescription(description);
+                    logit(WORKSPACE_EVENT, "Changing description of pipeline with id: "
+                            + pipelinePointerId + ", old: " + pipelinePointer.getDescription() + ", new: " + description);
+                });
+    }
+
+    private boolean changeField(Long projectId, Long pipelinePointerId, Consumer<PipelinePointer> fieldSetConsumer) {
         List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
         PipelinePointer found = pipelinePointers.stream()
                 .filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
                 .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
-        logit(WORKSPACE_EVENT, "Changing tag of pipeline with id: "
-                + pipelinePointerId + ", old: " + found.getTag() + ", new: " + tagName);
-        found.setTag(tagName);
+        fieldSetConsumer.accept(found);
         save();
         return true;
-    }
-
-    @Override
-    public ProjectsFile changeDescription() {
-        return null;
     }
 
     private ProjectsFile save() {

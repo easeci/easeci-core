@@ -31,6 +31,7 @@ public class Pipeline {
         private String name;
         private Path pipelineFilePath;
         private String tag;
+        private String description;
     }
 
     // here all elements of Easefile specification like variables, directives, etc.
