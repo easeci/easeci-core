@@ -55,7 +55,7 @@ public interface PipelinePointerIO {
      *                                     In exception we have error code included, so
      *                                     we know what was wrong in the method flow and why pipeline's tag was not changed
      * */
-    boolean changeTag(Long projectId, Long pipelinePointerId, String tagName);
+    boolean changePipelinePointerTag(Long projectId, Long pipelinePointerId, String tagName);
 
     /**
      * Change PipelinePointer's description just existing in projects-structure.json
@@ -67,5 +67,5 @@ public interface PipelinePointerIO {
      *                                     In exception we have error code included, so
      *                                     we know what was wrong in the method flow and why pipeline's description was not changed
      * */
-    boolean changeDescription(Long projectId, Long pipelinePointerId, String description);
+    boolean changePipelinePointerDescription(Long projectId, Long pipelinePointerId, String description);
 }

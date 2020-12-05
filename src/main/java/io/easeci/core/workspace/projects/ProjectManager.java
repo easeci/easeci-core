@@ -4,11 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.DirUtils;
 import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.workspace.projects.dto.AddProjectRequest;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -21,11 +24,13 @@ import static io.easeci.core.workspace.LocationUtils.getProjectsStructureFileLoc
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 import static io.easeci.core.workspace.projects.PipelineManagementException.PipelineManagementStatus.*;
 import static io.easeci.core.workspace.projects.ProjectUtils.nextPipelinePointerId;
-import static io.easeci.core.workspace.projects.ProjectsFile.INITIAL_PROJECT_ID;
+import static io.easeci.core.workspace.projects.ProjectUtils.nextProjectId;
+import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectId;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
-public class ProjectManager implements PipelinePointerIO {
+public class ProjectManager implements PipelinePointerIO, ProjectIO {
     public final static String PROJECTS_DIRECTORY = "/projects/";
     public final static String PROJECTS_FILE = PROJECTS_DIRECTORY + "projects-structure.json";
     private static ProjectManager projectManager;
@@ -77,7 +82,7 @@ public class ProjectManager implements PipelinePointerIO {
             Files.writeString(projectsStructureFile, projectsFileAsString);
         } catch (IOException e) {
             e.printStackTrace();
-            logit(WORKSPACE_EVENT, "Exception was thrown when trying to create file: " + PROJECTS_FILE);
+            logit(WORKSPACE_EVENT, "Exception was thrown when trying to create file: '" + PROJECTS_FILE + "'");
             return projectsStructureFile;
         }
         return projectsStructureFile;
@@ -89,7 +94,7 @@ public class ProjectManager implements PipelinePointerIO {
                 projectsFile = load();
             } catch (IOException e) {
                 e.printStackTrace();
-                logit(WORKSPACE_EVENT, "Critical error, cannot loaded file: " + PROJECTS_FILE + "\nException: " + e.toString(), TWO);
+                logit(WORKSPACE_EVENT, "Critical error, cannot loaded file: '" + PROJECTS_FILE + "'\nException: " + e.toString(), TWO);
             }
         }
         return projectsFile;
@@ -105,7 +110,7 @@ public class ProjectManager implements PipelinePointerIO {
         validate(pipelineMeta);
         PipelinePointer pointer = new PipelinePointer();
         pointer.setId(nextPipelinePointerId(projectsFile));
-        pointer.setProjectId(ofNullable(pipelineMeta.getProjectId()).orElse(INITIAL_PROJECT_ID));
+        pointer.setProjectId(ofNullable(pipelineMeta.getProjectId()).orElse(defaultProjectId()));
         pointer.setPipelineId(pipelineMeta.getPipelineId());
         pointer.setPipelineFilePath(pipelineMeta.getPipelineFilePath());
         pointer.setCreatedDate(pipelineMeta.getCreatedDate());
@@ -116,10 +121,10 @@ public class ProjectManager implements PipelinePointerIO {
 
         boolean isJoined = projectsFile.join(pointer);
         if (isJoined) {
-            logit(WORKSPACE_EVENT, "Pipeline called: " + pipelineMeta.getName() + " added to project with id: " + pipelineMeta.getProjectId(), THREE);
+            logit(WORKSPACE_EVENT, "Pipeline called: '" + pipelineMeta.getName() + "' added to project with id: '" + pipelineMeta.getProjectId() + "'", THREE);
             save();
         } else {
-            logit(WORKSPACE_EVENT, "Critical error, seems like project with id: " + pipelineMeta.getProjectId() + " not exists ?", THREE);
+            logit(WORKSPACE_EVENT, "Critical error, seems like project with id: '" + pipelineMeta.getProjectId() + "' not exists ?", THREE);
         }
         return isJoined;
     }
@@ -157,7 +162,7 @@ public class ProjectManager implements PipelinePointerIO {
                 .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
         boolean isRemoved = pipelinePointers.remove(found);
         if (isRemoved) {
-            logit(WORKSPACE_EVENT, "Pipeline Pointer with id: " + pipelinePointerId + " was successfully removed");
+            logit(WORKSPACE_EVENT, "Pipeline Pointer with id: '" + pipelinePointerId + "' was successfully removed");
         }
         return isRemoved;
     }
@@ -167,28 +172,28 @@ public class ProjectManager implements PipelinePointerIO {
         return changeField(projectId, pipelinePointerId,
                 pipelinePointer -> {
                     pipelinePointer.setName(pipelinePointerName);
-                    logit(WORKSPACE_EVENT, "Changing name of pipeline with id: "
-                            + pipelinePointerId + ", old: " + pipelinePointer.getName() + ", new: " + pipelinePointerName);
+                    logit(WORKSPACE_EVENT, "Changing name of pipeline with id: '"
+                            + pipelinePointerId + "', old: '" + pipelinePointer.getName() + "', new: '" + pipelinePointerName + "'");
                 });
     }
 
     @Override
-    public boolean changeTag(Long projectId, Long pipelinePointerId, String tagName) {
+    public boolean changePipelinePointerTag(Long projectId, Long pipelinePointerId, String tagName) {
         return changeField(projectId, pipelinePointerId,
                 pipelinePointer -> {
                     pipelinePointer.setTag(tagName);
-                    logit(WORKSPACE_EVENT, "Changing tag of pipeline with id: "
-                            + pipelinePointerId + ", old: " + pipelinePointer.getTag() + ", new: " + tagName);
+                    logit(WORKSPACE_EVENT, "Changing tag of pipeline with id: '"
+                            + pipelinePointerId + "', old: '" + pipelinePointer.getTag() + "', new: '" + tagName + "'");
                 });
     }
 
     @Override
-    public boolean changeDescription(Long projectId, Long pipelinePointerId, String description) {
+    public boolean changePipelinePointerDescription(Long projectId, Long pipelinePointerId, String description) {
         return changeField(projectId, pipelinePointerId,
                 pipelinePointer -> {
                     pipelinePointer.setDescription(description);
-                    logit(WORKSPACE_EVENT, "Changing description of pipeline with id: "
-                            + pipelinePointerId + ", old: " + pipelinePointer.getDescription() + ", new: " + description);
+                    logit(WORKSPACE_EVENT, "Changing description of pipeline with id: '"
+                            + pipelinePointerId + "', old: '" + pipelinePointer.getDescription() + "', new: '" + description + "'");
                 });
     }
 
@@ -215,6 +220,102 @@ public class ProjectManager implements PipelinePointerIO {
             e.printStackTrace();
         }
         return ProjectManager.projectsFile;
+    }
+
+    @Override
+    public boolean createNewProject(AddProjectRequest request) {
+        Project project = Project.builder()
+                .id(nextProjectId(projectsFile))
+                .cratedDate(new Date())
+                .name(request.getName())
+                .tag(request.getTag())
+                .description(request.getDescription())
+                .pipelines(new ArrayList<>(0))
+                .build();
+
+        ProjectGroup projectGroup = assignProjectGroup(request);
+        validateProject(projectGroup, project);
+        boolean isAdded = projectGroup.getProjects().add(project);
+        if (isAdded) {
+            logit(WORKSPACE_EVENT, "New project named: '" +
+                    project.getName() + "', with id: '" + project.getId() + "', assigned to projectGroup: '" + projectGroup.getId() + "'");
+            save();
+        }
+        return isAdded;
+    }
+
+    private ProjectGroup assignProjectGroup(AddProjectRequest request) {
+        if (nonNull(request.getProjectGroupId())) {
+            return findProjectGroup(request.getProjectGroupId());
+        } else {
+            Long otherProjectGroupId = ProjectsFile.defaultProjectGroupId();
+            return findProjectGroup(otherProjectGroupId);
+        }
+    }
+
+    private ProjectGroup findProjectGroup(Long projectGroupId) {
+        return projectsFile.getProjectGroups().stream()
+                .filter(projectGroup -> projectGroup.getId().equals(projectGroupId))
+                .findFirst()
+                .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
+    }
+
+    private void validateProject(ProjectGroup group, Project project) {
+        boolean isProjectNameExists = group.getProjects().stream().anyMatch(found -> found.getName().equals(project.getName()));
+        boolean isProjectIdExists = group.getProjects().stream().anyMatch(found -> found.getId().equals(project.getId()));
+        if (isProjectNameExists) {
+            logit(WORKSPACE_EVENT, "Could not create new project because one named: '" + project.getName() + "' just exists", THREE);
+            throw new PipelineManagementException(PROJECT_NAME_EXISTS);
+        }
+        if (isProjectIdExists) {
+            logit(WORKSPACE_EVENT, "Could not create new project because one with id: '" + project.getId() + "' just exists", THREE);
+            throw new PipelineManagementException(PROJECT_ID_EXISTS);
+        }
+    }
+
+    @Override
+    public boolean deleteProject(Long projectGroupId, Long projectId, boolean isHardRemoval) {
+        // check if user not trying default secured project
+        if (projectId.equals(defaultProjectId())) {
+            logit(WORKSPACE_EVENT, "Cannot remove secured project");
+            return false;
+        }
+        boolean isRemoved;
+        ProjectGroup projectGroup = findProjectGroup(projectGroupId);
+        Project projectToRemoval = projectGroup.getProjects().stream()
+                                               .filter(project -> project.getId().equals(projectId))
+                                               .findFirst()
+                                               .orElseThrow(() -> new PipelineManagementException(PROJECT_NOT_EXISTS));
+        if (!isHardRemoval) {
+            Project defaultProject = projectGroup.getProjects().stream()
+                    .filter(project -> project.getId().equals(defaultProjectId()))
+                    .findFirst()
+                    .orElseThrow(() -> new PipelineManagementException(PROJECT_NOT_EXISTS));
+            movePipelinePointers(projectToRemoval.getPipelines(), defaultProject);
+        }
+        isRemoved = projectGroup.getProjects().remove(projectToRemoval);
+        save();
+        return isRemoved;
+    }
+
+    private void movePipelinePointers(List<PipelinePointer> pipelinePointers, Project targetProject) {
+        pipelinePointers.forEach(pipelinePointer -> pipelinePointer.setProjectId(targetProject.getId()));
+        targetProject.getPipelines().addAll(pipelinePointers);
+    }
+
+    @Override
+    public boolean renameProject() {
+        return false;
+    }
+
+    @Override
+    public boolean changeProjectTag() {
+        return false;
+    }
+
+    @Override
+    public boolean changeProjectDescription() {
+        return false;
     }
 
     static void refreshFileContext() {

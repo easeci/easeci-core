@@ -3,6 +3,7 @@ package io.easeci.core.workspace.projects;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -15,7 +16,7 @@ class ProjectsFile implements Serializable {
 
     public static ProjectsFile empty() {
         ProjectsFile projectsFile = new ProjectsFile();
-        projectsFile.setProjectGroups(Collections.emptyList());
+        projectsFile.setProjectGroups(new ArrayList<>(0));
         return projectsFile;
     }
 
@@ -31,7 +32,7 @@ class ProjectsFile implements Serializable {
                                             .id(INITIAL_PROJECT_ID)
                                             .cratedDate(new Date())
                                             .name("other")
-                                            .pipelines(Collections.emptyList())
+                                            .pipelines(new ArrayList<>(0))
                                             .build()))
                                     .description("Unassigned projects")
                                     .build()
@@ -47,5 +48,13 @@ class ProjectsFile implements Serializable {
                 .map(project -> project.getPipelines().add(pointer))
                 .findFirst()
                 .orElse(false);
+    }
+
+    public static Long defaultProjectGroupId() {
+        return INITIAL_PROJECT_ID;
+    }
+
+    public static Long defaultProjectId() {
+        return INITIAL_PROJECT_ID;
     }
 }
