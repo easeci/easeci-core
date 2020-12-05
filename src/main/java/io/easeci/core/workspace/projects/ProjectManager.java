@@ -304,18 +304,24 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO {
     }
 
     @Override
-    public boolean renameProject() {
-        return false;
+    public boolean renameProject(Long projectId, String projectName) {
+        findProject(projectId).setName(projectName);
+        save();
+        return true;
     }
 
     @Override
-    public boolean changeProjectTag() {
-        return false;
+    public boolean changeProjectTag(Long projectId, String projectTag) {
+        findProject(projectId).setTag(projectTag);
+        save();
+        return true;
     }
 
     @Override
-    public boolean changeProjectDescription() {
-        return false;
+    public boolean changeProjectDescription(Long projectId, String projectDescription) {
+        findProject(projectId).setDescription(projectDescription);
+        save();
+        return true;
     }
 
     static void refreshFileContext() {
