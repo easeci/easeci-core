@@ -404,6 +404,75 @@ class ProjectManagerTest {
         assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size());
     }
 
+    @Test
+    @DisplayName("Should correctly rename project")
+    void renameProjectSuccessTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        Long defaultProjectGroupId = defaultProjectGroupId();
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
+        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+
+        assertAll(() -> assertNotNull(projectIO),
+                () -> assertNotNull(projectsFile),
+                () -> assertTrue(isProjectAdded));
+
+        Project justAddedProject = firstAddedProject(projectsFile);
+        final String projectNewName = "Updated project name";
+
+        boolean isRenamed = projectIO.renameProject(justAddedProject.getId(), projectNewName);
+
+        assertAll(() -> assertTrue(isRenamed),
+                () -> assertEquals(projectNewName, justAddedProject.getName()));
+    }
+
+    @Test
+    @DisplayName("Should correctly change tag of project")
+    void changeProjectTagSuccessTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        Long defaultProjectGroupId = defaultProjectGroupId();
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
+        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+
+        assertAll(() -> assertNotNull(projectIO),
+                () -> assertNotNull(projectsFile),
+                () -> assertTrue(isProjectAdded));
+
+        Project justAddedProject = firstAddedProject(projectsFile);
+        final String projectNewTag = "Production mode";
+
+        boolean isRenamed = projectIO.changeProjectTag(justAddedProject.getId(), projectNewTag);
+
+        assertAll(() -> assertTrue(isRenamed),
+                () -> assertEquals(projectNewTag, justAddedProject.getTag()));
+    }
+
+    @Test
+    @DisplayName("Should correctly change description of project")
+    void changeProjectDescriptionSuccessTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        Long defaultProjectGroupId = defaultProjectGroupId();
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
+        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+
+        assertAll(() -> assertNotNull(projectIO),
+                () -> assertNotNull(projectsFile),
+                () -> assertTrue(isProjectAdded));
+
+        Project justAddedProject = firstAddedProject(projectsFile);
+        final String projectNewDescription = "Production mode description";
+
+        boolean isRenamed = projectIO.changeProjectDescription(justAddedProject.getId(), projectNewDescription);
+
+        assertAll(() -> assertTrue(isRenamed),
+                () -> assertEquals(projectNewDescription, justAddedProject.getDescription()));
+    }
+
     private int pipelinesAmount(ProjectsFile projectsFile) {
         return projectsFile.getProjectGroups()
                 .get(0).getProjects()
