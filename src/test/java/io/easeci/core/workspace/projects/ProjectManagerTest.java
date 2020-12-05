@@ -3,13 +3,18 @@ package io.easeci.core.workspace.projects;
 import io.easeci.core.bootstrap.BootstrapperFactory;
 import io.easeci.core.engine.pipeline.Pipeline;
 import io.easeci.core.extension.PluginSystemCriticalException;
+import io.easeci.core.workspace.projects.dto.AddProjectRequest;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static io.easeci.core.workspace.LocationUtils.getProjectsStructureFileLocation;
+import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectGroupId;
+import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectId;
+import static io.easeci.core.workspace.projects.Utils.prepareAddProjectRequest;
 import static io.easeci.core.workspace.projects.Utils.preparePipelineMetadata;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -160,20 +165,6 @@ class ProjectManagerTest {
                 });
     }
 
-    private int pipelinesAmount(ProjectsFile projectsFile) {
-        return projectsFile.getProjectGroups()
-                .get(0).getProjects()
-                .get(0).getPipelines()
-                .size();
-    }
-
-    private PipelinePointer firstPipelinePointer(ProjectsFile projectsFile) {
-        return projectsFile.getProjectGroups()
-                .get(0).getProjects()
-                .get(0).getPipelines()
-                .get(0);
-    }
-
     @Test
     @DisplayName("Should correctly rename pipeline pointer when one just exists")
     void renamePipelinePointerSuccessTest() {
@@ -211,7 +202,7 @@ class ProjectManagerTest {
         final Long pipelinePointerId = 0L;
         final Long projectId = 0L;
 
-        boolean isTagChanged = pipelinePointerIO.changeTag(projectId, pipelinePointerId, newTagName);
+        boolean isTagChanged = pipelinePointerIO.changePipelinePointerTag(projectId, pipelinePointerId, newTagName);
 
         PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
 
@@ -234,13 +225,204 @@ class ProjectManagerTest {
         final Long pipelinePointerId = 0L;
         final Long projectId = 0L;
 
-        boolean isDescriptionChanged = pipelinePointerIO.changeTag(projectId, pipelinePointerId, newDescription);
+        boolean isDescriptionChanged = pipelinePointerIO.changePipelinePointerDescription(projectId, pipelinePointerId, newDescription);
 
         PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
 
         assertAll(() -> assertTrue(isDescriptionChanged),
-                () -> assertEquals(newDescription, pipelinePointerChanged.getTag()),
-                () -> assertNotEquals(oldDescription, pipelinePointerChanged.getTag()));
+                () -> assertEquals(newDescription, pipelinePointerChanged.getDescription()),
+                () -> assertNotEquals(oldDescription, pipelinePointerChanged.getDescription()));
+    }
+
+    @Test
+    @DisplayName("Should correctly add new project and assign this one to 'other' - default project group")
+    void createProjectSuccessTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        Long defaultProjectGroupId = defaultProjectGroupId();
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
+        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+
+        assertAll(() -> assertNotNull(projectIO),
+                () -> assertNotNull(projectsFile),
+                () -> assertTrue(isProjectAdded));
+
+        Project justAddedProject = firstAddedProject(projectsFile);
+
+        assertAll(() -> assertEquals(1, justAddedProject.getId()),
+                () -> assertNotNull(justAddedProject.getCratedDate()),
+                () -> assertNull(justAddedProject.getLastModifiedDate()),
+                () -> assertEquals(addProjectRequest.getName(), justAddedProject.getName()),
+                () -> assertEquals(addProjectRequest.getTag(), justAddedProject.getTag()),
+                () -> assertEquals(addProjectRequest.getDescription(), justAddedProject.getDescription()),
+                () -> assertEquals(0, justAddedProject.getPipelines().size())
+        );
+    }
+
+    @Test
+    @DisplayName("Should not add new project because one with such name just exists")
+    void createProjectNameExistsTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        ProjectGroup projectGroup = new ProjectGroup();
+        projectGroup.setId(1L);
+        projectGroup.setName("Some Project group");
+        projectGroup.setProjects(new ArrayList<>(1));
+        projectsFile.getProjectGroups().add(projectGroup);
+
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(projectGroup.getId());
+
+        // first adding
+        projectIO.createNewProject(addProjectRequest);
+
+        // second adding
+        assertThrows(PipelineManagementException.class, () -> projectIO.createNewProject(addProjectRequest));
+    }
+
+    @Test
+    @DisplayName("Should not add new project because project group not exists")
+    void createProjectNotExistsTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        Long notExistingProjectGroup = 140L;
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(notExistingProjectGroup);
+
+        assertThrows(PipelineManagementException.class, () -> projectIO.createNewProject(addProjectRequest));
+    }
+
+    @Test
+    @DisplayName("Should correctly softly remove project if one exists")
+    void softRemoveProjectSuccessTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        Long defaultProjectGroupId = defaultProjectGroupId();
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
+        projectIO.createNewProject(addProjectRequest);
+
+        Project projectToRemove = firstAddedProject(projectsFile);
+        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        pipelineMeta.setProjectId(projectToRemove.getId());
+        pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+
+        // In soft removal this pipeline must not be deleted!
+        // This pipelinePointer must be moved to 'other' named project with id: 0
+        PipelinePointer pipelinePointer = projectToRemove.getPipelines().get(0);
+
+        assertAll(
+                // 2 project should be in projectGroup at index = 0
+                () -> assertEquals(2, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                // First default project should has any pipelinePointers
+                () -> assertEquals(0, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()),
+                // Second project should has one just added pipelinePointer
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().get(1).getPipelines().size())
+        );
+
+        boolean isRemoved = projectIO.deleteProject(defaultProjectGroupId, projectToRemove.getId(), false);
+
+        assertAll(
+                () -> assertTrue(isRemoved),
+                // 1 project should be in projectGroup at index = 0, it was 2 project and 1 was removed
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                // First default project had 0 pipelinePointer but now has 1,
+                // because it was moved from softly deleted project
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()),
+                // Second project now not exists because it was removed
+                () -> assertThrows(IndexOutOfBoundsException.class, () -> projectsFile.getProjectGroups().get(0).getProjects().get(1).getPipelines()),
+                () -> assertEquals(pipelinePointer.getPipelineId(), projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().get(0).getPipelineId())
+        );
+    }
+
+    @Test
+    @DisplayName("Should correctly hard(cascade: project with pipelinePointer) remove project if one exists")
+    void hardRemoveProjectSuccessTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        Long defaultProjectGroupId = defaultProjectGroupId();
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
+        projectIO.createNewProject(addProjectRequest);
+
+        Project projectToRemove = firstAddedProject(projectsFile);
+        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        pipelineMeta.setProjectId(projectToRemove.getId());
+        pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+
+        // In soft removal this pipeline must not be deleted!
+        // This pipelinePointer must be moved to 'other' named project with id: 0
+        PipelinePointer pipelinePointer = projectToRemove.getPipelines().get(0);
+
+        assertAll(
+                // 2 project should be in projectGroup at index = 0
+                () -> assertEquals(2, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                // First default project should has any pipelinePointers
+                () -> assertEquals(0, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()),
+                // Second project should has one just added pipelinePointer
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().get(1).getPipelines().size())
+        );
+
+        boolean isRemoved = projectIO.deleteProject(defaultProjectGroupId, projectToRemove.getId(), true);
+
+        assertAll(
+                () -> assertTrue(isRemoved),
+                // 1 project should be in projectGroup at index = 0, it was 2 project and 1 was removed
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                // First default project had 0 pipelinePointer and now has 0 too (hard/cascade removal),
+                () -> assertEquals(0, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()),
+                // Second project now not exists because it was removed
+                () -> assertThrows(IndexOutOfBoundsException.class, () -> projectsFile.getProjectGroups().get(0).getProjects().get(1).getPipelines())
+        );
+    }
+
+    @Test
+    @DisplayName("Should not remove project when one not exists")
+    void removeProjectNotExistsTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        final Long notExistingProjectId = 140L;
+
+        assertThrows(PipelineManagementException.class, () -> projectIO.deleteProject(defaultProjectGroupId(), notExistingProjectId, true));
+    }
+
+    @Test
+    @DisplayName("Should cannot remove DEFAULT project")
+    void removeProjectDeniedTest() {
+        ProjectIO projectIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+        Long defaultProjectGroupId = defaultProjectGroupId();
+
+        boolean isProjectRemoved = projectIO.deleteProject(defaultProjectGroupId, defaultProjectId(), true);
+
+        assertFalse(isProjectRemoved);
+        assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size());
+    }
+
+    private int pipelinesAmount(ProjectsFile projectsFile) {
+        return projectsFile.getProjectGroups()
+                .get(0).getProjects()
+                .get(0).getPipelines()
+                .size();
+    }
+
+    private PipelinePointer firstPipelinePointer(ProjectsFile projectsFile) {
+        return projectsFile.getProjectGroups()
+                .get(0).getProjects()
+                .get(0).getPipelines()
+                .get(0);
+    }
+
+    private Project firstAddedProject(ProjectsFile projectsFile) {
+        return projectsFile.getProjectGroups()
+                .get(0)
+                .getProjects()
+                .get(1); // get first project in projectGroup, not zero because on zero index is default project
     }
 
     @AfterAll
