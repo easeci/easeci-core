@@ -1,6 +1,7 @@
 package io.easeci.core.workspace.projects;
 
 import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
 import io.easeci.core.workspace.projects.dto.AddProjectRequest;
 
 import java.nio.file.Paths;
@@ -18,7 +19,7 @@ public class Utils {
         pipelineMeta.setEasefilePath(Paths.get("/tmp/Easefile"));
         pipelineMeta.setName("Demo pipeline");
         pipelineMeta.setPipelineFilePath(Paths.get("/tmp/workspace/projects/pipelines"));
-        pipelineMeta.setTag("Demo pojects example tag");
+        pipelineMeta.setTag("Demo projects example tag");
         pipelineMeta.setProjectId(INITIAL_PROJECT_ID);
         return pipelineMeta;
     }
@@ -27,8 +28,16 @@ public class Utils {
         AddProjectRequest request = new AddProjectRequest();
         request.setProjectGroupId(projectGroupId);
         request.setName("Demo project");
-        request.setTag("Demo pojects example tag");
+        request.setTag("Demo projects example tag");
         request.setDescription("Example project, created in testing purposes");
+        return request;
+    }
+
+    static AddProjectGroupRequest prepareAddProjectGroupRequest() {
+        AddProjectGroupRequest request = new AddProjectGroupRequest();
+        request.setName("Demo project group");
+        request.setTag("Demo projects example tag");
+        request.setDescription("Example project group");
         return request;
     }
 }
