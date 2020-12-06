@@ -3,6 +3,7 @@ package io.easeci.core.workspace.projects;
 import io.easeci.core.bootstrap.BootstrapperFactory;
 import io.easeci.core.engine.pipeline.Pipeline;
 import io.easeci.core.extension.PluginSystemCriticalException;
+import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
 import io.easeci.core.workspace.projects.dto.AddProjectRequest;
 import org.junit.jupiter.api.*;
 
@@ -14,8 +15,7 @@ import java.util.UUID;
 import static io.easeci.core.workspace.LocationUtils.getProjectsStructureFileLocation;
 import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectGroupId;
 import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectId;
-import static io.easeci.core.workspace.projects.Utils.prepareAddProjectRequest;
-import static io.easeci.core.workspace.projects.Utils.preparePipelineMetadata;
+import static io.easeci.core.workspace.projects.Utils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProjectManagerTest {
@@ -473,6 +473,45 @@ class ProjectManagerTest {
                 () -> assertEquals(projectNewDescription, justAddedProject.getDescription()));
     }
 
+    @Test
+    @DisplayName("Should correctly add project group")
+    void createProjectGroupTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        AddProjectGroupRequest request = prepareAddProjectGroupRequest();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        ProjectGroup newProjectGroupJustAdded = projectGroupIO.createNewProjectGroup(request);
+
+        assertAll(() -> assertEquals(request.getName(), newProjectGroupJustAdded.getName()),
+                () -> assertEquals(request.getTag(), newProjectGroupJustAdded.getTag()),
+                () -> assertEquals(request.getDescription(), newProjectGroupJustAdded.getDescription()));
+
+        // id of new added group
+        Long projectGroupId = newProjectGroupJustAdded.getId();
+        ProjectGroup projectGroup = firstProjectGroup(projectsFile, projectGroupId);
+
+        assertAll(() -> assertEquals(1, projectGroupId),
+                () -> assertEquals(request.getName(), projectGroup.getName()),
+                () -> assertEquals(request.getTag(), projectGroup.getTag()),
+                () -> assertEquals(request.getDescription(), projectGroup.getDescription()),
+                () -> assertEquals(0, projectGroup.getProjects().size()));
+    }
+
+    @Test
+    @DisplayName("Should not add project group because one exists with same name")
+    void createProjectGroupJustExistsTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        AddProjectGroupRequest request = prepareAddProjectGroupRequest();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        // add a first time
+        ProjectGroup newProjectGroup = projectGroupIO.createNewProjectGroup(request);
+
+        // add a second time
+        assertAll(() -> assertThrows(PipelineManagementException.class, () -> projectGroupIO.createNewProjectGroup(request)),
+                () -> assertEquals(2, projectsFile.getProjectGroups().size()));
+    }
+
     private int pipelinesAmount(ProjectsFile projectsFile) {
         return projectsFile.getProjectGroups()
                 .get(0).getProjects()
@@ -492,6 +531,13 @@ class ProjectManagerTest {
                 .get(0)
                 .getProjects()
                 .get(1); // get first project in projectGroup, not zero because on zero index is default project
+    }
+
+    private ProjectGroup firstProjectGroup(ProjectsFile projectsFile, Long projectGroupId) {
+        return projectsFile.getProjectGroups().stream()
+                .filter(projectGroup -> projectGroup.getId().equals(projectGroupId))
+                .findFirst()
+                .orElseThrow();
     }
 
     @AfterAll

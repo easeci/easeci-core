@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.DirUtils;
 import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
 import io.easeci.core.workspace.projects.dto.AddProjectRequest;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -23,14 +25,13 @@ import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getProjectsStructureFileLocation;
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 import static io.easeci.core.workspace.projects.PipelineManagementException.PipelineManagementStatus.*;
-import static io.easeci.core.workspace.projects.ProjectUtils.nextPipelinePointerId;
-import static io.easeci.core.workspace.projects.ProjectUtils.nextProjectId;
+import static io.easeci.core.workspace.projects.ProjectUtils.*;
 import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectId;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
-public class ProjectManager implements PipelinePointerIO, ProjectIO {
+public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGroupIO {
     public final static String PROJECTS_DIRECTORY = "/projects/";
     public final static String PROJECTS_FILE = PROJECTS_DIRECTORY + "projects-structure.json";
     private static ProjectManager projectManager;
@@ -327,5 +328,49 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO {
     static void refreshFileContext() {
         ProjectManager.projectManager = null;
         ProjectManager.getInstance();
+    }
+
+    @Override
+    public ProjectGroup createNewProjectGroup(AddProjectGroupRequest request) {
+        if (isProjectGroupExists(request.getName())) {
+            logit(WORKSPACE_EVENT, "Cannot create project group because one with name: '" + request.getName() + "' just exists");
+            throw new PipelineManagementException(PROJECT_GROUP_EXISTS);
+        }
+        ProjectGroup project = ProjectGroup.builder()
+                .id(nextProjectGroupId(projectsFile))
+                .cratedDate(new Date())
+                .name(request.getName())
+                .tag(request.getTag())
+                .description(request.getDescription())
+                .projects(new ArrayList<>(0))
+                .build();
+        projectsFile.getProjectGroups().add(project);
+        save();
+        return project;
+    }
+
+    private boolean isProjectGroupExists(String projectGroupName) {
+        return projectsFile.getProjectGroups().stream()
+                .anyMatch(projectGroup -> projectGroup.getName().equals(projectGroupName));
+    }
+
+    @Override
+    public ProjectGroup deleteProjectGroup() {
+        return null;
+    }
+
+    @Override
+    public ProjectGroup renameProjectGroup() {
+        return null;
+    }
+
+    @Override
+    public ProjectGroup changeTag() {
+        return null;
+    }
+
+    @Override
+    public ProjectGroup changeDescription() {
+        return null;
     }
 }

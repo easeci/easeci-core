@@ -16,4 +16,8 @@ public class ProjectUtils {
                 .flatMap(projectGroup -> projectGroup.getProjects().stream())
                 .count();
     }
+
+    static long nextProjectGroupId(ProjectsFile projectsFile) {
+        return projectsFile.getProjectGroups().size();
+    }
 }
