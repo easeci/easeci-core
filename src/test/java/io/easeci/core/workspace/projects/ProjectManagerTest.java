@@ -612,8 +612,62 @@ class ProjectManagerTest {
 
         final Long securedProjectGroupId = defaultProjectGroupId();
         assertThrows(PipelineManagementException.class, () -> projectGroupIO.deleteProjectGroup(securedProjectGroupId, false));
-
     }
+
+    @Test
+    @DisplayName("Should correctly rename project group")
+    void renameProjectGroupSuccessTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        AddProjectGroupRequest request = prepareAddProjectGroupRequest();
+        ProjectGroup newProjectGroup = projectGroupIO.createNewProjectGroup(request);
+
+        final String oldProjectGroupName = newProjectGroup.getName();
+        final String newProjectGroupName = "Changed project group name";
+
+        ProjectGroup renamedProjectGroup = projectGroupIO.renameProjectGroup(newProjectGroup.getId(), newProjectGroupName);
+
+        assertAll(() -> assertNotEquals(oldProjectGroupName, renamedProjectGroup.getName()),
+                () -> assertEquals(newProjectGroupName, renamedProjectGroup.getName()));
+    }
+
+    @Test
+    @DisplayName("Should correctly change tag of project group")
+    void changeProjectGroupTagSuccessTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        AddProjectGroupRequest request = prepareAddProjectGroupRequest();
+        ProjectGroup newProjectGroup = projectGroupIO.createNewProjectGroup(request);
+
+        final String oldProjectGroupTag = newProjectGroup.getTag();
+        final String newProjectGroupTag = "Changed project group tag";
+
+        ProjectGroup renamedProjectGroup = projectGroupIO.changeTag(newProjectGroup.getId(), newProjectGroupTag);
+
+        assertAll(() -> assertNotEquals(oldProjectGroupTag, renamedProjectGroup.getTag()),
+                () -> assertEquals(newProjectGroupTag, renamedProjectGroup.getTag()));
+    }
+
+    @Test
+    @DisplayName("Should correctly change description of project group")
+    void changeProjectGroupDescriptionSuccessTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        AddProjectGroupRequest request = prepareAddProjectGroupRequest();
+        ProjectGroup newProjectGroup = projectGroupIO.createNewProjectGroup(request);
+
+        final String oldProjectGroupDescription = newProjectGroup.getDescription();
+        final String newProjectGroupDescription = "Changed project group description";
+
+        ProjectGroup renamedProjectGroup = projectGroupIO.changeDescription(newProjectGroup.getId(), newProjectGroupDescription);
+
+        assertAll(() -> assertNotEquals(oldProjectGroupDescription, renamedProjectGroup.getDescription()),
+                () -> assertEquals(newProjectGroupDescription, renamedProjectGroup.getDescription()));
+    }
+
 
     private int pipelinesAmount(ProjectsFile projectsFile) {
         return projectsFile.getProjectGroups()

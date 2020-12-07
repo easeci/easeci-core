@@ -36,9 +36,39 @@ public interface ProjectGroupIO {
      * */
     ProjectGroup deleteProjectGroup(Long projectGroupId, boolean isHardRemoval);
 
-    ProjectGroup renameProjectGroup();
+    /**
+     * This method renames project group.
+     * @param projectGroupId is id of project group in project-structure.json
+     * @param projectGroupName is new name of project group
+     * @return modified project group with associated objects
+     * @throws PipelineManagementException that inform us about validation result etc.
+     *                                     In exception we have error code included, so
+     *                                     we know what was wrong in the method flow and why project was not renamed.
+     *                                     For example it is throwing when project not exists.
+     * */
+    ProjectGroup renameProjectGroup(Long projectGroupId, String projectGroupName);
 
-    ProjectGroup changeTag();
+    /**
+     * This method edits tag of project group.
+     * @param projectGroupId is id of project group in project-structure.json
+     * @param projectGroupTag is new tag of project group
+     * @return modified project group with associated objects
+     * @throws PipelineManagementException that inform us about validation result etc.
+     *                                     In exception we have error code included, so
+     *                                     we know what was wrong in the method flow and why project's tag was not changed.
+     *                                     For example it is throwing when project not exists.
+     * */
+    ProjectGroup changeTag(Long projectGroupId, String projectGroupTag);
 
-    ProjectGroup changeDescription();
+    /**
+     * This method edits description of project group.
+     * @param projectGroupId is id of project group in project-structure.json
+     * @param projectGroupDescription is new description of project group
+     * @return modified project group with associated objects
+     * @throws PipelineManagementException that inform us about validation result etc.
+     *                                     In exception we have error code included, so
+     *                                     we know what was wrong in the method flow and why project's description was not changed.
+     *                                     For example it is throwing when project not exists.
+     * */
+    ProjectGroup changeDescription(Long projectGroupId, String projectGroupDescription);
 }

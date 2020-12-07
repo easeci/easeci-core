@@ -397,17 +397,42 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public ProjectGroup renameProjectGroup() {
-        return null;
+    public ProjectGroup renameProjectGroup(Long projectGroupId, String projectGroupName) {
+        ProjectGroup projectGroup = projectsFile.getProjectGroups().stream()
+                .filter(group -> group.getId().equals(projectGroupId))
+                .findFirst()
+                .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
+        final String oldName = projectGroup.getName();
+        projectGroup.setName(projectGroupName);
+        save();
+        logit(WORKSPACE_EVENT, "Project group was renamed from '" + oldName + "', to: '" + projectGroupName + "'");
+        return projectGroup;
     }
 
     @Override
-    public ProjectGroup changeTag() {
-        return null;
+    public ProjectGroup changeTag(Long projectGroupId, String projectGroupTag) {
+        ProjectGroup projectGroup = projectsFile.getProjectGroups().stream()
+                .filter(group -> group.getId().equals(projectGroupId))
+                .findFirst()
+                .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
+        final String oldTag = projectGroup.getTag();
+        projectGroup.setTag(projectGroupTag);
+        save();
+        logit(WORKSPACE_EVENT, "Project group's tag was changed from '" + oldTag + "', to: '" + projectGroupTag + "'");
+        return projectGroup;
     }
 
     @Override
-    public ProjectGroup changeDescription() {
-        return null;
+    public ProjectGroup changeDescription(Long projectGroupId, String projectGroupDescription) {
+        ProjectGroup projectGroup = projectsFile.getProjectGroups().stream()
+                .filter(group -> group.getId().equals(projectGroupId))
+                .findFirst()
+                .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
+        final String oldDescription = projectGroup.getDescription();
+        projectGroup.setDescription(projectGroupDescription);
+        save();
+        logit(WORKSPACE_EVENT, "Project group's description was changed from '" + oldDescription + "', to: '" + projectGroupDescription + "'");
+        return projectGroup;
     }
+
 }
