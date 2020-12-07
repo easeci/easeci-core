@@ -11,7 +11,8 @@ public class PipelineManagementException extends RuntimeException {
         PROJECT_GROUP_NOT_EXISTS,
         PROJECT_GROUP_EXISTS,
         PROJECT_ID_EXISTS,
-        PROJECT_NAME_EXISTS
+        PROJECT_NAME_EXISTS,
+        REMOVAL_DENIED
     }
 
     @Getter

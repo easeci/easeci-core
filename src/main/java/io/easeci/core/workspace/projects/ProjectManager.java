@@ -26,6 +26,7 @@ import static io.easeci.core.workspace.LocationUtils.getProjectsStructureFileLoc
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
 import static io.easeci.core.workspace.projects.PipelineManagementException.PipelineManagementStatus.*;
 import static io.easeci.core.workspace.projects.ProjectUtils.*;
+import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectGroupId;
 import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectId;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -293,6 +294,10 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
                     .findFirst()
                     .orElseThrow(() -> new PipelineManagementException(PROJECT_NOT_EXISTS));
             movePipelinePointers(projectToRemoval.getPipelines(), defaultProject);
+            logit(WORKSPACE_EVENT, "Removed in a soft way project with id: '" + projectId + "'," +
+                    "All pipelines pointers were moved to default 'other' project");
+        } else {
+            logit(WORKSPACE_EVENT, "Removed in a hard way project with id: '" + projectId + "'. It was permanently removed.");
         }
         isRemoved = projectGroup.getProjects().remove(projectToRemoval);
         save();
@@ -306,22 +311,31 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
 
     @Override
     public boolean renameProject(Long projectId, String projectName) {
-        findProject(projectId).setName(projectName);
+        Project project = findProject(projectId);
+        final String oldName = project.getName();
+        project.setName(projectName);
         save();
+        logit(WORKSPACE_EVENT, "Project was renamed from '" + oldName + "', to: '" + projectName + "'");
         return true;
     }
 
     @Override
     public boolean changeProjectTag(Long projectId, String projectTag) {
-        findProject(projectId).setTag(projectTag);
+        Project project = findProject(projectId);
+        final String oldTag = project.getTag();
+        project.setTag(projectTag);
         save();
+        logit(WORKSPACE_EVENT, "Project has changed tag from '" + oldTag + "', to: '" + projectTag + "'");
         return true;
     }
 
     @Override
     public boolean changeProjectDescription(Long projectId, String projectDescription) {
-        findProject(projectId).setDescription(projectDescription);
+        Project project = findProject(projectId);
+        final String oldDescription = project.getDescription();
+        project.setDescription(projectDescription);
         save();
+        logit(WORKSPACE_EVENT, "Project has changed description from '" + oldDescription + "', to: '" + projectDescription + "'");
         return true;
     }
 
@@ -355,8 +369,31 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public ProjectGroup deleteProjectGroup() {
-        return null;
+    public ProjectGroup deleteProjectGroup(Long projectGroupId, boolean isHardRemoval) {
+        if (projectGroupId.equals(defaultProjectGroupId())) {
+            logit(WORKSPACE_EVENT, "Cannot remove secured project group with id: '" + projectGroupId + "'");
+            throw new PipelineManagementException(REMOVAL_DENIED);
+        }
+        ProjectGroup projectGroupToRemoval = projectsFile.getProjectGroups().stream()
+                .filter(group -> group.getId().equals(projectGroupId))
+                .findFirst()
+                .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
+        if (!isHardRemoval) {
+            Long defaultProjectGroupId = defaultProjectGroupId();
+            ProjectGroup defaultProjectGroup = projectsFile.getProjectGroups().stream()
+                    .filter(group -> group.getId().equals(defaultProjectGroupId))
+                    .findFirst()
+                    .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
+            List<Project> projects = projectGroupToRemoval.getProjects();
+            defaultProjectGroup.getProjects().addAll(projects);
+            logit(WORKSPACE_EVENT, "Removed in a soft way project group with id: '" + projectGroupId + "'," +
+                    "All projects with their pipeline pointer were moved to default 'other' project group");
+        } else {
+            logit(WORKSPACE_EVENT, "Removed in a hard way project group with id: '" + projectGroupId + "'. It was permanently removed.");
+        }
+        projectsFile.getProjectGroups().remove(projectGroupToRemoval);
+        save();
+        return projectGroupToRemoval;
     }
 
     @Override

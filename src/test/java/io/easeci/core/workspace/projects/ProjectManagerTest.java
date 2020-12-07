@@ -512,6 +512,109 @@ class ProjectManagerTest {
                 () -> assertEquals(2, projectsFile.getProjectGroups().size()));
     }
 
+    @Test
+    @DisplayName("Should delete project group in soft way without deleting projects correlated with group")
+    void deleteProjectGroupSoftSuccessTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        ProjectIO projectIO = ProjectManager.getInstance();
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        AddProjectGroupRequest request = prepareAddProjectGroupRequest();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        // add a project group
+        ProjectGroup newProjectGroup = projectGroupIO.createNewProjectGroup(request);
+
+        // add project
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(newProjectGroup.getId());
+        projectIO.createNewProject(addProjectRequest);
+        Project project = newProjectGroup.getProjects().get(0);
+
+        // add pipeline pointer
+        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        pipelineMeta.setProjectId(project.getId());
+        pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+
+        // assertion before soft removal
+        assertAll(() -> assertEquals(2, projectsFile.getProjectGroups().size()),
+                () -> assertEquals(1, newProjectGroup.getProjects().get(0).getPipelines().size()),
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                () -> assertEquals(0, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()));
+
+        // In soft removal projects correlated with project group and pipelines correlated with
+        // these projects must not be removed but moved to default 'other' project group with id = 0
+        projectGroupIO.deleteProjectGroup(newProjectGroup.getId(), false);
+
+        // assertions after soft removal
+        assertAll(() -> assertEquals(1, newProjectGroup.getProjects().size()),
+                () -> assertEquals(1, newProjectGroup.getProjects().get(0).getPipelines().size()),
+                () -> assertThrows(IndexOutOfBoundsException.class, () -> newProjectGroup.getProjects().get(1)),
+                () -> assertEquals(2, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                () -> assertEquals(0, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()));
+    }
+
+    @Test
+    @DisplayName("Should delete project group in hard way with deleting correlated projects and pipeline pointers")
+    void deleteProjectGroupHardSuccessTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        ProjectIO projectIO = ProjectManager.getInstance();
+        PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
+        AddProjectGroupRequest request = prepareAddProjectGroupRequest();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        // add a project group
+        ProjectGroup newProjectGroup = projectGroupIO.createNewProjectGroup(request);
+
+        // add project
+        AddProjectRequest addProjectRequest = prepareAddProjectRequest(newProjectGroup.getId());
+        projectIO.createNewProject(addProjectRequest);
+        Project project = newProjectGroup.getProjects().get(0);
+
+        // add pipeline pointer
+        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        pipelineMeta.setProjectId(project.getId());
+        pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+
+        // assertion before hard removal
+        assertAll(() -> assertEquals(2, projectsFile.getProjectGroups().size()),
+                () -> assertEquals(1, newProjectGroup.getProjects().get(0).getPipelines().size()),
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                () -> assertEquals(0, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()));
+
+        // In hard removal projects correlated with project group and pipelines correlated with
+        // these projects must not be removed but moved to default 'other' project group with id = 0
+        projectGroupIO.deleteProjectGroup(newProjectGroup.getId(), true);
+
+        // assertions after hard removal
+        assertAll(
+                () -> assertEquals(1, newProjectGroup.getProjects().size()),
+                () -> assertEquals(1, newProjectGroup.getProjects().get(0).getPipelines().size()),
+                () -> assertThrows(IndexOutOfBoundsException.class, () -> newProjectGroup.getProjects().get(1)),
+                () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size()),
+                () -> assertEquals(0, projectsFile.getProjectGroups().get(0).getProjects().get(0).getPipelines().size()));
+
+    }
+
+    @Test
+    @DisplayName("Should throw exception when trying to remove project group that not exists")
+    void deleteProjectGroupNotExistsTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        final Long notExistingProjectGroupId = 180L;
+        assertThrows(PipelineManagementException.class, () -> projectGroupIO.deleteProjectGroup(notExistingProjectGroupId, false));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when trying to remove default, secured project group")
+    void deleteProjectGroupSecuredTest() {
+        ProjectGroupIO projectGroupIO = ProjectManager.getInstance();
+        ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
+
+        final Long securedProjectGroupId = defaultProjectGroupId();
+        assertThrows(PipelineManagementException.class, () -> projectGroupIO.deleteProjectGroup(securedProjectGroupId, false));
+
+    }
+
     private int pipelinesAmount(ProjectsFile projectsFile) {
         return projectsFile.getProjectGroups()
                 .get(0).getProjects()
