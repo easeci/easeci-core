@@ -1,13 +1,13 @@
 package io.easeci.api.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.cli.ClientConnectionManager;
 import io.easeci.core.cli.ConnectionCloseRequest;
 import io.easeci.core.cli.ConnectionRequest;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import ratpack.exec.Promise;
-import ratpack.http.TypedData;
 
 import java.util.List;
 
@@ -34,13 +34,11 @@ public class ClientHandlers implements InternalHandlers {
                 .httpMethod(POST)
                 .endpointUri(MAPPING + "connection/open")
                 .handler(ctx -> Promise.value(ctx.getRequest())
-                        .map(request -> clientConnectionManager.initConnection(
-                                request,
-                                request.getBody()
-                                        .map(TypedData::getBytes)
-                                        .map(bytes -> objectMapper.readValue(bytes, ConnectionRequest.class))
-                                ).map(connectionStateResponse -> objectMapper.writeValueAsBytes(connectionStateResponse))
-                        ).then(promise -> promise.then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes))))
+                        .map(request -> clientConnectionManager.initConnection(request, ApiRequestValidator.extractBody(request, ConnectionRequest.class))
+                                .map(connectionStateResponse -> objectMapper.writeValueAsBytes(connectionStateResponse))
+                                .mapError(ApiRequestValidator::handleException))
+                        .mapError(ApiRequestValidator::handleExceptionPromise)
+                        .then(promise -> promise.then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes))))
                 .build();
     }
 
@@ -58,11 +56,10 @@ public class ClientHandlers implements InternalHandlers {
         return EndpointDeclaration.builder()
                 .httpMethod(POST)
                 .endpointUri(MAPPING + "connection/close")
-                .handler(ctx -> ctx.getRequest().getBody()
-                        .map(TypedData::getBytes)
-                        .map(bytes -> objectMapper.readValue(bytes, ConnectionCloseRequest.class))
+                .handler(ctx -> ApiRequestValidator.extractBody(ctx.getRequest(), ConnectionCloseRequest.class)
                         .map(connectionCloseRequest -> clientConnectionManager.closeConnection(connectionCloseRequest))
                         .map(connectionDto -> objectMapper.writeValueAsBytes(connectionDto))
+                        .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
