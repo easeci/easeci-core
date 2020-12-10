@@ -5,5 +5,6 @@ public enum ConnectionState {
     ALIVE,
     CLOSED,
     CONNECTIONS_LIMIT,
-    CONNECTION_ERROR
+    CONNECTION_ERROR,
+    NOT_EXISTS
 }

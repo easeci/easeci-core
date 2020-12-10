@@ -1,6 +1,7 @@
 package io.easeci.api.extension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.extension.DirectivesCollector;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
@@ -15,6 +16,7 @@ import ratpack.path.PathTokens;
 
 import java.util.List;
 
+import static io.easeci.api.validation.ApiRequestValidator.extractBody;
 import static ratpack.http.HttpMethod.*;
 import static ratpack.http.MediaType.APPLICATION_JSON;
 
@@ -64,10 +66,11 @@ public class ExtensionHandlers implements InternalHandlers {
         return EndpointDeclaration.builder()
                 .httpMethod(PATCH)
                 .endpointUri(MAPPING + "shutdown")
-                .handler(ctx -> ctx.getRequest().getBody()
-                        .map(typedData -> objectMapper.readValue(typedData.getBytes(), ActionRequest.class))
+                .handler(ctx -> extractBody(ctx.getRequest(), ActionRequest.class)
                         .map(actionRequest -> this.controllable.shutdownExtension(actionRequest))
+                        .mapError(throwable -> ActionResponse.of(false, List.of(throwable.getMessage())))
                         .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -76,10 +79,10 @@ public class ExtensionHandlers implements InternalHandlers {
         return EndpointDeclaration.builder()
                 .httpMethod(PATCH)
                 .endpointUri(MAPPING + "startup")
-                .handler(ctx -> ctx.getRequest().getBody()
-                        .map(typedData -> objectMapper.readValue(typedData.getBytes(), ActionRequest.class))
+                .handler(ctx -> extractBody(ctx.getRequest(), ActionRequest.class)
                         .map(actionRequest -> this.controllable.startupExtension(actionRequest))
                         .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -88,10 +91,10 @@ public class ExtensionHandlers implements InternalHandlers {
         return EndpointDeclaration.builder()
                 .httpMethod(PATCH)
                 .endpointUri(MAPPING + "restart")
-                .handler(ctx -> ctx.getRequest().getBody()
-                        .map(typedData -> objectMapper.readValue(typedData.getBytes(), ActionRequest.class))
+                .handler(ctx -> extractBody(ctx.getRequest(), ActionRequest.class)
                         .map(actionRequest -> this.controllable.restart(actionRequest))
                         .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }

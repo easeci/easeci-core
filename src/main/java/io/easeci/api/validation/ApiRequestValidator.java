@@ -3,6 +3,7 @@ package io.easeci.api.validation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,13 @@ public class ApiRequestValidator {
         if (throwable instanceof InvalidFormatException) {
             ValidationErrorResponse validationErrorResponse = jsonDeserializationError();
             return write(validationErrorResponse);
+        }
+        if (throwable instanceof MismatchedInputException) {
+            ValidationErrorResponse validationErrorResponse = jsonNoContentError();
+            return write(validationErrorResponse);
+        }
+        else {
+            throwable.printStackTrace();
         }
         return defaultError();
     }

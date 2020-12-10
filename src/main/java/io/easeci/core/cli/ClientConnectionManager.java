@@ -95,9 +95,7 @@ public class ClientConnectionManager {
                             + ", for user: " + connection.getUsername()
                             + " is just closed for now");
                     return connection;
-                }).orElse(Connection.builder()
-                                    .connectionState(CLOSED)
-                                    .build())
+                }).orElseThrow(() -> new IllegalStateException("Connection is closed now or not exists"))
         );
     }
 
