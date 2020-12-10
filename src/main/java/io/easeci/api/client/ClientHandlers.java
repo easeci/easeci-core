@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.cli.ClientConnectionManager;
 import io.easeci.core.cli.ConnectionCloseRequest;
+import io.easeci.core.cli.ConnectionDto;
 import io.easeci.core.cli.ConnectionRequest;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
@@ -58,6 +59,7 @@ public class ClientHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "connection/close")
                 .handler(ctx -> ApiRequestValidator.extractBody(ctx.getRequest(), ConnectionCloseRequest.class)
                         .map(connectionCloseRequest -> clientConnectionManager.closeConnection(connectionCloseRequest))
+                        .mapError(throwable -> ConnectionDto.notExists())
                         .map(connectionDto -> objectMapper.writeValueAsBytes(connectionDto))
                         .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))

@@ -34,4 +34,13 @@ public class ValidationErrorResponse {
                 .build()));
         return response;
     }
+
+    public static ValidationErrorResponse jsonNoContentError() {
+        ValidationErrorResponse response = new ValidationErrorResponse();
+        response.setErrors(Collections.singletonList(ValidationError.builder()
+                .errorCode("JSON values not present")
+                .errorMessage("JSON value must be present in this type of request")
+                .build()));
+        return response;
+    }
 }

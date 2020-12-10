@@ -100,6 +100,9 @@ class ExtensionsManager implements ExtensionControllable {
 
     @Override
     public ActionResponse shutdownExtension(ActionRequest actionRequest) {
+        if (isNull(actionRequest.getPluginUuid()) || isNull(actionRequest.getExtensionType())) {
+            throw new IllegalStateException("Cannot process shutting down plugin because pluginUuid or extensionType is null");
+        }
         logit(PLUGIN_EVENT, "Trying to finish plugin identified by UUID: " + actionRequest.getPluginUuid(), THREE);
         return pluginContainer.findByUuid(actionRequest.getExtensionType(), actionRequest.getPluginUuid())
                 .map(instance -> zip(

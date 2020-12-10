@@ -1,6 +1,8 @@
 package io.easeci.api.parsing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.api.validation.ApiRequestValidator;
+import io.easeci.api.validation.ValidationException;
 import io.easeci.core.engine.easefile.loader.EasefileContentMalformed;
 import io.easeci.core.engine.easefile.loader.EasefileLoaderFactory;
 import io.easeci.core.engine.easefile.parser.EasefileParser;
@@ -12,6 +14,7 @@ import ratpack.http.HttpMethod;
 import java.io.IOException;
 import java.util.List;
 
+import static io.easeci.api.validation.ApiRequestValidator.extractBody;
 import static ratpack.http.MediaType.APPLICATION_JSON;
 
 public class EasefileParsingHandlers implements InternalHandlers {
@@ -33,19 +36,22 @@ public class EasefileParsingHandlers implements InternalHandlers {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.POST)
                 .endpointUri(MAPPING)
-                .handler(ctx -> ctx.getRequest().getBody()
-                        .map(typedData -> {
-                            RunParseProcess runParseProcess = objectMapper.readValue(typedData.getBytes(), RunParseProcess.class);
+                .handler(ctx -> extractBody(ctx.getRequest(), RunParseProcess.class)
+                        .map(runParseProcess -> {
                             String easefilePlainContent = EasefileLoaderFactory.factorize(runParseProcess).provide();
                             return easefileParser.parse(easefilePlainContent);
                         }).map(ParseProcessResponse::of)
                         .mapError(this::errorMapping)
                         .map(parseProcessResponse -> objectMapper.writeValueAsBytes(parseProcessResponse))
+                        .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
 
     private ParseProcessResponse errorMapping(Throwable throwable) {
+        if (throwable instanceof ValidationException) {
+            throw (ValidationException) throwable;
+        }
         if (throwable instanceof IOException) {
             return ParseProcessResponse.withError("Cannot load Easefile from defined source");
         }

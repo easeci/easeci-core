@@ -6,6 +6,8 @@ import lombok.Getter;
 
 import java.util.UUID;
 
+import static io.easeci.core.cli.ConnectionState.NOT_EXISTS;
+
 @Getter
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -21,6 +23,15 @@ public class ConnectionDto {
                 connection.getConnectionState(),
                 connection.getUsername(),
                 connection.getClientAddress().getHost()
+        );
+    }
+
+    public static ConnectionDto notExists() {
+        return new ConnectionDto(
+                null,
+                NOT_EXISTS,
+                null,
+                null
         );
     }
 }
