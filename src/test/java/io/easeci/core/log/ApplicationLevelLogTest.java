@@ -1,28 +1,18 @@
 package io.easeci.core.log;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.log.file.EventUtils;
 import io.easeci.core.output.Event;
-import io.easeci.core.workspace.LinuxWorkspaceInitializer;
 import io.easeci.core.workspace.LocationUtils;
 import io.easeci.commons.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ApplicationLevelLogTest {
-    private static Path path;
-
-    @BeforeAll
-    static void setup() {
-        LinuxWorkspaceInitializer workspaceInit = LinuxWorkspaceInitializer.getInstance();
-        path = workspaceInit.init(Optional.empty());
-    }
+class ApplicationLevelLogTest extends BaseWorkspaceContextTest {
 
     @Test
     @DisplayName("Should correctly instantiate singleton of ApplicationLevelLog")
@@ -66,10 +56,5 @@ class ApplicationLevelLogTest {
         String content = FileUtils.fileLoad(path.toString());
         FileUtils.fileDelete(path.toString());
         return content;
-    }
-
-    @AfterAll
-    static void cleanup() {
-        FileUtils.fileDelete(path.toString());
     }
 }

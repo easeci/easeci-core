@@ -1,8 +1,7 @@
 package io.easeci.core.workspace.projects;
 
-import io.easeci.core.bootstrap.BootstrapperFactory;
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.engine.pipeline.Pipeline;
-import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
 import io.easeci.core.workspace.projects.dto.AddProjectRequest;
 import org.junit.jupiter.api.*;
@@ -18,18 +17,17 @@ import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectId;
 import static io.easeci.core.workspace.projects.Utils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProjectManagerTest {
+class ProjectManagerTest extends BaseWorkspaceContextTest {
 
     @BeforeEach
-    void setup() {
+    void setupEach() {
         try {
-            BootstrapperFactory.factorize().bootstrap(new String[]{});
             Files.deleteIfExists(getProjectsStructureFileLocation());
             // singleton trap!
             // remember in future: if you are using singleton object it will be one instance object per all test class invocation
             // In order to fix this singleton issue remove one and recreate new object
             ProjectManager.refreshFileContext();
-        } catch (IOException | PluginSystemCriticalException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -695,10 +693,5 @@ class ProjectManagerTest {
                 .filter(projectGroup -> projectGroup.getId().equals(projectGroupId))
                 .findFirst()
                 .orElseThrow();
-    }
-
-    @AfterAll
-    static void cleanup() throws IOException {
-        Files.deleteIfExists(getProjectsStructureFileLocation());
     }
 }

@@ -1,13 +1,11 @@
 package io.easeci.core.workspace;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.commons.YamlUtils;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,13 +14,13 @@ import java.util.Optional;
 import static io.easeci.core.workspace.LinuxWorkspaceInitializer.BOOTSTRAP_FILENAME;
 import static org.junit.jupiter.api.Assertions.*;
 
-class LinuxWorkspaceInitializerTest {
+class LinuxWorkspaceInitializerTest extends BaseWorkspaceContextTest {
     private LinuxWorkspaceInitializer workspaceInitializer;
 
     private final Path TEST_WORKSPACE_PATH = Paths.get("/tmp/easeci_test");
 
     @BeforeEach
-    void setup() {
+    void setupEach() {
         this.workspaceInitializer = LinuxWorkspaceInitializer.getInstance();
     }
 
@@ -50,17 +48,5 @@ class LinuxWorkspaceInitializerTest {
 
         assertAll(() -> assertTrue(Files.exists(runYmlPath)),
                 () -> assertTrue(Files.exists(Paths.get(String.valueOf(YamlUtils.ymlGet(runYmlPath, "easeci.workspace.path").getValue())))));
-    }
-
-    void deleteRunYaml() throws IOException {
-        Path pwd = Path.of(System.getProperty("user.dir"));
-        Path runYmlPath = Paths.get(pwd.toString().concat("/").concat(BOOTSTRAP_FILENAME));
-        Files.deleteIfExists(runYmlPath);
-    }
-
-    @AfterEach
-    void cleanup() throws IOException {
-        FileUtils.deleteDirectory(TEST_WORKSPACE_PATH.toFile());
-        deleteRunYaml();
     }
 }

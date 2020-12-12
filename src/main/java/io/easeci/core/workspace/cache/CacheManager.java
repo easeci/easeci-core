@@ -98,6 +98,17 @@ public class CacheManager implements CacheGarbageCollector, CacheTemp {
             e.printStackTrace();
             logit(WORKSPACE_EVENT, 0 + " bytes of cache resource freed. Removing cache ends with exception", THREE);
             return 0;
+        } finally {
+            if (!cacheDirectoryLocation.toString().endsWith(".cache")) {
+                try {
+                    if (Files.exists(cacheDirectoryLocation) && Files.list(cacheDirectoryLocation).count() == 0) {
+                        Files.deleteIfExists(cacheDirectoryLocation);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    logit(WORKSPACE_EVENT, "Empty cache directory removed: " + cacheDirectoryLocation, THREE);
+                }
+            }
         }
     }
 
@@ -134,5 +145,9 @@ public class CacheManager implements CacheGarbageCollector, CacheTemp {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    public static void destroyInstance() {
+        cacheManager = null;
     }
 }

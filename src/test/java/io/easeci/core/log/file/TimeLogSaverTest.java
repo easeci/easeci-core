@@ -1,5 +1,7 @@
 package io.easeci.core.log.file;
 
+import io.easeci.BaseWorkspaceContextTest;
+import io.easeci.core.log.ApplicationLevelLog;
 import io.easeci.core.output.Event;
 import io.easeci.commons.FileUtils;
 import org.junit.jupiter.api.*;
@@ -11,7 +13,7 @@ import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TimeLogSaverTest {
+class TimeLogSaverTest extends BaseWorkspaceContextTest {
     private final static String FILEPATH = "/tmp/test-logfile";
 
     @Test
@@ -68,6 +70,7 @@ class TimeLogSaverTest {
     @Test
     @DisplayName("Should invoke saving method after TIME_DELAY is up and correctly save events from queue")
     void timeLogSaverBatchSaveTest() throws InterruptedException {
+        ApplicationLevelLog.destroyInstance();
         final long TIME_DELAY = 1000;
         final int TIMES = 4;
         Queue<Event> eventQueue = new LinkedList<>();
@@ -87,11 +90,11 @@ class TimeLogSaverTest {
 //        So there are two possible results
         assertAll(() -> assertTrue(FileUtils.isExist(FILEPATH)),
                 () -> assertTrue(TIMES * EventUtils.EVENT_BYTE_SIZE == FileUtils.fileLoad(FILEPATH).getBytes().length
-                        || 585 == FileUtils.fileLoad(FILEPATH).getBytes().length));
+                        || 580 == FileUtils.fileLoad(FILEPATH).getBytes().length));
     }
 
     @AfterEach
-    void cleanup() {
+    void cleanupEach() {
         FileUtils.fileDelete(FILEPATH);
     }
 }

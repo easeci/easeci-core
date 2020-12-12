@@ -6,7 +6,7 @@ import io.easeci.core.output.EventType;
 import java.time.LocalDateTime;
 
 public class EventUtils {
-    public static final int EVENT_BYTE_SIZE = 117;
+    public static final int EVENT_BYTE_SIZE = 116;
     public static final String EVENT_CONTENT = "This is example event content for test",
                                EVENT_TITLE = "Sample log event",
                                EVENT_PUBLISHER = "EaseCI process";

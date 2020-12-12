@@ -118,4 +118,8 @@ public class ApplicationLevelLog implements LogManager {
             return timer;
         }
     }
+
+    public static void destroyInstance() {
+        applicationLevelLog = null;
+    }
 }

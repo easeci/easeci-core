@@ -1,7 +1,7 @@
 package io.easeci.core.engine.easefile.loader;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import io.easeci.BaseWorkspaceContextTest;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static org.junit.jupiter.api.Assertions.*;
 
-class WorkspaceLoaderTest {
+class WorkspaceLoaderTest extends BaseWorkspaceContextTest {
 
     static final int EASEFILE_LENGTH = 790;
 

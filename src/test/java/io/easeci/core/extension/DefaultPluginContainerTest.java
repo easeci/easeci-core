@@ -1,7 +1,7 @@
 package io.easeci.core.extension;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.extension.ExtensionType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,15 +16,10 @@ import static io.easeci.core.extension.utils.PluginContainerUtils.fromBasic;
 import static io.easeci.core.extension.utils.PluginContainerUtils.fromBasicWithPluginName;
 import static org.junit.jupiter.api.Assertions.*;
 
-class DefaultPluginContainerTest {
+class DefaultPluginContainerTest extends BaseWorkspaceContextTest {
     private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test.json";
-    private PluginContainer pluginContainer;
     private PluginStrategy pluginStrategy = Mockito.mock(PluginStrategy.class);
-
-    @BeforeEach
-    void setup() {
-        this.pluginContainer = new DefaultPluginContainer(pluginStrategy);
-    }
+    private PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
 
     @Test
     @DisplayName("Should correctly create container object")

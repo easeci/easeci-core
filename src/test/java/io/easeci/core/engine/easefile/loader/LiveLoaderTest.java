@@ -1,5 +1,6 @@
 package io.easeci.core.engine.easefile.loader;
 
+import io.easeci.BaseWorkspaceContextTest;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static io.easeci.core.engine.easefile.loader.GitLoaderTest.EASEFILE_FROM_GITHUB;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class LiveLoaderTest {
+class LiveLoaderTest extends BaseWorkspaceContextTest {
 
     @Test
     @DisplayName("Should correctly load content from request and save backup in cache")

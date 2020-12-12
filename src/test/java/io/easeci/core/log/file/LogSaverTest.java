@@ -1,5 +1,6 @@
 package io.easeci.core.log.file;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.output.Event;
 import io.easeci.commons.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -20,14 +21,14 @@ import static io.easeci.core.log.file.EventUtils.provideEvent;
 import static io.easeci.core.log.file.LogSaver.unmarshal;
 import static org.junit.jupiter.api.Assertions.*;
 
-class LogSaverTest {
+class LogSaverTest extends BaseWorkspaceContextTest {
     private LogSaver logSaver;
     private Queue<Event> eventQueue;
     private String FILEPATH = "/tmp/easeci_log_test";
     private Path logfile = Paths.get("/tmp/easeci_log_test");
 
     @BeforeEach
-    void setup() {
+    void setupEach() {
         this.eventQueue = new LinkedList<>();
         this.logfile = Paths.get(FILEPATH);
 
@@ -65,7 +66,7 @@ class LogSaverTest {
     @MethodSource(value = "provideSameEvents")
     @DisplayName("Should return in each case same value of bytes array length, arrays must be the same")
     void unmarshalTest(Event event) {
-        final int ARRAY_SIZE = 117;
+        final int ARRAY_SIZE = 116;
 
         byte[] unmarshal = unmarshal(event);
 
@@ -86,7 +87,7 @@ class LogSaverTest {
     @Test
     @DisplayName("Should correctly write unmarshalled event to file, length of saved bytes should be the same as unmarshalled event")
     void standardWriteTest() {
-        final int EXPECTED_BYTES_SIZE = 117;
+        final int EXPECTED_BYTES_SIZE = 116;
         Event event = provideEvent();
 
         byte[] unmarshal = unmarshal(event);
@@ -113,7 +114,7 @@ class LogSaverTest {
     @DisplayName("Should write few events as a batch")
     void batchWriteTest() {
         final int EVENT_AMOUNT = 4;
-        final int EVENT_SIZE = 117;
+        final int EVENT_SIZE = 116;
         final int EXPECTED_TOTAL_BYTES = EVENT_AMOUNT * EVENT_SIZE;
         List<byte[]> unmarshalEvents = Stream.generate(EventUtils::provideEvent)
                 .limit(EVENT_AMOUNT)
@@ -145,7 +146,7 @@ class LogSaverTest {
     }
 
     @AfterEach
-    void cleanup() {
+    void cleanupEach() {
         FileUtils.fileDelete(FILEPATH);
     }
 }

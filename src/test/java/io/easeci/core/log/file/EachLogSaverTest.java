@@ -1,5 +1,6 @@
 package io.easeci.core.log.file;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.output.Event;
 import io.easeci.commons.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +13,7 @@ import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class EachLogSaverTest {
+class EachLogSaverTest extends BaseWorkspaceContextTest {
     private final static String FILEPATH = "/tmp/test-logfile";
 
     @Test
@@ -111,7 +112,7 @@ class EachLogSaverTest {
     }
 
     @AfterEach
-    void cleanup() {
+    void cleanupEach() {
         FileUtils.fileDelete(FILEPATH);
     }
 }

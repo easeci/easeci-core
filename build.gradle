@@ -83,6 +83,10 @@ test {
     useJUnitPlatform()
 }
 
+tasks.withType(Test) {
+    maxParallelForks = 1
+}
+
 jacocoTestReport {
     reports {
         xml.enabled true
