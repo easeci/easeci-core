@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public enum ExtensionType {
-    STANDALONE_PLUGIN,
-    EXTENSION_PLUGIN,
-    DIRECTIVE_PLUGIN;
+    STANDALONE_PLUGIN,  // plugin that has a separated thread and works all the time
+    EXTENSION_PLUGIN,   // plugin that not working at daemon thread, only executes some future when called from easeci-core
+    DIRECTIVE_PLUGIN;   // plugin that provide extension for parsing Easefile to Pipeline
 
     private static final Map<ExtensionType, String> extensionTypeInterfaceMap = new HashMap<>() {{
        put(STANDALONE_PLUGIN, "io.easeci.extension.Standalone");

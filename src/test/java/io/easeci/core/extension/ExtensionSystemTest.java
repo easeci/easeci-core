@@ -1,7 +1,7 @@
 package io.easeci.core.extension;
 
+import io.easeci.BaseWorkspaceContextTest;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -11,11 +11,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled
-class ExtensionSystemTest {
+class ExtensionSystemTest extends BaseWorkspaceContextTest {
 
     @BeforeAll
-    static void setup() {
+    static void setupClass() {
         ExtensionsManager extensionsManager = Mockito.mock(ExtensionsManager.class);
         PluginContainer pluginContainer = Mockito.mock(PluginContainer.class);
 
@@ -48,21 +47,10 @@ class ExtensionSystemTest {
         assertTrue(extensionSystem.isStarted());
     }
 
-    @Disabled
-    @Test
-    @DisplayName("Should not allow create threads more than it is specified in threadPoolMaxSize variable")
-    void extensionSystemOverflowedTest() throws PluginSystemCriticalException {
-        ExtensionSystem extensionSystem = ExtensionSystem.getInstance();
-        extensionSystem.start();
-        List<String> all = extensionSystem.getAll("some.interface", String.class);
-
-//        Mock not works, fix it TODO
-    }
-
-    @Disabled
     @Test
     @DisplayName("Should throw RuntimeException when trying to get all plugins without starting mechanism")
     void extensionSystemNoStartedTest() {
+        ExtensionSystem.destroyInstance();
         assertThrows(RuntimeException.class, () -> ExtensionSystem.getInstance().getAll("some.interface", String.class));
     }
 }

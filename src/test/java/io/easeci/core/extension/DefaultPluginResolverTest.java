@@ -85,7 +85,38 @@ class DefaultPluginResolverTest extends BaseWorkspaceContextTest {
 
     @Test
     @DisplayName("Should correctly resolve Plugin object by name and version of plugin")
-    void defaultPluginResolverLoadResolveSingle() {
-//        TODO
+    void defaultPluginResolverLoadResolveSingle() throws IOException {
+        PluginResolver pluginResolver = new DefaultPluginResolver();
+
+        final String FILE_NAME = "/tmp/plugins/git-v1.0.jar";
+        Path fakeDir = DirUtils.directoryCreate("/tmp/plugins");
+        Path jarFilePath = FileUtils.fileSave(FILE_NAME, "", true);
+
+        InfrastructureInit infrastructureInit = Mockito.mock(InfrastructureInit.class);
+        Mockito.when(infrastructureInit.getPluginDirectories())
+                .thenReturn(
+                        List.of(
+                                Path.of("/tmp/plugins"),
+                                Path.of("/opt/plugins")
+                        )
+                );
+
+        final String pluginName = "git";
+        final String pluginVersion = "v1.0";
+
+        Plugin plugin = pluginResolver.resolve(infrastructureInit, pluginName, pluginVersion);
+
+        assertAll(() -> assertNotNull(plugin),
+                () -> assertNotNull(plugin.getJarArchive()),
+                () -> assertTrue(plugin.getJarArchive().isStoredLocally()),
+                () -> assertNotNull(plugin.getJarArchive().getFileName()),
+                () -> assertNotNull(plugin.getJarArchive().getJarPath()),
+                () -> assertNotNull(plugin.getJarArchive().getJarUrl()),
+                () -> assertTrue(FileUtils.isExist(plugin.getJarArchive().getJarPath().toString())),
+                () -> assertTrue(FileUtils.isExist(plugin.getJarArchive().getJarUrl().getPath())),
+                () -> assertNotNull(plugin.getJarArchive().getJarPath()),
+                () -> assertEquals(jarFilePath, plugin.getJarArchive().getJarPath()));
+
+        org.apache.commons.io.FileUtils.deleteDirectory(fakeDir.toFile());
     }
 }
