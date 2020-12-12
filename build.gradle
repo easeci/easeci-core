@@ -5,7 +5,6 @@ buildscript {
     }
     dependencies {
         classpath "io.ratpack:ratpack-gradle:1.8.0"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72"
     }
 }
 
@@ -15,7 +14,6 @@ plugins {
     id 'com.github.dawnwords.jacoco.badge' version '0.1.0'
     id 'application'
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.72'
 }
 
 group = 'io.easeci.core'
@@ -36,12 +34,9 @@ dependencies {
     compile project(':domain')
     compile project(':io-lib')
 
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.3.72'
-
     implementation 'io.ratpack:ratpack-core:1.8.0'
     compile group: 'io.ratpack', name: 'ratpack-rx', version: '1.8.0'
     implementation 'org.asynchttpclient:async-http-client:2.12.1'
-    implementation 'org.codehaus.groovy:groovy-all:2.5.8'
     implementation 'org.yaml:snakeyaml:1.25'
     implementation 'com.google.guava:guava:28.1-jre'
     compile group: 'io.vavr', name: 'vavr', version: '0.10.2'
@@ -67,23 +62,6 @@ dependencies {
     testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.6.1')
     testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.6.1')
     testRuntimeOnly('org.junit.vintage:junit-vintage-engine:5.6.1')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-}
-
-sourceSets {
-    main.kotlin.srcDirs += 'src/main/kotlin'
-    main.java.srcDirs += 'src/main/java'
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 mainClassName = 'io.easeci.EaseciCoreApplication'
@@ -115,6 +93,6 @@ jacocoTestReport {
 check.dependsOn jacocoTestReport
 
 jacocoBadgeGenSetting {
-    jacocoReportPath  "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
+    jacocoReportPath "$buildDir/reports/jacoco/test/jacocoTestReport.xml"
     readmePath "$projectDir/README.md"
 }

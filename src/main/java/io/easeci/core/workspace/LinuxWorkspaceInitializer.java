@@ -119,7 +119,7 @@ public class LinuxWorkspaceInitializer extends AbstractWorkspaceInitializer {
                 try {
                     Files.createDirectory(workspacePath);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.info("File: {} just exists. Recreation not necessary", workspacePath.toString());
                 }
                 createRunYml(Paths.get(currentDir().toString()
                         .concat("/")
