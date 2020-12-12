@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -102,5 +101,9 @@ public class ExtensionSystem implements ExtensionControllable, DirectivesCollect
     @Override
     public List<Directive> collectAll() {
         return getAll("io.easeci.extension.command.Directive", Directive.class);
+    }
+
+    public static void destroyInstance() {
+        extensionSystem = null;
     }
 }
