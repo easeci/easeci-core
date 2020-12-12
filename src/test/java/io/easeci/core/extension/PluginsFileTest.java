@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
 import static io.easeci.core.workspace.LocationUtils.getPluginsYmlLocation;
-import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class PluginsFileTest {
 

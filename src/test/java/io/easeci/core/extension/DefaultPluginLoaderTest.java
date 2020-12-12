@@ -1,7 +1,7 @@
 package io.easeci.core.extension;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.extension.ExtensionType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,17 +18,11 @@ import static io.easeci.core.extension.utils.PluginContainerUtils.createFakePlug
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
-class DefaultPluginLoaderTest {
+class DefaultPluginLoaderTest extends BaseWorkspaceContextTest {
     private final static String PLUGIN_CONFIG_FILE_DISABLED = "workspace/plugins-config-test-all-disabled.json",
                                    PLUGIN_CONFIG_FILE_VALID = "workspace/plugins-config-test.json";
-    private static Path pluginConfigJsonDisabledPath,
-                        pluginConfigJsonValidPath;
-
-    @BeforeEach
-    void setup() {
-        pluginConfigJsonDisabledPath = buildPathFromResources(PLUGIN_CONFIG_FILE_DISABLED);
-        pluginConfigJsonValidPath = buildPathFromResources(PLUGIN_CONFIG_FILE_VALID);
-    }
+    private static Path pluginConfigJsonDisabledPath = buildPathFromResources(PLUGIN_CONFIG_FILE_DISABLED),
+                        pluginConfigJsonValidPath = buildPathFromResources(PLUGIN_CONFIG_FILE_VALID);
 
     @Test
     @DisplayName("Should not load plugin that is disabled in plugins-config.json")

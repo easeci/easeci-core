@@ -1,5 +1,6 @@
 package io.easeci.core.extension;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.extension.ExtensionType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +15,7 @@ import java.util.*;
 import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static org.junit.jupiter.api.Assertions.*;
 
-class DefaultPluginConfigTest {
+class DefaultPluginConfigTest extends BaseWorkspaceContextTest {
     private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test.json",
                                  NOT_EXISTING_FILE = "workspace/not-exists/plugins-config-test.json",
                                INVALID_CONFIG_FILE = "workspace/plugins-config-test-invalid.json",

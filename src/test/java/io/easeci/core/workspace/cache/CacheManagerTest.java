@@ -1,6 +1,8 @@
 package io.easeci.core.workspace.cache;
 
+import io.easeci.BaseWorkspaceContextTest;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,11 +14,18 @@ import java.nio.file.Paths;
 import static io.easeci.core.workspace.LocationUtils.getCacheDirectoryLocation;
 import static org.junit.jupiter.api.Assertions.*;
 
-class CacheManagerTest {
+class CacheManagerTest extends BaseWorkspaceContextTest {
+
+    @BeforeEach
+    void beforeEach() {
+        CacheManager.getInstance();
+    }
 
     @Test
     @DisplayName("Should clean cache directory in workspace")
     void shouldCleanCacheTest() throws IOException {
+        CacheManager cacheManager = CacheManager.getInstance();
+        cacheManager.cleanup(); // clean all before test running in order to protect of trashes
         Path path = getCacheDirectoryLocation();
         Path fileToCreate = Paths.get(path.toString().concat("/test-file"));
         Path directoryToCreate = Paths.get(path.toString().concat("/test-dir"));
@@ -24,7 +33,6 @@ class CacheManagerTest {
         Files.createFile(fileToCreate);
         Files.createDirectory(directoryToCreate);
 
-        CacheManager cacheManager = CacheManager.getInstance();
         long bytesRemoved = cacheManager.cleanup();
 
         assertEquals(4096, bytesRemoved);
@@ -52,7 +60,7 @@ class CacheManagerTest {
     }
 
     @AfterEach
-    void cleanup() {
+    void cleanupEach() {
         CacheManager.getInstance().cleanup();
     }
 }

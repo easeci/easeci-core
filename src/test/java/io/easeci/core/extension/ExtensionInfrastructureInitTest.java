@@ -1,12 +1,10 @@
 package io.easeci.core.extension;
 
-import io.easeci.core.bootstrap.LinuxBootstrapper;
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.commons.DirUtils;
 import io.easeci.commons.FileUtils;
 import org.junit.jupiter.api.*;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -14,12 +12,7 @@ import java.util.List;
 import static io.easeci.core.workspace.LocationUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class ExtensionInfrastructureInitTest {
-
-    @BeforeAll
-    static void setup() throws PluginSystemCriticalException {
-        LinuxBootstrapper.getInstance().bootstrap(new String[] {});
-    }
+class ExtensionInfrastructureInitTest extends BaseWorkspaceContextTest {
 
     @Test
     @DisplayName("Should correctly initialize ExtensionInfrastructureInit object")
@@ -135,15 +128,6 @@ class ExtensionInfrastructureInitTest {
     @AfterEach
     void cleanEach() {
         FileUtils.fileDelete(getPluginsYmlLocation().toString());
-    }
-
-    @AfterAll
-    static void cleanup() throws IOException {
-        String workspaceLocation = getWorkspaceLocation();
-        File runFile = getRunFile();
-
-        DirUtils.directoryDelete(workspaceLocation, true);
-        Files.deleteIfExists(runFile.toPath());
     }
 
     void cleanDirs(List<Path> dirs) {
