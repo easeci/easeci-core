@@ -5,6 +5,7 @@ import io.easeci.api.easefile.EasefileManagementHandlers;
 import io.easeci.api.extension.ExtensionHandlers;
 import io.easeci.api.log.LogHandler;
 import io.easeci.api.parsing.EasefileParsingHandlers;
+import io.easeci.api.projects.ProjectGroupExtensionHandlers;
 import io.easeci.core.bootstrap.BootstrapperFactory;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
@@ -28,7 +29,8 @@ public class EaseciCoreApplication {
                                                new LogHandler(),
                                                new ClientHandlers(),
                                                new EasefileManagementHandlers(),
-                                               new EasefileParsingHandlers()),
+                                               new EasefileParsingHandlers(),
+                                               new ProjectGroupExtensionHandlers()),
                                        BaseExternalHandlers.get());
         ServerBootstrapper.getInstance().run();
     }

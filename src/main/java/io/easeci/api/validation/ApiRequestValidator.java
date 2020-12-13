@@ -1,13 +1,16 @@
 package io.easeci.api.validation;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import ratpack.exec.Promise;
+import ratpack.handling.Context;
 import ratpack.http.Request;
 
 import java.util.ArrayList;
@@ -24,6 +27,23 @@ public class ApiRequestValidator {
         return request.getBody()
                 .map(typedData -> objectMapper.readValue(typedData.getBytes(), bodyType))
                 .next(ApiRequestValidator::validate);
+    }
+
+    public static <T> Promise<T> extractBody(Context ctx, Class<T> bodyType) {
+        return ctx.getRequest().getBody()
+                .map(typedData -> objectMapper.readValue(typedData.getBytes(), bodyType))
+                .next(ApiRequestValidator::validate)
+                .mapError(throwable -> {
+                    byte[] bytes = ApiRequestValidator.handleException(throwable);
+                    throw new ValidationErrorSignal("Request ends with validation error, validation errors returned to client", bytes);
+                });
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class ValidationErrorSignal extends RuntimeException {
+        private String message;
+        private byte[] response;
     }
 
     @SneakyThrows
@@ -49,17 +69,20 @@ public class ApiRequestValidator {
             ValidationErrorResponse validationErrorResponse = jsonNoContentError();
             return write(validationErrorResponse);
         }
+        if (throwable instanceof InvalidDefinitionException || throwable instanceof JsonParseException) {
+            ValidationErrorResponse validationErrorResponse = jsonDefinitionError();
+            return write(validationErrorResponse);
+        }
         else {
             throwable.printStackTrace();
+            return defaultError();
         }
-        return defaultError();
     }
 
     private static byte[] write(ValidationErrorResponse validationErrorResponse) throws JsonProcessingException {
         try {
             return objectMapper.writeValueAsBytes(validationErrorResponse);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return defaultError();
         }
     }

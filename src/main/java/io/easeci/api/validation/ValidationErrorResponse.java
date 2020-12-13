@@ -43,4 +43,13 @@ public class ValidationErrorResponse {
                 .build()));
         return response;
     }
+
+    public static ValidationErrorResponse jsonDefinitionError() {
+        ValidationErrorResponse response = new ValidationErrorResponse();
+        response.setErrors(Collections.singletonList(ValidationError.builder()
+                .errorCode("JSON serialize exception")
+                .errorMessage("JSON value from system request/response cannot be correctly serialized")
+                .build()));
+        return response;
+    }
 }
