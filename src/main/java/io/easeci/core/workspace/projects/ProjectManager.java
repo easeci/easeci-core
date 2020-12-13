@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -404,6 +403,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
                 .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
         final String oldName = projectGroup.getName();
         projectGroup.setName(projectGroupName);
+        projectGroup.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project group was renamed from '" + oldName + "', to: '" + projectGroupName + "'");
         return projectGroup;
@@ -417,6 +417,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
                 .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
         final String oldTag = projectGroup.getTag();
         projectGroup.setTag(projectGroupTag);
+        projectGroup.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project group's tag was changed from '" + oldTag + "', to: '" + projectGroupTag + "'");
         return projectGroup;
@@ -430,6 +431,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
                 .orElseThrow(() -> new PipelineManagementException(PROJECT_GROUP_NOT_EXISTS));
         final String oldDescription = projectGroup.getDescription();
         projectGroup.setDescription(projectGroupDescription);
+        projectGroup.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project group's description was changed from '" + oldDescription + "', to: '" + projectGroupDescription + "'");
         return projectGroup;
