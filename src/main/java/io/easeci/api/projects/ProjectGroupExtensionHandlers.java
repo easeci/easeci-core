@@ -10,7 +10,7 @@ import io.easeci.core.workspace.projects.PipelineManagementException;
 import io.easeci.core.workspace.projects.ProjectGroup;
 import io.easeci.core.workspace.projects.ProjectGroupIO;
 import io.easeci.core.workspace.projects.ProjectManager;
-import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
+import io.easeci.api.projects.dto.AddProjectGroupRequest;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import lombok.extern.slf4j.Slf4j;

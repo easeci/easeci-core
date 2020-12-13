@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.DirUtils;
 import io.easeci.core.engine.pipeline.Pipeline;
-import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
-import io.easeci.core.workspace.projects.dto.AddProjectRequest;
+import io.easeci.api.projects.dto.AddProjectGroupRequest;
+import io.easeci.api.projects.dto.AddProjectRequest;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -224,7 +224,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public boolean createNewProject(AddProjectRequest request) {
+    public Project createNewProject(AddProjectRequest request) {
         Project project = Project.builder()
                 .id(nextProjectId(projectsFile))
                 .cratedDate(new Date())
@@ -236,13 +236,11 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
 
         ProjectGroup projectGroup = assignProjectGroup(request);
         validateProject(projectGroup, project);
-        boolean isAdded = projectGroup.getProjects().add(project);
-        if (isAdded) {
-            logit(WORKSPACE_EVENT, "New project named: '" +
+        projectGroup.getProjects().add(project);
+        logit(WORKSPACE_EVENT, "New project named: '" +
                     project.getName() + "', with id: '" + project.getId() + "', assigned to projectGroup: '" + projectGroup.getId() + "'");
-            save();
-        }
-        return isAdded;
+        save();
+        return project;
     }
 
     private ProjectGroup assignProjectGroup(AddProjectRequest request) {
@@ -275,13 +273,12 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public boolean deleteProject(Long projectGroupId, Long projectId, boolean isHardRemoval) {
+    public Project deleteProject(Long projectGroupId, Long projectId, boolean isHardRemoval) {
         // check if user not trying default secured project
         if (projectId.equals(defaultProjectId())) {
             logit(WORKSPACE_EVENT, "Cannot remove secured project");
-            return false;
+            return null;
         }
-        boolean isRemoved;
         ProjectGroup projectGroup = findProjectGroup(projectGroupId);
         Project projectToRemoval = projectGroup.getProjects().stream()
                                                .filter(project -> project.getId().equals(projectId))
@@ -298,9 +295,9 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         } else {
             logit(WORKSPACE_EVENT, "Removed in a hard way project with id: '" + projectId + "'. It was permanently removed.");
         }
-        isRemoved = projectGroup.getProjects().remove(projectToRemoval);
+        projectGroup.getProjects().remove(projectToRemoval);
         save();
-        return isRemoved;
+        return projectToRemoval;
     }
 
     private void movePipelinePointers(List<PipelinePointer> pipelinePointers, Project targetProject) {
@@ -309,36 +306,36 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public boolean renameProject(Long projectId, String projectName) {
+    public Project renameProject(Long projectId, String projectName) {
         Project project = findProject(projectId);
         final String oldName = project.getName();
         project.setName(projectName);
         project.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project was renamed from '" + oldName + "', to: '" + projectName + "'");
-        return true;
+        return project;
     }
 
     @Override
-    public boolean changeProjectTag(Long projectId, String projectTag) {
+    public Project changeProjectTag(Long projectId, String projectTag) {
         Project project = findProject(projectId);
         final String oldTag = project.getTag();
         project.setTag(projectTag);
         project.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project has changed tag from '" + oldTag + "', to: '" + projectTag + "'");
-        return true;
+        return project;
     }
 
     @Override
-    public boolean changeProjectDescription(Long projectId, String projectDescription) {
+    public Project changeProjectDescription(Long projectId, String projectDescription) {
         Project project = findProject(projectId);
         final String oldDescription = project.getDescription();
         project.setDescription(projectDescription);
         project.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project has changed description from '" + oldDescription + "', to: '" + projectDescription + "'");
-        return true;
+        return project;
     }
 
     static void refreshFileContext() {
