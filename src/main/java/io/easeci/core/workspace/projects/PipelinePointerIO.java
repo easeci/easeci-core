@@ -18,54 +18,54 @@ public interface PipelinePointerIO {
      * It is required for navigation, managing and store all info in one place.
      * @param pipelineMeta is internal static call in Pipeline.class that holds all
      *                     most helpful and important information about Pipeline in system.
-     * @return boolean value. If it is true - pipeline was created correctly.
+     * @return PipelinePointer object that represents pipelinePointer. Pipeline was added correctly if object is not null.
      * @throws PipelineManagementException that inform us about validation result etc.
      *                                     In exception we have error code included, so
      *                                     we know what was wrong in the method flow and why pipeline was not created
      * */
-    boolean createNewPipelinePointer(Pipeline.Metadata pipelineMeta) throws PipelineManagementException;
+    PipelinePointer createNewPipelinePointer(Pipeline.Metadata pipelineMeta) throws PipelineManagementException;
 
     /**
      * Simple delete method of PipelinePointer just existing in projects-structure.json
      * @param projectId is numeric project's id
      * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
-     * @return boolean value. If it is true - pipeline was deleted correctly.
+     * @return PipelinePointer object that represents pipelinePointer. PipelinePointer was deleted correctly if object is not null.
      * @throws PipelineManagementException that inform us about validation result etc.
      *                                     In exception we have error code included, so
      *                                     we know what was wrong in the method flow and why pipeline was not removed
      * */
-    boolean deletePipelinePointer(Long projectId, Long pipelinePointerId) throws PipelineManagementException;
+    PipelinePointer deletePipelinePointer(Long projectId, Long pipelinePointerId) throws PipelineManagementException;
 
     /**
      * Rename PipelinePointer just existing in projects-structure.json
      * @param projectId is numeric project's id
      * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
      * @param pipelinePointerName is new name of pipeline pointer
-     * @return boolean value. If it is true - pipeline was renamed correctly.
+     * @return PipelinePointer object that represents pipelinePointer. Pipeline's was renamed correctly if object is not null.
      * */
-    boolean renamePipelinePointer(Long projectId, Long pipelinePointerId, String pipelinePointerName);
+    PipelinePointer renamePipelinePointer(Long projectId, Long pipelinePointerId, String pipelinePointerName);
 
     /**
      * Rename PipelinePointer's tag just existing in projects-structure.json
      * @param projectId is numeric project's id
      * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
      * @param tagName is new tag of pipeline pointer
-     * @return boolean value. If it is true - pipeline's tag was changed correctly.
+     * @return PipelinePointer object that represents pipelinePoint. Pipeline's tag was renamed correctly if object is not null.
      * @throws PipelineManagementException that inform us about validation result etc.
      *                                     In exception we have error code included, so
      *                                     we know what was wrong in the method flow and why pipeline's tag was not changed
      * */
-    boolean changePipelinePointerTag(Long projectId, Long pipelinePointerId, String tagName);
+    PipelinePointer changePipelinePointerTag(Long projectId, Long pipelinePointerId, String tagName);
 
     /**
      * Change PipelinePointer's description just existing in projects-structure.json
      * @param projectId is numeric project's id
      * @param pipelinePointerId is numeric pipelinePointer's id (don't confuse with pipelineId)
      * @param description is new description of pipeline pointer
-     * @return boolean value. If it is true - pipeline's description was renamed correctly.
+     * @return PipelinePointer object that represents pipelinePoint. Pipeline's description was renamed correctly if object is not null.
      * @throws PipelineManagementException that inform us about validation result etc.
      *                                     In exception we have error code included, so
      *                                     we know what was wrong in the method flow and why pipeline's description was not changed
      * */
-    boolean changePipelinePointerDescription(Long projectId, Long pipelinePointerId, String description);
+    PipelinePointer changePipelinePointerDescription(Long projectId, Long pipelinePointerId, String description);
 }
