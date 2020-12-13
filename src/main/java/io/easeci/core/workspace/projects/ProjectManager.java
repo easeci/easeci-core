@@ -106,8 +106,12 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         return OBJECT_MAPPER.readValue(projectsStructureFileLocation.toFile(), ProjectsFile.class);
     }
 
+    public List<ProjectGroup> getProjectGroupList() {
+        return projectsFile.getProjectGroups();
+    }
+
     @Override
-    public boolean createNewPipelinePointer(Pipeline.Metadata pipelineMeta) {
+    public PipelinePointer createNewPipelinePointer(Pipeline.Metadata pipelineMeta) {
         validate(pipelineMeta);
         PipelinePointer pointer = new PipelinePointer();
         pointer.setId(nextPipelinePointerId(projectsFile));
@@ -127,7 +131,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         } else {
             logit(WORKSPACE_EVENT, "Critical error, seems like project with id: '" + pipelineMeta.getProjectId() + "' not exists ?", THREE);
         }
-        return isJoined;
+        return pointer;
     }
 
     private void validate(Pipeline.Metadata pipelineMeta) {
@@ -156,7 +160,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public boolean deletePipelinePointer(Long projectId, Long pipelinePointerId) {
+    public PipelinePointer deletePipelinePointer(Long projectId, Long pipelinePointerId) {
         List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
         PipelinePointer found = pipelinePointers.stream()
                 .filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
@@ -165,11 +169,11 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         if (isRemoved) {
             logit(WORKSPACE_EVENT, "Pipeline Pointer with id: '" + pipelinePointerId + "' was successfully removed");
         }
-        return isRemoved;
+        return found;
     }
 
     @Override
-    public boolean renamePipelinePointer(Long projectId, Long pipelinePointerId, String pipelinePointerName) {
+    public PipelinePointer renamePipelinePointer(Long projectId, Long pipelinePointerId, String pipelinePointerName) {
         return changeField(projectId, pipelinePointerId,
                 pipelinePointer -> {
                     pipelinePointer.setName(pipelinePointerName);
@@ -179,7 +183,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public boolean changePipelinePointerTag(Long projectId, Long pipelinePointerId, String tagName) {
+    public PipelinePointer changePipelinePointerTag(Long projectId, Long pipelinePointerId, String tagName) {
         return changeField(projectId, pipelinePointerId,
                 pipelinePointer -> {
                     pipelinePointer.setTag(tagName);
@@ -189,7 +193,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public boolean changePipelinePointerDescription(Long projectId, Long pipelinePointerId, String description) {
+    public PipelinePointer changePipelinePointerDescription(Long projectId, Long pipelinePointerId, String description) {
         return changeField(projectId, pipelinePointerId,
                 pipelinePointer -> {
                     pipelinePointer.setDescription(description);
@@ -198,14 +202,14 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
                 });
     }
 
-    private boolean changeField(Long projectId, Long pipelinePointerId, Consumer<PipelinePointer> fieldSetConsumer) {
+    private PipelinePointer changeField(Long projectId, Long pipelinePointerId, Consumer<PipelinePointer> fieldSetConsumer) {
         List<PipelinePointer> pipelinePointers = findProject(projectId).getPipelines();
         PipelinePointer found = pipelinePointers.stream()
                 .filter(pipelinePointer -> pipelinePointer.getId().equals(pipelinePointerId))
                 .findFirst().orElseThrow(() -> new PipelineManagementException(PIPELINE_NOT_EXISTS));
         fieldSetConsumer.accept(found);
         save();
-        return true;
+        return found;
     }
 
     private ProjectsFile save() {

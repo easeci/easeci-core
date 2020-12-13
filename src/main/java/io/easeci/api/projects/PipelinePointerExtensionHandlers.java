@@ -4,7 +4,6 @@ import io.easeci.api.communication.ApiResponse;
 import io.easeci.api.projects.dto.*;
 import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.workspace.projects.*;
-import io.easeci.api.projects.dto.AddProjectRequest;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import ratpack.handling.Context;
@@ -19,79 +18,66 @@ import static io.easeci.api.communication.ApiResponse.unknownSuccess;
 import static io.easeci.api.validation.ApiRequestValidator.extractBody;
 import static ratpack.http.MediaType.APPLICATION_JSON;
 
-public class ProjectExtensionHandlers implements InternalHandlers {
-    private final static String MAPPING = "project/";
-    private ProjectIO projectIO;
+public class PipelinePointerExtensionHandlers implements InternalHandlers {
+    private final static String MAPPING = "pipeline/pointer";
+    private PipelinePointerIO pipelinePointerIO;
 
-    public ProjectExtensionHandlers() {
-        this.projectIO = ProjectManager.getInstance();
+    public PipelinePointerExtensionHandlers() {
+        this.pipelinePointerIO = ProjectManager.getInstance();
     }
 
     @Override
     public List<EndpointDeclaration> endpoints() {
         return List.of(
-                createProject(),
-                deleteProject(),
-                renameProject(),
-                changeTagProject(),
-                changeDescriptionProject()
+                deletePipelinePointer(),
+                renamePipelinePointer(),
+                changeTagPipelinePointer(),
+                changeDescriptionPipelinePointer()
         );
     }
 
-    private EndpointDeclaration createProject() {
-        return EndpointDeclaration.builder()
-                .httpMethod(HttpMethod.POST)
-                .endpointUri(MAPPING + "create")
-                .handler(ctx -> extractBody(ctx, AddProjectRequest.class)
-                        .map(addProjectRequest -> projectIO.createNewProject(addProjectRequest))
-                        .map(project -> handleCreationSuccess(ctx, project))
-                        .mapError(throwable -> handleException(ctx, throwable))
-                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
-                .build();
-    }
-
-    private EndpointDeclaration deleteProject() {
+    private EndpointDeclaration deletePipelinePointer() {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.POST)
                 .endpointUri(MAPPING + "delete")
-                .handler(ctx -> extractBody(ctx, DeleteProjectRequest.class)
-                        .map(request -> projectIO.deleteProject(request.getProjectGroupId(), request.getProjectId(), request.getIsHardRemoval()))
+                .handler(ctx -> extractBody(ctx, DeletePipelinePointerRequest.class)
+                        .map(request -> pipelinePointerIO.deletePipelinePointer(request.getProjectId(), request.getPipelinePointerId()))
                         .map(project -> handleUpdateSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
 
-    private EndpointDeclaration renameProject() {
+    private EndpointDeclaration renamePipelinePointer() {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.PUT)
                 .endpointUri(MAPPING + "rename")
-                .handler(ctx -> extractBody(ctx, RenameProjectRequest.class)
-                        .map(request -> projectIO.renameProject(request.getProjectId(), request.getName()))
+                .handler(ctx -> extractBody(ctx, RenamePipelinePointerRequest.class)
+                        .map(request -> pipelinePointerIO.renamePipelinePointer(request.getProjectId(), request.getPipelinePointerId(), request.getName()))
                         .map(project -> handleUpdateSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
 
-    private EndpointDeclaration changeTagProject() {
+    private EndpointDeclaration changeTagPipelinePointer() {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.PUT)
                 .endpointUri(MAPPING + "tag")
-                .handler(ctx -> extractBody(ctx, TagChangeProjectRequest.class)
-                        .map(request -> projectIO.changeProjectTag(request.getProjectId(), request.getTag()))
+                .handler(ctx -> extractBody(ctx, TagChangePipelinePointerRequest.class)
+                        .map(request -> pipelinePointerIO.changePipelinePointerTag(request.getProjectId(), request.getPipelinePointerId(), request.getTag()))
                         .map(project -> handleUpdateSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
 
-    private EndpointDeclaration changeDescriptionProject() {
+    private EndpointDeclaration changeDescriptionPipelinePointer() {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.PUT)
                 .endpointUri(MAPPING + "description")
-                .handler(ctx -> extractBody(ctx, DescriptionChangeProjectRequest.class)
-                        .map(request -> projectIO.changeProjectDescription(request.getProjectId(), request.getDescription()))
+                .handler(ctx -> extractBody(ctx, DescriptionChangePipelinePointerRequest.class)
+                        .map(request -> pipelinePointerIO.changePipelinePointerDescription(request.getProjectId(), request.getPipelinePointerId(), request.getDescription()))
                         .map(project -> handleDeleteSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
@@ -116,36 +102,24 @@ public class ProjectExtensionHandlers implements InternalHandlers {
         return write(apiResponse);
     }
 
-    private byte[] handleCreationSuccess(Context ctx, Project project) {
-        ctx.getResponse().status(Status.OK);
-        ApiResponse<SuccessResponse> successResponse;
-        if (project != null && project.getId() != null) {
-            final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PROJECT_CREATED;
-            successResponse = ApiResponse.success(SuccessResponse.of(project.getId(), projectDomainStatus));
-        } else {
-            successResponse = unknownSuccess();
-        }
-        return write(successResponse);
-    }
-
-    private byte[] handleDeleteSuccess(Context ctx, Project project) {
+    private byte[] handleDeleteSuccess(Context ctx, PipelinePointer pipelinePointer) {
         ctx.getResponse().status(Status.OK);
         ApiResponse<SuccessResponse> apiResponse;
-        if (project != null) {
-            final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PROJECT_REMOVED;
-            apiResponse = ApiResponse.success(SuccessResponse.of(project.getId(), projectDomainStatus));
+        if (pipelinePointer != null) {
+            final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PIPELINE_POINTER_REMOVED;
+            apiResponse = ApiResponse.success(SuccessResponse.of(pipelinePointer.getId(), projectDomainStatus));
         } else {
             apiResponse = unknownSuccess();
         }
         return write(apiResponse);
     }
 
-    private byte[] handleUpdateSuccess(Context ctx, Project project) {
+    private byte[] handleUpdateSuccess(Context ctx, PipelinePointer pipelinePointer) {
         ctx.getResponse().status(Status.OK);
         ApiResponse<SuccessResponse> apiResponse;
-        if (project != null) {
-            final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PROJECT_MODIFIED;
-            apiResponse = ApiResponse.success(SuccessResponse.of(project.getId(), projectDomainStatus));
+        if (pipelinePointer != null) {
+            final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PIPELINE_POINTER_MODIFIED;
+            apiResponse = ApiResponse.success(SuccessResponse.of(pipelinePointer.getId(), projectDomainStatus));
         } else {
             apiResponse = unknownSuccess();
         }

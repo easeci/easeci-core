@@ -2,6 +2,7 @@ package io.easeci.core.engine.easefile.parser;
 
 import io.easeci.core.engine.EngineStatus;
 import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
+import io.easeci.core.workspace.projects.PipelinePointer;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
 import io.easeci.core.workspace.projects.ProjectManager;
 
@@ -21,9 +22,9 @@ public class MainEasefileParser implements EasefileParser {
 
         EasefileParseResult easefileParseResult = new EasefileParseResult();
 
-        boolean isPointerCreated = pipelinePointerIO.createNewPipelinePointer(easefileParseResult.getPipeline().getMetadata());
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(easefileParseResult.getPipeline().getMetadata());
 
-        if (!isPointerCreated) {
+        if (pipelinePointer != null) {
             EngineStatus ePp0001 = EngineStatus.F_PP_0001;
             ePp0001.className = this.getClass().getName();
             ePp0001.codeLine = Thread.currentThread().getStackTrace()[0].getLineNumber();

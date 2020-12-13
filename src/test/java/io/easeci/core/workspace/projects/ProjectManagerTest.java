@@ -40,7 +40,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
 
         // execute testing method
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
 
         // find just saved pipeline
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
@@ -48,7 +48,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
 
         assertAll(() -> assertNotNull(pipelinePointerIO),
                   () -> assertNotNull(justAddedPointer),
-                  () -> assertTrue(isPipelinePointerCreated),
+                  () -> assertNotNull(pipelinePointer),
                   () -> assertEquals(pipelineMeta.getPipelineId(), justAddedPointer.getPipelineId()),
                   () -> assertEquals(pipelineMeta.getCreatedDate(), justAddedPointer.getCreatedDate()),
                   () -> assertEquals(pipelineMeta.getEasefilePath(), justAddedPointer.getEasefilePath()),
@@ -67,7 +67,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         pipelineMeta.setName("Another test name");
 
         // execute testing method
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
 
         assertThrows(PipelineManagementException.class, () -> pipelinePointerIO.createNewPipelinePointer(pipelineMeta));
 
@@ -75,7 +75,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         int pipelinesAmount = pipelinesAmount(projectsFile);
 
-        assertAll(() -> assertTrue(isPipelinePointerCreated),
+        assertAll(() -> assertNotNull(pipelinePointer),
                   () -> assertEquals(1, pipelinesAmount));
     }
 
@@ -88,7 +88,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         pipelineMeta.setPipelineId(UUID.randomUUID());
 
         // execute testing method
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
 
         assertThrows(PipelineManagementException.class, () -> pipelinePointerIO.createNewPipelinePointer(pipelineMeta));
 
@@ -96,7 +96,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         int pipelinesAmount = pipelinesAmount(projectsFile);
 
-        assertAll(() -> assertTrue(isPipelinePointerCreated),
+        assertAll(() -> assertNotNull(projectsFile),
                   () -> assertEquals(1, pipelinesAmount));
     }
 
@@ -106,17 +106,17 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
-        assertTrue(isPipelinePointerCreated);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertNotNull(pipelinePointer);
 
         Long projectId = pipelineMeta.getProjectId();
         Long pipelineId = 0L;
 
         int pipelinesAmountBeforeRemoval = pipelinesAmount(projectsFile);
-        boolean removalResult = pipelinePointerIO.deletePipelinePointer(projectId, pipelineId);
+        PipelinePointer pipelinePointerDeleted = pipelinePointerIO.deletePipelinePointer(projectId, pipelineId);
         int pipelinesAmountAfterRemoval = pipelinesAmount(projectsFile);
 
-        assertAll(() -> assertTrue(removalResult),
+        assertAll(() -> assertNotNull(pipelinePointerDeleted),
                   () -> assertEquals(1, pipelinesAmountBeforeRemoval),
                   () -> assertEquals(0, pipelinesAmountAfterRemoval));
     }
@@ -127,8 +127,8 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
-        assertTrue(isPipelinePointerCreated);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertNotNull(pipelinePointer);
 
         Long projectId = pipelineMeta.getProjectId();
         Long pipelineId = 10L; // not existing pipeline pointer
@@ -148,8 +148,8 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
-        assertTrue(isPipelinePointerCreated);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertNotNull(pipelinePointer);
 
         Long projectId = pipelineMeta.getProjectId() + 1;  // not existing project
         Long pipelineId = 0L;
@@ -169,19 +169,20 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
-        assertTrue(isPipelinePointerCreated);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertNotNull(pipelinePointer);
 
         final String oldPipelineName = pipelineMeta.getName();
         final String newPipelineName = "New pipeline name";
         final Long pipelinePointerId = 0L;
         final Long projectId = 0L;
 
-        boolean isRenamed = pipelinePointerIO.renamePipelinePointer(projectId, pipelinePointerId, newPipelineName);
+        PipelinePointer pipelinePointerRenamed = pipelinePointerIO.renamePipelinePointer(projectId, pipelinePointerId, newPipelineName);
 
         PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
 
-        assertAll(() -> assertTrue(isRenamed),
+        assertAll(() -> assertNotNull(pipelinePointerChanged),
+                () -> assertNotNull(pipelinePointerRenamed),
                 () -> assertEquals(newPipelineName, pipelinePointerChanged.getName()),
                 () -> assertNotEquals(oldPipelineName, pipelinePointerChanged.getName()));
     }
@@ -192,19 +193,19 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
-        assertTrue(isPipelinePointerCreated);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertNotNull(pipelinePointer);
 
         final String oldTagName = pipelineMeta.getTag();
         final String newTagName = "Tag v2.0";
         final Long pipelinePointerId = 0L;
         final Long projectId = 0L;
 
-        boolean isTagChanged = pipelinePointerIO.changePipelinePointerTag(projectId, pipelinePointerId, newTagName);
+        PipelinePointer pipelinePointerEdited = pipelinePointerIO.changePipelinePointerTag(projectId, pipelinePointerId, newTagName);
 
         PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
 
-        assertAll(() -> assertTrue(isTagChanged),
+        assertAll(() -> assertNotNull(pipelinePointerEdited),
                 () -> assertEquals(newTagName, pipelinePointerChanged.getTag()),
                 () -> assertNotEquals(oldTagName, pipelinePointerChanged.getTag()));
     }
@@ -215,19 +216,19 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
-        boolean isPipelinePointerCreated = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
-        assertTrue(isPipelinePointerCreated);
+        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
+        assertNotNull(pipelinePointer);
 
         final String oldDescription = pipelineMeta.getDescription();
         final String newDescription = "This is new description of this pipeline.";
         final Long pipelinePointerId = 0L;
         final Long projectId = 0L;
 
-        boolean isDescriptionChanged = pipelinePointerIO.changePipelinePointerDescription(projectId, pipelinePointerId, newDescription);
+        PipelinePointer pipelinePointerEdited = pipelinePointerIO.changePipelinePointerDescription(projectId, pipelinePointerId, newDescription);
 
         PipelinePointer pipelinePointerChanged = firstPipelinePointer(projectsFile);
 
-        assertAll(() -> assertTrue(isDescriptionChanged),
+        assertAll(() -> assertNotNull(pipelinePointerEdited),
                 () -> assertEquals(newDescription, pipelinePointerChanged.getDescription()),
                 () -> assertNotEquals(oldDescription, pipelinePointerChanged.getDescription()));
     }

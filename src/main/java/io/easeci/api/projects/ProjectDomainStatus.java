@@ -36,8 +36,19 @@ public enum ProjectDomainStatus {
         public String message() {
             return "Project modified with success";
         }
-    }
-    ;
+    },
+    PIPELINE_POINTER_REMOVED {
+        @Override
+        public String message() {
+            return "PipelinePointer removed with success";
+        }
+    },
+    PIPELINE_POINTER_MODIFIED {
+        @Override
+        public String message() {
+            return "PipelinePointer modified with success";
+        }
+    };
 
     public abstract String message();
 }
