@@ -313,6 +313,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         Project project = findProject(projectId);
         final String oldName = project.getName();
         project.setName(projectName);
+        project.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project was renamed from '" + oldName + "', to: '" + projectName + "'");
         return true;
@@ -323,6 +324,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         Project project = findProject(projectId);
         final String oldTag = project.getTag();
         project.setTag(projectTag);
+        project.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project has changed tag from '" + oldTag + "', to: '" + projectTag + "'");
         return true;
@@ -333,6 +335,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         Project project = findProject(projectId);
         final String oldDescription = project.getDescription();
         project.setDescription(projectDescription);
+        project.setLastModifiedDate(new Date());
         save();
         logit(WORKSPACE_EVENT, "Project has changed description from '" + oldDescription + "', to: '" + projectDescription + "'");
         return true;
