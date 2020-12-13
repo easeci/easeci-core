@@ -1,6 +1,6 @@
 package io.easeci.core.workspace.projects;
 
-import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
+import io.easeci.api.projects.dto.AddProjectGroupRequest;
 
 /**
  * Main interface to deal with Project Group that is wrapper for Projects.

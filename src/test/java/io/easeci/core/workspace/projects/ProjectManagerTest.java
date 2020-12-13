@@ -2,8 +2,8 @@ package io.easeci.core.workspace.projects;
 
 import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.engine.pipeline.Pipeline;
-import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
-import io.easeci.core.workspace.projects.dto.AddProjectRequest;
+import io.easeci.api.projects.dto.AddProjectGroupRequest;
+import io.easeci.api.projects.dto.AddProjectRequest;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -240,11 +240,11 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
 
         Long defaultProjectGroupId = defaultProjectGroupId();
         AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
-        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+        Project project = projectIO.createNewProject(addProjectRequest);
 
         assertAll(() -> assertNotNull(projectIO),
                 () -> assertNotNull(projectsFile),
-                () -> assertTrue(isProjectAdded));
+                () -> assertNotNull(project));
 
         Project justAddedProject = firstAddedProject(projectsFile);
 
@@ -320,10 +320,10 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
                 () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().get(1).getPipelines().size())
         );
 
-        boolean isRemoved = projectIO.deleteProject(defaultProjectGroupId, projectToRemove.getId(), false);
+        Project project = projectIO.deleteProject(defaultProjectGroupId, projectToRemove.getId(), false);
 
         assertAll(
-                () -> assertTrue(isRemoved),
+                () -> assertNotNull(project),
                 // 1 project should be in projectGroup at index = 0, it was 2 project and 1 was removed
                 () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size()),
                 // First default project had 0 pipelinePointer but now has 1,
@@ -364,10 +364,10 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
                 () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().get(1).getPipelines().size())
         );
 
-        boolean isRemoved = projectIO.deleteProject(defaultProjectGroupId, projectToRemove.getId(), true);
+        Project project = projectIO.deleteProject(defaultProjectGroupId, projectToRemove.getId(), true);
 
         assertAll(
-                () -> assertTrue(isRemoved),
+                () -> assertNotNull(project),
                 // 1 project should be in projectGroup at index = 0, it was 2 project and 1 was removed
                 () -> assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size()),
                 // First default project had 0 pipelinePointer and now has 0 too (hard/cascade removal),
@@ -396,9 +396,9 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
         Long defaultProjectGroupId = defaultProjectGroupId();
 
-        boolean isProjectRemoved = projectIO.deleteProject(defaultProjectGroupId, defaultProjectId(), true);
+        Project project = projectIO.deleteProject(defaultProjectGroupId, defaultProjectId(), true);
 
-        assertFalse(isProjectRemoved);
+        assertNull(project);
         assertEquals(1, projectsFile.getProjectGroups().get(0).getProjects().size());
     }
 
@@ -410,18 +410,18 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
 
         Long defaultProjectGroupId = defaultProjectGroupId();
         AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
-        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+        Project project = projectIO.createNewProject(addProjectRequest);
 
         assertAll(() -> assertNotNull(projectIO),
                 () -> assertNotNull(projectsFile),
-                () -> assertTrue(isProjectAdded));
+                () -> assertNotNull(project));
 
         Project justAddedProject = firstAddedProject(projectsFile);
         final String projectNewName = "Updated project name";
 
-        boolean isRenamed = projectIO.renameProject(justAddedProject.getId(), projectNewName);
+        Project projectRenamed = projectIO.renameProject(justAddedProject.getId(), projectNewName);
 
-        assertAll(() -> assertTrue(isRenamed),
+        assertAll(() -> assertNotNull(projectRenamed),
                 () -> assertEquals(projectNewName, justAddedProject.getName()));
     }
 
@@ -433,18 +433,18 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
 
         Long defaultProjectGroupId = defaultProjectGroupId();
         AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
-        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+        Project projectNew = projectIO.createNewProject(addProjectRequest);
 
         assertAll(() -> assertNotNull(projectIO),
                 () -> assertNotNull(projectsFile),
-                () -> assertTrue(isProjectAdded));
+                () -> assertNotNull(projectNew));
 
         Project justAddedProject = firstAddedProject(projectsFile);
         final String projectNewTag = "Production mode";
 
-        boolean isRenamed = projectIO.changeProjectTag(justAddedProject.getId(), projectNewTag);
+        Project projectRenamed = projectIO.changeProjectTag(justAddedProject.getId(), projectNewTag);
 
-        assertAll(() -> assertTrue(isRenamed),
+        assertAll(() -> assertNotNull(projectRenamed),
                 () -> assertEquals(projectNewTag, justAddedProject.getTag()));
     }
 
@@ -456,18 +456,18 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
 
         Long defaultProjectGroupId = defaultProjectGroupId();
         AddProjectRequest addProjectRequest = prepareAddProjectRequest(defaultProjectGroupId);
-        boolean isProjectAdded = projectIO.createNewProject(addProjectRequest);
+        Project projectAdded = projectIO.createNewProject(addProjectRequest);
 
         assertAll(() -> assertNotNull(projectIO),
                 () -> assertNotNull(projectsFile),
-                () -> assertTrue(isProjectAdded));
+                () -> assertNotNull(projectAdded));
 
         Project justAddedProject = firstAddedProject(projectsFile);
         final String projectNewDescription = "Production mode description";
 
-        boolean isRenamed = projectIO.changeProjectDescription(justAddedProject.getId(), projectNewDescription);
+        Project projectEdited = projectIO.changeProjectDescription(justAddedProject.getId(), projectNewDescription);
 
-        assertAll(() -> assertTrue(isRenamed),
+        assertAll(() -> assertNotNull(projectEdited),
                 () -> assertEquals(projectNewDescription, justAddedProject.getDescription()));
     }
 

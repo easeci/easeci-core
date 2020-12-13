@@ -1,8 +1,8 @@
 package io.easeci.core.workspace.projects;
 
 import io.easeci.core.engine.pipeline.Pipeline;
-import io.easeci.core.workspace.projects.dto.AddProjectGroupRequest;
-import io.easeci.core.workspace.projects.dto.AddProjectRequest;
+import io.easeci.api.projects.dto.AddProjectGroupRequest;
+import io.easeci.api.projects.dto.AddProjectRequest;
 
 import java.nio.file.Paths;
 import java.util.Date;

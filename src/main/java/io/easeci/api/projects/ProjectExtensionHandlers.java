@@ -4,7 +4,7 @@ import io.easeci.api.communication.ApiResponse;
 import io.easeci.api.projects.dto.*;
 import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.workspace.projects.*;
-import io.easeci.core.workspace.projects.dto.AddProjectRequest;
+import io.easeci.api.projects.dto.AddProjectRequest;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import ratpack.handling.Context;
@@ -44,7 +44,7 @@ public class ProjectExtensionHandlers  implements InternalHandlers {
                 .endpointUri(MAPPING + "create")
                 .handler(ctx -> extractBody(ctx, AddProjectRequest.class)
                         .map(addProjectRequest -> projectIO.createNewProject(addProjectRequest))
-                        .map(isProjectAdded -> handleCreationSuccess(ctx, isProjectAdded))
+                        .map(project -> handleCreationSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -56,7 +56,7 @@ public class ProjectExtensionHandlers  implements InternalHandlers {
                 .endpointUri(MAPPING + "delete")
                 .handler(ctx -> extractBody(ctx, DeleteProjectRequest.class)
                         .map(request -> projectIO.deleteProject(request.getProjectGroupId(), request.getProjectId(), request.getIsHardRemoval()))
-                        .map(isProjectRemoved -> handleUpdateSuccess(ctx, isProjectRemoved))
+                        .map(project -> handleUpdateSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -68,7 +68,7 @@ public class ProjectExtensionHandlers  implements InternalHandlers {
                 .endpointUri(MAPPING + "rename")
                 .handler(ctx -> extractBody(ctx, RenameProjectRequest.class)
                         .map(request -> projectIO.renameProject(request.getProjectId(), request.getName()))
-                        .map(isProjectRenamed -> handleUpdateSuccess(ctx, isProjectRenamed))
+                        .map(project -> handleUpdateSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -80,7 +80,7 @@ public class ProjectExtensionHandlers  implements InternalHandlers {
                 .endpointUri(MAPPING + "tag")
                 .handler(ctx -> extractBody(ctx, TagChangeProjectRequest.class)
                         .map(request -> projectIO.changeProjectTag(request.getProjectId(), request.getTag()))
-                        .map(isTagChanged -> handleUpdateSuccess(ctx, isTagChanged))
+                        .map(project -> handleUpdateSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -92,7 +92,7 @@ public class ProjectExtensionHandlers  implements InternalHandlers {
                 .endpointUri(MAPPING + "description")
                 .handler(ctx -> extractBody(ctx, DescriptionChangeProjectRequest.class)
                         .map(request -> projectIO.changeProjectDescription(request.getProjectId(), request.getDescription()))
-                        .map(isDescriptionChanged -> handleDeleteSuccess(ctx, isDescriptionChanged))
+                        .map(project -> handleDeleteSuccess(ctx, project))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -116,36 +116,36 @@ public class ProjectExtensionHandlers  implements InternalHandlers {
         return write(apiResponse);
     }
 
-    private byte[] handleCreationSuccess(Context ctx, boolean isProjectAdded) {
+    private byte[] handleCreationSuccess(Context ctx, Project project) {
         ctx.getResponse().status(Status.OK);
         ApiResponse<SuccessResponse> successResponse;
-        if (isProjectAdded) {
+        if (project != null && project.getId() != null) {
             final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PROJECT_CREATED;
-            successResponse = ApiResponse.success(SuccessResponse.of(projectDomainStatus));
+            successResponse = ApiResponse.success(SuccessResponse.of(project.getId(), projectDomainStatus));
         } else {
             successResponse = unknownSuccess();
         }
         return write(successResponse);
     }
 
-    private byte[] handleDeleteSuccess(Context ctx, boolean isProjectRemoved) {
+    private byte[] handleDeleteSuccess(Context ctx, Project project) {
         ctx.getResponse().status(Status.OK);
         ApiResponse<SuccessResponse> apiResponse;
-        if (isProjectRemoved) {
+        if (project != null) {
             final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PROJECT_REMOVED;
-            apiResponse = ApiResponse.success(SuccessResponse.of(projectDomainStatus));
+            apiResponse = ApiResponse.success(SuccessResponse.of(project.getId(), projectDomainStatus));
         } else {
             apiResponse = unknownSuccess();
         }
         return write(apiResponse);
     }
 
-    private byte[] handleUpdateSuccess(Context ctx, boolean isProjectEdited) {
+    private byte[] handleUpdateSuccess(Context ctx, Project project) {
         ctx.getResponse().status(Status.OK);
         ApiResponse<SuccessResponse> apiResponse;
-        if (isProjectEdited) {
+        if (project != null) {
             final ProjectDomainStatus projectDomainStatus = ProjectDomainStatus.PROJECT_MODIFIED;
-            apiResponse = ApiResponse.success(SuccessResponse.of(projectDomainStatus));
+            apiResponse = ApiResponse.success(SuccessResponse.of(project.getId(), projectDomainStatus));
         } else {
             apiResponse = unknownSuccess();
         }
