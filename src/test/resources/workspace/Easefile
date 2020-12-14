@@ -1,5 +1,9 @@
 pipeline:
   executor: auto
+  meta:
+    projectId: 0
+    tag: 'java maven'
+    description: 'Java project based on Maven, continuous deployment process'
   variables:
     _repo_address = https://github.com/easeci/easeci-core-java
     _repo_clone_target = /var/sources/easeci

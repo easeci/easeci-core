@@ -1,8 +1,10 @@
 package io.easeci.core.engine.pipeline;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
@@ -17,9 +19,24 @@ import java.util.UUID;
  * 2020-11-22
  * */
 @Getter
-public class Pipeline {
+public class Pipeline implements Serializable {
     private Metadata metadata;
-    private List<PipeDataSet> pipeDataSets;
+    private Key key;
+    private List<Executor> executors;
+    private List<Variable> variables;
+    private List<Stage> stages;
+    private byte[] scriptEncoded;
+
+    @Builder
+    public Pipeline(Metadata metadata, Key key, List<Executor> executors,
+                    List<Variable> variables, List<Stage> stages, byte[] scriptEncoded) {
+        this.metadata = metadata;
+        this.key = key;
+        this.executors = executors;
+        this.variables = variables;
+        this.stages = stages;
+        this.scriptEncoded = scriptEncoded;
+    }
 
     @Data
     public static class Metadata {
@@ -32,10 +49,5 @@ public class Pipeline {
         private Path pipelineFilePath;
         private String tag;
         private String description;
-    }
-
-    // here all elements of Easefile specification like variables, directives, etc.
-    static class PipeDataSet {
-
     }
 }

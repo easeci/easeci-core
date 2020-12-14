@@ -6,6 +6,7 @@ import io.easeci.api.validation.ValidationException;
 import io.easeci.core.engine.easefile.loader.EasefileContentMalformed;
 import io.easeci.core.engine.easefile.loader.EasefileLoaderFactory;
 import io.easeci.core.engine.easefile.parser.EasefileParser;
+import io.easeci.core.engine.easefile.parser.MainEasefileParser;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -24,6 +25,7 @@ public class EasefileParsingHandlers implements InternalHandlers {
 
     public EasefileParsingHandlers() {
         this.objectMapper = new ObjectMapper();
+        this.easefileParser = new MainEasefileParser();
     }
 
     @Override
