@@ -17,7 +17,6 @@ public class RunParseProcess implements Validator {
     private String gitRepositoryUrl;
     private String encodedEasefileContent;
 
-
     @Override
     public List<ValidationError> validate() {
         return combine(Arrays.asList(

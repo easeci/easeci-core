@@ -24,10 +24,9 @@ import io.easeci.core.node.NodeUtils;
  * 2020-11-23
  * */
 public enum EngineStatus {
+    S_EP_0000("Pipeline was successfully created, file created, pointer in project-structure.json created"),
     F_PP_0001("Pipeline was created but something went wrong while adding PipelinePointer to projects-structure.json file");
 
-    public String className;           // <- indicates class where error could be occurred
-    public long codeLine;              // <- indicates line of code where error could be occurred
     private String applicationVersion; // <- inform what is EaseCI version
     private String errorCode;
     private String message;

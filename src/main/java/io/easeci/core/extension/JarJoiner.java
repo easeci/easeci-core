@@ -1,6 +1,5 @@
 package io.easeci.core.extension;
 
-import io.easeci.core.log.ApplicationLevelLogFacade;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

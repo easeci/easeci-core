@@ -46,6 +46,8 @@ dependencies {
     implementation "io.reactivex.rxjava3:rxjava:3.0.2"
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.9.0.202009080501-r'
 
+    compile group: 'org.zeroturnaround', name: 'zt-exec', version: '1.12'
+
     implementation 'org.slf4j:slf4j-api:1.7.30'
     implementation 'org.slf4j:slf4j-simple:1.7.30'
 
