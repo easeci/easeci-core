@@ -3,6 +3,7 @@ package io.easeci.core.engine.pipeline;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -39,6 +40,7 @@ public class Pipeline implements Serializable {
     }
 
     @Data
+    @ToString
     public static class Metadata {
         private Long projectId;
         private UUID pipelineId;
