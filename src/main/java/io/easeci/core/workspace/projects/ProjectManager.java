@@ -33,6 +33,7 @@ import static java.util.Optional.ofNullable;
 
 public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGroupIO {
     public final static String PROJECTS_DIRECTORY = "/projects/";
+    public final static String PIPELINES_DIRECTORY = "/projects/pipelines/";
     public final static String PROJECTS_FILE = PROJECTS_DIRECTORY + "projects-structure.json";
     private static ProjectManager projectManager;
     private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -61,9 +62,14 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     private Path initializeDirectory() {
         final String workspaceLocation = getWorkspaceLocation();
         final String projectsDirLocation = workspaceLocation.concat(PROJECTS_DIRECTORY);
+        final String pipelinesDirLocation = workspaceLocation.concat(PIPELINES_DIRECTORY);
         if (!DirUtils.isDirectoryExists(projectsDirLocation)) {
             Path path = DirUtils.directoryCreate(projectsDirLocation);
             logit(WORKSPACE_EVENT, "Directory for projects store just created at here: " + projectsDirLocation, THREE);
+            if (!DirUtils.isDirectoryExists(pipelinesDirLocation)) {
+                DirUtils.directoryCreate(projectsDirLocation);
+                logit(WORKSPACE_EVENT, "Directory for projects store just created at here: " + projectsDirLocation, THREE);
+            }
             return path;
         }
         return Path.of(projectsDirLocation);

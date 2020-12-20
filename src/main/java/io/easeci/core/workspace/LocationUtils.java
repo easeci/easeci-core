@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 import static io.easeci.core.workspace.AbstractWorkspaceInitializer.BOOTSTRAP_FILENAME;
 import static io.easeci.commons.YamlUtils.ymlGet;
+import static io.easeci.core.workspace.projects.ProjectManager.PIPELINES_DIRECTORY;
 
 public class LocationUtils {
 
@@ -84,5 +85,10 @@ public class LocationUtils {
     public static Path getVarsFileLocation() {
         return Paths.get(getWorkspaceLocation()
                     .concat("/vars.json"));
+    }
+
+    public static Path getPipelineFilesLocation() {
+        return Paths.get(getWorkspaceLocation()
+                    .concat(PIPELINES_DIRECTORY));
     }
 }

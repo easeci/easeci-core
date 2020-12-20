@@ -1,9 +1,6 @@
 package io.easeci.core.engine.pipeline;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 import java.nio.file.Path;

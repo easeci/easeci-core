@@ -2,7 +2,6 @@ package io.easeci.core.engine.easefile.parser;
 
 import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
 import io.easeci.core.engine.pipeline.Pipeline;
-import io.easeci.core.workspace.projects.PipelinePointer;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
 
 import java.nio.file.Path;
@@ -36,7 +35,10 @@ public abstract class EasefileParserTemplate implements EasefileParser {
     abstract Path writePipelineFile(byte[] content);
 
     private EasefileParseResult afterParsingSuccess(Pipeline pipeline) {
-        PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipeline.getMetadata());
+        final byte[] serializedPipeline = serialize(pipeline);
+        final Path pipelineFilePath = writePipelineFile(serializedPipeline);
+        logit(EASEFILE_EVENT, "Pipeline was serialized, wrote to file and placed here: " + pipelineFilePath.toString());
+        pipelinePointerIO.createNewPipelinePointer(pipeline.getMetadata());
         logit(EASEFILE_EVENT, "Easefile parsed successfully and pipeline pointer added with metadata: " + pipeline.getMetadata());
         return EasefileParseResult.success(true, pipeline.getMetadata().getPipelineFilePath());
     }
