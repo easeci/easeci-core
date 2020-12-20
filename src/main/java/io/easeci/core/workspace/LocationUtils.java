@@ -80,4 +80,9 @@ public class LocationUtils {
         return Paths.get(getWorkspaceLocation()
                     .concat("/projects/projects-structure.json"));
     }
+
+    public static Path getVarsFileLocation() {
+        return Paths.get(getWorkspaceLocation()
+                    .concat("/vars.json"));
+    }
 }

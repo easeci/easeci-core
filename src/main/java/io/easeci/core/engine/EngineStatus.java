@@ -1,6 +1,7 @@
 package io.easeci.core.engine;
 
 import io.easeci.core.node.NodeUtils;
+import lombok.Getter;
 
 /**
  * Error statuses for action from EaseCI Engine.
@@ -23,9 +24,11 @@ import io.easeci.core.node.NodeUtils;
  * @author Karol Meksuła
  * 2020-11-23
  * */
+@Getter
 public enum EngineStatus {
     S_EP_0000("Pipeline was successfully created, file created, pointer in project-structure.json created"),
-    F_PP_0001("Pipeline was created but something went wrong while adding PipelinePointer to projects-structure.json file");
+    F_PP_0001("Pipeline was created but something went wrong while adding PipelinePointer to projects-structure.json file"),
+    F_EP_0002("Easefile parsing failed due to some syntax errors, any pipeline was not created");
 
     private String applicationVersion; // <- inform what is EaseCI version
     private String errorCode;
