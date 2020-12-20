@@ -76,6 +76,12 @@ public class ApplicationLevelLogFacade {
                 return "Easefile Event";
             }
         },
+        PIPELINE_EVENT {
+            @Override
+            public String toLevelName() {
+                return "Pipeline Event";
+            }
+        },
         TECHNICAL_EVENT {
             @Override
             public String toLevelName() {

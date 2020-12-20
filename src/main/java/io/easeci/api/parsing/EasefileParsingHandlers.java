@@ -26,7 +26,9 @@ public class EasefileParsingHandlers implements InternalHandlers {
 
     public EasefileParsingHandlers() {
         this.objectMapper = new ObjectMapper();
-        this.easefileParser = new MainEasefileParser(ProjectManager.getInstance());
+        this.easefileParser = MainEasefileParser.builder()
+                                                .pipelinePointerIO(ProjectManager.getInstance())
+                                                .build();
     }
 
     @Override
