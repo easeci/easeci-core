@@ -4,9 +4,9 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.nio.file.Path;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
+import io.easeci.core.workspace.vars.Variable;
 
 /**
  * Pipeline class is heart of EaseCI workflow.
@@ -17,6 +17,7 @@ import java.util.UUID;
  * 2020-11-22
  * */
 @Getter
+@NoArgsConstructor
 public class Pipeline implements Serializable {
     private Metadata metadata;
     private Key key;
@@ -48,5 +49,22 @@ public class Pipeline implements Serializable {
         private Path pipelineFilePath;
         private String tag;
         private String description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Pipeline pipeline = (Pipeline) o;
+        return Objects.equals(metadata, pipeline.metadata) && Objects.equals(key, pipeline.key) && Objects.equals(executors, pipeline.executors) && Objects.equals(variables, pipeline.variables) && Objects.equals(stages, pipeline.stages) && Arrays.equals(scriptEncoded, pipeline.scriptEncoded);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(metadata, key, executors, variables, stages);
+        result = 31 * result + Arrays.hashCode(scriptEncoded);
+        return result;
     }
 }

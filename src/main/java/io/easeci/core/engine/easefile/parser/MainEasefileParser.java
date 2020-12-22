@@ -7,6 +7,7 @@ import io.easeci.core.engine.easefile.parser.parts.PipelinePartProcessor;
 import io.easeci.core.engine.pipeline.*;
 import io.easeci.core.workspace.SerializeUtils;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
+import io.easeci.core.workspace.vars.Variable;
 import io.vavr.Tuple2;
 import lombok.Builder;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static io.easeci.core.workspace.LocationUtils.getPipelineFilesLocation;
 
-public class MainEasefileParser extends EasefileParserTemplate {
+class MainEasefileParser extends EasefileParserTemplate {
 
     private PipelinePartProcessor<Pipeline.Metadata> metadataProcessor;
     private PipelinePartProcessor<Key> keyProcessor;
@@ -32,7 +33,7 @@ public class MainEasefileParser extends EasefileParserTemplate {
     }
 
     @Builder
-    public MainEasefileParser(PipelinePointerIO pipelinePointerIO,
+    MainEasefileParser(PipelinePointerIO pipelinePointerIO,
                               PipelinePartProcessor<Pipeline.Metadata> metadataProcessor,
                               PipelinePartProcessor<Key> keyProcessor,
                               PipelinePartProcessor<List<Executor>> executorsProcessor,
@@ -59,7 +60,7 @@ public class MainEasefileParser extends EasefileParserTemplate {
         Path pipelineFile = Path.of(pipelineFilesLocation.toString()
                 .concat("/")
                 .concat("pipeline_")
-                .concat(String.valueOf(System.currentTimeMillis() / 1000L)));
+                .concat(String.valueOf(System.currentTimeMillis())));
         try {
             Path file = Files.createFile(pipelineFile);
             Files.write(file, serializedContent);

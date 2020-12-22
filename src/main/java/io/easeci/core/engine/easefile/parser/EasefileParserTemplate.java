@@ -10,7 +10,7 @@ import static io.easeci.core.engine.EngineStatus.F_EP_0002;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.EASEFILE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 
-public abstract class EasefileParserTemplate implements EasefileParser {
+abstract class EasefileParserTemplate implements EasefileParser {
 
     private PipelinePointerIO pipelinePointerIO;
 
