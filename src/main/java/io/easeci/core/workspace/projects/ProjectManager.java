@@ -67,8 +67,8 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
             Path path = DirUtils.directoryCreate(projectsDirLocation);
             logit(WORKSPACE_EVENT, "Directory for projects store just created at here: " + projectsDirLocation, THREE);
             if (!DirUtils.isDirectoryExists(pipelinesDirLocation)) {
-                DirUtils.directoryCreate(projectsDirLocation);
-                logit(WORKSPACE_EVENT, "Directory for projects store just created at here: " + projectsDirLocation, THREE);
+                DirUtils.directoryCreate(pipelinesDirLocation);
+                logit(WORKSPACE_EVENT, "Directory for deserialized pipelines store just created at here: " + projectsDirLocation, THREE);
             }
             return path;
         }
