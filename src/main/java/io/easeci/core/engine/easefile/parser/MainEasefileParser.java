@@ -3,6 +3,8 @@ package io.easeci.core.engine.easefile.parser;
 import io.easeci.core.engine.EngineStatus;
 import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
 import io.easeci.core.engine.easefile.parser.analyse.SyntaxError;
+import io.easeci.core.engine.easefile.parser.parts.ParsingError;
+import io.easeci.core.engine.easefile.parser.parts.PipelinePartCriticalError;
 import io.easeci.core.engine.easefile.parser.parts.PipelinePartProcessor;
 import io.easeci.core.engine.pipeline.*;
 import io.easeci.core.workspace.SerializeUtils;
@@ -18,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static io.easeci.core.workspace.LocationUtils.getPipelineFilesLocation;
+import static java.util.Objects.isNull;
 
 class MainEasefileParser extends EasefileParserTemplate {
 
@@ -27,10 +30,6 @@ class MainEasefileParser extends EasefileParserTemplate {
     private PipelinePartProcessor<List<Variable>> varsProcessor;
     private PipelinePartProcessor<List<Stage>> stagesProcessor;
     private PipelinePartProcessor<byte[]> scriptFileProcessor;
-
-    private MainEasefileParser(PipelinePointerIO pipelinePointerIO) {
-        super(pipelinePointerIO);
-    }
 
     @Builder
     MainEasefileParser(PipelinePointerIO pipelinePointerIO,
@@ -54,7 +53,6 @@ class MainEasefileParser extends EasefileParserTemplate {
         return Base64.getEncoder().encode(serialized);
     }
 
-    // todo => unit tests
     Path writePipelineFile(byte[] serializedContent) {
         Path pipelineFilesLocation = getPipelineFilesLocation();
         Path pipelineFile = Path.of(pipelineFilesLocation.toString()
@@ -70,7 +68,8 @@ class MainEasefileParser extends EasefileParserTemplate {
         return pipelineFile;
     }
 
-    Pipeline process(String easefileContent) throws StaticAnalyseException {
+    @Override
+    Pipeline process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError {
         Queue<SyntaxError> syntaxErrors = new ConcurrentLinkedQueue<>();
 
         Tuple2<Optional<Pipeline.Metadata>, List<SyntaxError>> metadata = this.metadataProcessor.process();
@@ -80,12 +79,19 @@ class MainEasefileParser extends EasefileParserTemplate {
         Tuple2<Optional<List<Stage>>, List<SyntaxError>> stages = this.stagesProcessor.process();
         Tuple2<Optional<byte[]>, List<SyntaxError>> scriptEncoded = this.scriptFileProcessor.process();
 
-        syntaxErrors.addAll(metadata._2);
-        syntaxErrors.addAll(key._2);
-        syntaxErrors.addAll(executors._2);
-        syntaxErrors.addAll(variables._2);
-        syntaxErrors.addAll(stages._2);
-        syntaxErrors.addAll(scriptEncoded._2);
+        validateProcessingResult(metadata, "Metadata");
+        validateProcessingResult(key, "Key");
+        validateProcessingResult(executors, "Executors");
+        validateProcessingResult(variables, "Variables");
+        validateProcessingResult(stages, "Stages");
+        validateProcessingResult(scriptEncoded, "Script collecting");
+
+        collectErrors(metadata, syntaxErrors);
+        collectErrors(key, syntaxErrors);
+        collectErrors(executors, syntaxErrors);
+        collectErrors(variables, syntaxErrors);
+        collectErrors(stages, syntaxErrors);
+        collectErrors(scriptEncoded, syntaxErrors);
 
         if (syntaxErrors.isEmpty()) {
             return Pipeline.builder()
@@ -100,4 +106,23 @@ class MainEasefileParser extends EasefileParserTemplate {
         throw new StaticAnalyseException(EngineStatus.S_EP_0000, new ArrayList<>(syntaxErrors));
     }
 
+    private <T> void collectErrors(Tuple2<Optional<T>, List<SyntaxError>> tuple, Queue<SyntaxError> syntaxErrors) {
+        Optional.ofNullable(tuple)
+                .map(tpl -> tpl._2)
+                .ifPresent(syntaxErrors::addAll);
+    }
+
+    private <T> void validateProcessingResult(Tuple2<Optional<T>, List<SyntaxError>> processingResult, final String processorName) throws PipelinePartCriticalError {
+        if (isNull(processingResult)) {
+            throw new PipelinePartCriticalError(List.of(
+                    ParsingError.of(
+                            processorName + " Pipeline part processor is damaged",
+                            "Please check is your instance of EaseCI Core has correctly defined plugins or call EaseCI support",
+                            processorName + " Pipeline part processor may be not initialized, " +
+                                    "EasefileParser can be instantiate in wrong way " +
+                                    "or external directive parser (plugin) is broken and cannot return processable result"
+                    )
+            ));
+        }
+    }
 }

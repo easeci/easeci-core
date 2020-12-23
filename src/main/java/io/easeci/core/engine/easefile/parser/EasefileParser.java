@@ -1,7 +1,5 @@
 package io.easeci.core.engine.easefile.parser;
 
-import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
-
 /**
  * Functional interface that provide entry point for
  * static analyse and parsing pipeline file called Easefile
@@ -20,8 +18,6 @@ public interface EasefileParser {
      *         that is parsed Easefile as a POJO representation.
      *         This object gathers and holds all information provided in
      *         Easefile and require for whole pipeline process.
-     * @throws StaticAnalyseException that contains all errors detected in Easefile file.
-     *         This exception should contains list of errors with line where occurred, message etc.
      * */
-    EasefileParseResult parse(String easefileContent) throws StaticAnalyseException;
+    EasefileParseResult parse(String easefileContent);
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 
@@ -49,8 +50,12 @@ class MainEasefileParserTest extends BaseWorkspaceContextTest {
         Pipeline pipeline = provideEmptyPipelineForTest();
         byte[] serializedPipeline = parser.serialize(pipeline);
         Path path = parser.writePipelineFile(serializedPipeline);
-        System.out.println(path);
 
-        assertAll(() -> assertNotNull(parser));
+        boolean isFileExists = Files.exists(path);
+
+        assertAll(() -> assertNotNull(parser),
+                () -> assertNotNull(serializedPipeline),
+                () -> assertNotNull(parser),
+                () -> assertTrue(isFileExists));
     }
 }

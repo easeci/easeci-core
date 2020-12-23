@@ -30,7 +30,7 @@ public abstract class BaseWorkspaceContextTest {
 
     @AfterAll
     public static void cleanup() throws IOException {
-//        FileUtils.deleteDirectory(Path.of(getWorkspaceLocation()).toFile());
-//        Files.deleteIfExists(getRunFile().toPath());
+        FileUtils.deleteDirectory(Path.of(getWorkspaceLocation()).toFile());
+        Files.deleteIfExists(getRunFile().toPath());
     }
 }

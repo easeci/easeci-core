@@ -6,7 +6,12 @@ import io.easeci.core.engine.pipeline.Stage;
 import io.easeci.core.workspace.vars.Variable;
 import io.easeci.extension.command.VariableType;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
+
+import static commons.WorkspaceTestUtils.buildPathFromResources;
 
 public class Utils {
 
@@ -20,5 +25,15 @@ public class Utils {
                         .build()))
                 .scriptEncoded(new byte[0])
                 .build();
+    }
+
+    static String readValidTestEasefile() {
+        Path path = buildPathFromResources("workspace/Easefile");
+        try {
+            return Files.readString(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
