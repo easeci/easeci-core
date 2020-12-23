@@ -28,7 +28,10 @@ import lombok.Getter;
 public enum EngineStatus {
     S_EP_0000("Pipeline was successfully created, file created, pointer in project-structure.json created"),
     F_PP_0001("Pipeline was created but something went wrong while adding PipelinePointer to projects-structure.json file"),
-    F_EP_0002("Easefile parsing failed due to some syntax errors, any pipeline was not created");
+    F_EP_0002("Easefile parsing failed due to some syntax errors, any pipeline was not created"),
+    F_EP_0003("Easefile parsing failed. Critical internal error occurred while collecting invocations of Easefile's parser. " +
+            "Some directives may return null value or could not call directive correctly. " +
+            "Another reason may be EasefileParser.class broken object");
 
     private String applicationVersion; // <- inform what is EaseCI version
     private String errorCode;

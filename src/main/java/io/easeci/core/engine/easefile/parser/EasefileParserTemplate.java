@@ -1,12 +1,14 @@
 package io.easeci.core.engine.easefile.parser;
 
 import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
+import io.easeci.core.engine.easefile.parser.parts.PipelinePartCriticalError;
 import io.easeci.core.engine.pipeline.Pipeline;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
 
 import java.nio.file.Path;
 
 import static io.easeci.core.engine.EngineStatus.F_EP_0002;
+import static io.easeci.core.engine.EngineStatus.F_EP_0003;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.EASEFILE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 
@@ -25,10 +27,12 @@ abstract class EasefileParserTemplate implements EasefileParser {
             return afterParsingSuccess(pipeline);
         } catch (StaticAnalyseException e) {
             return EasefileParseResult.failure(F_EP_0002, e.getSyntaxErrorList());
+        } catch (PipelinePartCriticalError e) {
+            return EasefileParseResult.criticalFailure(F_EP_0003, e.getParsingErrors());
         }
     }
 
-    abstract Pipeline process(String easefileContent) throws StaticAnalyseException;
+    abstract Pipeline process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError;
 
     abstract byte[] serialize(Pipeline pipeline);
 
