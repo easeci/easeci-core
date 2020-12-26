@@ -3,9 +3,7 @@ package io.easeci.core.engine.easefile.parser;
 import io.easeci.core.engine.EngineStatus;
 import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
 import io.easeci.core.engine.easefile.parser.analyse.SyntaxError;
-import io.easeci.core.engine.easefile.parser.parts.ParsingError;
-import io.easeci.core.engine.easefile.parser.parts.PipelinePartCriticalError;
-import io.easeci.core.engine.easefile.parser.parts.PipelinePartProcessor;
+import io.easeci.core.engine.easefile.parser.parts.*;
 import io.easeci.core.engine.pipeline.*;
 import io.easeci.core.workspace.SerializeUtils;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
@@ -30,16 +28,19 @@ class MainEasefileParser extends EasefileParserTemplate {
     private PipelinePartProcessor<List<Variable>> varsProcessor;
     private PipelinePartProcessor<List<Stage>> stagesProcessor;
     private PipelinePartProcessor<byte[]> scriptFileProcessor;
+    private EasefileExtractor easefileExtractor;
 
     @Builder
     MainEasefileParser(PipelinePointerIO pipelinePointerIO,
-                              PipelinePartProcessor<Pipeline.Metadata> metadataProcessor,
-                              PipelinePartProcessor<Key> keyProcessor,
-                              PipelinePartProcessor<List<Executor>> executorsProcessor,
-                              PipelinePartProcessor<List<Variable>> varsProcessor,
-                              PipelinePartProcessor<List<Stage>> stagesProcessor,
-                              PipelinePartProcessor<byte[]> scriptFileProcessor) {
+                       EasefileExtractor easefileExtractor,
+                       PipelinePartProcessor<Pipeline.Metadata> metadataProcessor,
+                       PipelinePartProcessor<Key> keyProcessor,
+                       PipelinePartProcessor<List<Executor>> executorsProcessor,
+                       PipelinePartProcessor<List<Variable>> varsProcessor,
+                       PipelinePartProcessor<List<Stage>> stagesProcessor,
+                       PipelinePartProcessor<byte[]> scriptFileProcessor) {
         super(pipelinePointerIO);
+        this.easefileExtractor = easefileExtractor;
         this.metadataProcessor = metadataProcessor;
         this.keyProcessor = keyProcessor;
         this.executorsProcessor = executorsProcessor;
@@ -72,12 +73,14 @@ class MainEasefileParser extends EasefileParserTemplate {
     Pipeline process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError {
         Queue<SyntaxError> syntaxErrors = new ConcurrentLinkedQueue<>();
 
-        Tuple2<Optional<Pipeline.Metadata>, List<SyntaxError>> metadata = this.metadataProcessor.process();
-        Tuple2<Optional<Key>, List<SyntaxError>> key = this.keyProcessor.process();
-        Tuple2<Optional<List<Executor>>, List<SyntaxError>> executors = this.executorsProcessor.process();
-        Tuple2<Optional<List<Variable>>, List<SyntaxError>> variables = this.varsProcessor.process();
-        Tuple2<Optional<List<Stage>>, List<SyntaxError>> stages = this.stagesProcessor.process();
-        Tuple2<Optional<byte[]>, List<SyntaxError>> scriptEncoded = this.scriptFileProcessor.process();
+        easefileExtractor.split(easefileContent);
+
+        Tuple2<Optional<Pipeline.Metadata>, List<SyntaxError>> metadata = this.metadataProcessor.process(() -> ((MetadataExtractor) easefileExtractor).fetchCrudeMetadata());
+        Tuple2<Optional<Key>, List<SyntaxError>> key = this.keyProcessor.process(() -> ((KeyExtractor) easefileExtractor).fetchCrudeKey());
+        Tuple2<Optional<List<Executor>>, List<SyntaxError>> executors = this.executorsProcessor.process(() -> ((ExecutorExtractor) easefileExtractor).fetchCrudeExecutor());
+        Tuple2<Optional<List<Variable>>, List<SyntaxError>> variables = this.varsProcessor.process(() -> ((VariableExtractor) easefileExtractor).fetchCrudeVariable());
+        Tuple2<Optional<List<Stage>>, List<SyntaxError>> stages = this.stagesProcessor.process(() -> ((StageExtractor) easefileExtractor).fetchCrudeStage());
+        Tuple2<Optional<byte[]>, List<SyntaxError>> scriptEncoded = this.scriptFileProcessor.process(() -> null);
 
         validateProcessingResult(metadata, "Metadata");
         validateProcessingResult(key, "Key");
