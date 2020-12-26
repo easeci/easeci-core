@@ -5,8 +5,9 @@ import io.vavr.Tuple2;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public interface PipelinePartProcessor<T> {
 
-    Tuple2<Optional<T>, List<SyntaxError>> process();
+    Tuple2<Optional<T>, List<SyntaxError>> process(Supplier<String> easefilePartSupplier);
 }

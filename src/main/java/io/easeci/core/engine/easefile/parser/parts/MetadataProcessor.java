@@ -6,11 +6,12 @@ import io.vavr.Tuple2;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class MetadataProcessor implements PipelinePartProcessor<Pipeline.Metadata> {
 
     @Override
-    public Tuple2<Optional<Pipeline.Metadata>, List<SyntaxError>> process() {
+    public Tuple2<Optional<Pipeline.Metadata>, List<SyntaxError>> process(Supplier<String> easefilePartSupplier) {
         return null;
     }
 }
