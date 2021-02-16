@@ -1,6 +1,8 @@
 package io.easeci.core.engine.easefile.parser.parts;
 
+import java.util.List;
+
 public interface VariableExtractor {
 
-    String fetchCrudeVariable() throws PipelinePartError;
+    List<Line> fetchCrudeVariable() throws PipelinePartError;
 }

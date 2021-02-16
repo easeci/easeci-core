@@ -2,7 +2,7 @@ package io.easeci.core.engine.easefile.parser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.BaseWorkspaceContextTest;
-import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.workspace.projects.ProjectManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,14 +22,14 @@ class MainEasefileParserTest extends BaseWorkspaceContextTest {
     void serializePipelineObjectTest() throws IOException {
         MainEasefileParser parser = (MainEasefileParser) ParserFactory.factorize(ParserFactory.ParserType.STANDARD);
 
-        Pipeline pipeline = provideEmptyPipelineForTest();
+        EasefileObjectModel pipeline = provideEmptyPipelineForTest();
 
         byte[] serialized = parser.serialize(pipeline);
 
         byte[] decode = Base64.getDecoder().decode(serialized);
         ObjectMapper objectMapper = new ObjectMapper();
 
-        Pipeline pipelineDeserialized = objectMapper.readValue(decode, Pipeline.class);
+        EasefileObjectModel pipelineDeserialized = objectMapper.readValue(decode, EasefileObjectModel.class);
 
         assertAll(() -> assertEquals(pipeline.getMetadata(), pipelineDeserialized.getMetadata()),
                 () -> assertEquals(pipeline.getKey(), pipelineDeserialized.getKey()),
@@ -47,7 +47,7 @@ class MainEasefileParserTest extends BaseWorkspaceContextTest {
 
         MainEasefileParser parser = (MainEasefileParser) ParserFactory.factorize(ParserFactory.ParserType.STANDARD);
 
-        Pipeline pipeline = provideEmptyPipelineForTest();
+        EasefileObjectModel pipeline = provideEmptyPipelineForTest();
         byte[] serializedPipeline = parser.serialize(pipeline);
         Path path = parser.writePipelineFile(serializedPipeline);
 

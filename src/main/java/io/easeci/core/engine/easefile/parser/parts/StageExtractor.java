@@ -1,6 +1,8 @@
 package io.easeci.core.engine.easefile.parser.parts;
 
+import java.util.List;
+
 public interface StageExtractor {
 
-    String fetchCrudeStage() throws PipelinePartError;
+    List<Line> fetchCrudeStage() throws PipelinePartError;
 }

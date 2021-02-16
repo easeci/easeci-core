@@ -22,7 +22,7 @@ import static java.util.Objects.isNull;
 
 class MainEasefileParser extends EasefileParserTemplate {
 
-    private PipelinePartProcessor<Pipeline.Metadata> metadataProcessor;
+    private PipelinePartProcessor<EasefileObjectModel.Metadata> metadataProcessor;
     private PipelinePartProcessor<Key> keyProcessor;
     private PipelinePartProcessor<List<Executor>> executorsProcessor;
     private PipelinePartProcessor<List<Variable>> varsProcessor;
@@ -33,7 +33,7 @@ class MainEasefileParser extends EasefileParserTemplate {
     @Builder
     MainEasefileParser(PipelinePointerIO pipelinePointerIO,
                        EasefileExtractor easefileExtractor,
-                       PipelinePartProcessor<Pipeline.Metadata> metadataProcessor,
+                       PipelinePartProcessor<EasefileObjectModel.Metadata> metadataProcessor,
                        PipelinePartProcessor<Key> keyProcessor,
                        PipelinePartProcessor<List<Executor>> executorsProcessor,
                        PipelinePartProcessor<List<Variable>> varsProcessor,
@@ -49,7 +49,7 @@ class MainEasefileParser extends EasefileParserTemplate {
         this.scriptFileProcessor = scriptFileProcessor;
     }
 
-    byte[] serialize(Pipeline pipeline) {
+    byte[] serialize(EasefileObjectModel pipeline) {
         byte[] serialized = SerializeUtils.write(pipeline);
         return Base64.getEncoder().encode(serialized);
     }
@@ -70,12 +70,12 @@ class MainEasefileParser extends EasefileParserTemplate {
     }
 
     @Override
-    Pipeline process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError {
+    EasefileObjectModel process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError {
         Queue<SyntaxError> syntaxErrors = new ConcurrentLinkedQueue<>();
 
         easefileExtractor.split(easefileContent);
 
-        Tuple2<Optional<Pipeline.Metadata>, List<SyntaxError>> metadata = this.metadataProcessor.process(() -> ((MetadataExtractor) easefileExtractor).fetchCrudeMetadata());
+        Tuple2<Optional<EasefileObjectModel.Metadata>, List<SyntaxError>> metadata = this.metadataProcessor.process(() -> ((MetadataExtractor) easefileExtractor).fetchCrudeMetadata());
         Tuple2<Optional<Key>, List<SyntaxError>> key = this.keyProcessor.process(() -> ((KeyExtractor) easefileExtractor).fetchCrudeKey());
         Tuple2<Optional<List<Executor>>, List<SyntaxError>> executors = this.executorsProcessor.process(() -> ((ExecutorExtractor) easefileExtractor).fetchCrudeExecutor());
         Tuple2<Optional<List<Variable>>, List<SyntaxError>> variables = this.varsProcessor.process(() -> ((VariableExtractor) easefileExtractor).fetchCrudeVariable());
@@ -97,8 +97,8 @@ class MainEasefileParser extends EasefileParserTemplate {
         collectErrors(scriptEncoded, syntaxErrors);
 
         if (syntaxErrors.isEmpty()) {
-            return Pipeline.builder()
-                    .metadata(metadata._1.orElse(new Pipeline.Metadata()))
+            return EasefileObjectModel.builder()
+                    .metadata(metadata._1.orElse(new EasefileObjectModel.Metadata()))
                     .key(key._1.orElse(Key.of(Key.KeyType.PIPELINE)))
                     .executors(executors._1.orElse(Collections.emptyList()))
                     .variables(variables._1.orElse(Collections.emptyList()))

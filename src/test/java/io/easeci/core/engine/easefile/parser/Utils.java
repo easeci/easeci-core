@@ -1,7 +1,7 @@
 package io.easeci.core.engine.easefile.parser;
 
 import io.easeci.core.engine.pipeline.Key;
-import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.engine.pipeline.Stage;
 import io.easeci.core.workspace.vars.Variable;
 import io.easeci.extension.command.VariableType;
@@ -15,9 +15,9 @@ import static commons.WorkspaceTestUtils.buildPathFromResources;
 
 public class Utils {
 
-    static Pipeline provideEmptyPipelineForTest() {
-        return Pipeline.builder()
-                .metadata(new Pipeline.Metadata())
+    static EasefileObjectModel provideEmptyPipelineForTest() {
+        return EasefileObjectModel.builder()
+                .metadata(new EasefileObjectModel.Metadata())
                 .key(Key.of(Key.KeyType.PIPELINE))
                 .executors(Collections.emptyList())
                 .variables(Collections.singletonList(Variable.of(VariableType.STRING, "title", "value")))
@@ -27,8 +27,20 @@ public class Utils {
                 .build();
     }
 
-    static String readValidTestEasefile() {
-        Path path = buildPathFromResources("workspace/Easefile");
+    public static String readValidTestEasefile() {
+        return load("workspace/Easefile");
+    }
+
+    public static String readEmptyExecutorTestEasefile() {
+        return load("workspace/Easefile_empty_executor");
+    }
+
+    public static String readMultiExecutorTestEasefile() {
+        return load("workspace/Easefile_multiexecutor");
+    }
+
+    private static String load(String stringPath) {
+        Path path = buildPathFromResources(stringPath);
         try {
             return Files.readString(path);
         } catch (IOException e) {

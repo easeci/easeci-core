@@ -1,8 +1,8 @@
 package io.easeci.core.workspace.projects;
 
-import io.easeci.core.engine.pipeline.Pipeline;
 import io.easeci.api.projects.dto.AddProjectGroupRequest;
 import io.easeci.api.projects.dto.AddProjectRequest;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 
 import java.nio.file.Paths;
 import java.util.Date;
@@ -12,8 +12,8 @@ import static io.easeci.core.workspace.projects.ProjectsFile.INITIAL_PROJECT_ID;
 
 public class Utils {
 
-    static Pipeline.Metadata preparePipelineMetadata() {
-        Pipeline.Metadata pipelineMeta = new Pipeline.Metadata();
+    static EasefileObjectModel.Metadata preparePipelineMetadata() {
+        EasefileObjectModel.Metadata pipelineMeta = new EasefileObjectModel.Metadata();
         pipelineMeta.setPipelineId(UUID.randomUUID());
         pipelineMeta.setCreatedDate(new Date());
         pipelineMeta.setEasefilePath(Paths.get("/tmp/Easefile"));

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static io.easeci.core.workspace.LocationUtils.getRunFile;
 import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
@@ -32,5 +33,7 @@ public abstract class BaseWorkspaceContextTest {
     public static void cleanup() throws IOException {
         FileUtils.deleteDirectory(Path.of(getWorkspaceLocation()).toFile());
         Files.deleteIfExists(getRunFile().toPath());
+
+        FileUtils.deleteDirectory(Paths.get(System.getProperty("user.dir") + "/plugins").toFile());
     }
 }

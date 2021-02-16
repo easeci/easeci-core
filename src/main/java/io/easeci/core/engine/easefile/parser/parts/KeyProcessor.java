@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 public class KeyProcessor implements PipelinePartProcessor<Key> {
     @Override
-    public Tuple2<Optional<Key>, List<SyntaxError>> process(Supplier<String> easefilePartSupplier) {
+    public Tuple2<Optional<Key>, List<SyntaxError>> process(Supplier<List<Line>> easefilePartSupplier) {
         return null;
     }
 }

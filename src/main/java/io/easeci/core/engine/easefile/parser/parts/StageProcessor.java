@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 public class StageProcessor implements PipelinePartProcessor<List<Stage>> {
     @Override
-    public Tuple2<Optional<List<Stage>>, List<SyntaxError>> process(Supplier<String> easefilePartSupplier) {
+    public Tuple2<Optional<List<Stage>>, List<SyntaxError>> process(Supplier<List<Line>> easefilePartSupplier) {
         return null;
     }
 }

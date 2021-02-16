@@ -1,7 +1,12 @@
 package io.easeci.core.engine.pipeline;
 
-import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@NoArgsConstructor
+import java.util.UUID;
+
+@Getter
+@AllArgsConstructor(staticName = "of")
 public class Executor {
+    private UUID nodeUuid;
 }

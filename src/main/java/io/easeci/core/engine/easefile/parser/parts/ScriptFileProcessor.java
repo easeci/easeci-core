@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 public class ScriptFileProcessor implements PipelinePartProcessor<byte[]> {
     @Override
-    public Tuple2<Optional<byte[]>, List<SyntaxError>> process(Supplier<String> easefilePartSupplier) {
+    public Tuple2<Optional<byte[]>, List<SyntaxError>> process(Supplier<List<Line>> easefilePartSupplier) {
         return null;
     }
 }
