@@ -1,26 +1,92 @@
 package io.easeci.core.engine.easefile.parser.parts;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static java.util.Optional.ofNullable;
 
 public class MainEasefileExtractor implements EasefileExtractor, MetadataExtractor, KeyExtractor,
                                               VariableExtractor, StageExtractor, ExecutorExtractor {
+    private static final int KEY_LINE_POSITION = 0;
 
-    private String crudeMetadata;
-    private String crudeKey;
-    private String crudeExecutor;
-    private String crudeVariable;
-    private String crudeStage;
+    private List<Line> crudeKey;
+    private List<Line> crudeMetadata;
+    private List<Line> crudeExecutor;
+    private List<Line> crudeVariable;
+    private List<Line> crudeStage;
+
+    private static final List<String> LABELS = Arrays.asList(
+            "executor:",
+            "meta:",
+            "variables:",
+            "stage",
+            "?stage"
+    );
 
     @Override
-    public void split(String easefileContent) {
-//        todo
+    public void split(String easefileContent) throws PipelinePartCriticalError {
+        if (easefileContent == null) {
+            throw new PipelinePartCriticalError(Collections.emptyList());
+        }
+
+        final Map<String, List<String>> linesByLabel = new HashMap<>();
+        String[] lines = easefileContent.split("\n");
+        this.crudeKey = Collections.singletonList(Line.of(KEY_LINE_POSITION + 1, lines[0]));
+
+        String lastLineLabel = "";
+        for (int i = 1; i < lines.length; i++) {
+            final String lineValue = lines[i].trim();
+            for (String label : LABELS) {
+                if (lineValue.startsWith(label)) {
+                    lastLineLabel = label;
+                    List<String> labelLines = linesByLabel.get(lastLineLabel);
+                    if (isNull(labelLines)) {
+                        List<String> collectedLines = new ArrayList<>();
+                        linesByLabel.put(label, collectedLines);
+                    }
+                } else {
+                    ofNullable(linesByLabel.get(lastLineLabel))
+                            .ifPresent(list -> {
+                                if (!list.contains(lineValue)) {
+                                    list.add(lineValue);
+                                }
+                            });
+                }
+            }
+        }
+
+        Map<String, List<Line>> linesIndexed = convert(linesByLabel);
+        linesIndexed.values().forEach(list -> list.remove(list.size() - 1));
+        this.crudeMetadata = ofNullable(linesIndexed.get("meta:")).orElse(Collections.emptyList());
+        this.crudeExecutor = ofNullable(linesIndexed.get("executor:")).orElseThrow(() -> missingEasefilePartException("executor"));
+        this.crudeVariable = ofNullable(linesIndexed.get("variables:")).orElse(Collections.emptyList());
+        List<Line> stage = ofNullable(linesIndexed.get("stage")).orElseThrow(() -> missingEasefilePartException("stage"));
+        stage.addAll(ofNullable(linesIndexed.get("?stage")).orElse(Collections.emptyList()));
+        this.crudeStage = stage;
+    }
+
+    private Map<String, List<Line>> convert(Map<String, List<String>> linesByLabel) {
+        final int lineNumber = 1;
+        return linesByLabel.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, stringListEntry -> stringListEntry.getValue().stream()
+                        .map(content -> Line.of(lineNumber + 1, content))
+                        .collect(Collectors.toList())));
+    }
+
+    private PipelinePartCriticalError missingEasefilePartException(String missingPart) {
+        return new PipelinePartCriticalError(Collections.singletonList(
+                ParsingError.of(
+                        "Required Easefile part is missing",
+                        "Please include " + missingPart + " easefile part and try again",
+                        "Cannot find missing " + missingPart + " easefile part. " +
+                                "You must define this one on your Easefile"))
+        );
     }
 
     @Override
-    public String fetchCrudeMetadata() throws PipelinePartError {
+    public List<Line> fetchCrudeMetadata() throws PipelinePartError {
         if (isNull(this.crudeMetadata)) {
             throw new PipelinePartError(error("Metadata"));
         }
@@ -28,7 +94,7 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
     }
 
     @Override
-    public String fetchCrudeKey() throws PipelinePartError {
+    public List<Line> fetchCrudeKey() throws PipelinePartError {
         if (isNull(this.crudeKey)) {
             throw new PipelinePartError(error("Key"));
         }
@@ -36,7 +102,7 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
     }
 
     @Override
-    public String fetchCrudeVariable() throws PipelinePartError {
+    public List<Line> fetchCrudeVariable() throws PipelinePartError {
         if (isNull(this.crudeVariable)) {
             throw new PipelinePartError(error("Variable"));
         }
@@ -44,7 +110,7 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
     }
 
     @Override
-    public String fetchCrudeStage() throws PipelinePartError {
+    public List<Line> fetchCrudeStage() throws PipelinePartError {
         if (isNull(this.crudeStage)) {
             throw new PipelinePartError(error("Stage"));
         }
@@ -52,7 +118,7 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
     }
 
     @Override
-    public String fetchCrudeExecutor() throws PipelinePartError {
+    public List<Line> fetchCrudeExecutor() throws PipelinePartError {
         if (isNull(this.crudeExecutor)) {
             throw new PipelinePartError(error("Executor"));
         }

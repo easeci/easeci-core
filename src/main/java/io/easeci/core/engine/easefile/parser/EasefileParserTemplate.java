@@ -2,7 +2,7 @@ package io.easeci.core.engine.easefile.parser;
 
 import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
 import io.easeci.core.engine.easefile.parser.parts.PipelinePartCriticalError;
-import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
 
 import java.nio.file.Path;
@@ -23,8 +23,8 @@ abstract class EasefileParserTemplate implements EasefileParser {
     @Override
     public EasefileParseResult parse(String easefileContent) {
         try {
-            Pipeline pipeline = process(easefileContent);
-            return afterParsingSuccess(pipeline);
+            EasefileObjectModel eom = process(easefileContent);
+            return afterParsingSuccess(eom);
         } catch (StaticAnalyseException e) {
             return EasefileParseResult.failure(F_EP_0002, e.getSyntaxErrorList());
         } catch (PipelinePartCriticalError e) {
@@ -32,18 +32,18 @@ abstract class EasefileParserTemplate implements EasefileParser {
         }
     }
 
-    abstract Pipeline process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError;
+    abstract EasefileObjectModel process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError;
 
-    abstract byte[] serialize(Pipeline pipeline);
+    abstract byte[] serialize(EasefileObjectModel pipeline);
 
     abstract Path writePipelineFile(byte[] content);
 
-    private EasefileParseResult afterParsingSuccess(Pipeline pipeline) {
-        final byte[] serializedPipeline = serialize(pipeline);
+    private EasefileParseResult afterParsingSuccess(EasefileObjectModel eom) {
+        final byte[] serializedPipeline = serialize(eom);
         final Path pipelineFilePath = writePipelineFile(serializedPipeline);
         logit(EASEFILE_EVENT, "Pipeline was serialized, wrote to file and placed here: " + pipelineFilePath.toString());
-        pipelinePointerIO.createNewPipelinePointer(pipeline.getMetadata());
-        logit(EASEFILE_EVENT, "Easefile parsed successfully and pipeline pointer added with metadata: " + pipeline.getMetadata());
-        return EasefileParseResult.success(true, pipeline.getMetadata().getPipelineFilePath());
+        pipelinePointerIO.createNewPipelinePointer(eom.getMetadata());
+        logit(EASEFILE_EVENT, "Easefile parsed successfully and pipeline pointer added with metadata: " + eom.getMetadata());
+        return EasefileParseResult.success(true, eom.getMetadata().getPipelineFilePath());
     }
 }

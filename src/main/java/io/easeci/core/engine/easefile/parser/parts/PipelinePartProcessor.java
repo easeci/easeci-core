@@ -9,5 +9,5 @@ import java.util.function.Supplier;
 
 public interface PipelinePartProcessor<T> {
 
-    Tuple2<Optional<T>, List<SyntaxError>> process(Supplier<String> easefilePartSupplier);
+    Tuple2<Optional<T>, List<SyntaxError>> process(Supplier<List<Line>> easefilePartSupplier);
 }

@@ -1,6 +1,6 @@
 package io.easeci.core.workspace.projects;
 
-import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 
 /**
  * Main interface to deal with Pipeline Pointers.
@@ -23,7 +23,7 @@ public interface PipelinePointerIO {
      *                                     In exception we have error code included, so
      *                                     we know what was wrong in the method flow and why pipeline was not created
      * */
-    PipelinePointer createNewPipelinePointer(Pipeline.Metadata pipelineMeta) throws PipelineManagementException;
+    PipelinePointer createNewPipelinePointer(EasefileObjectModel.Metadata pipelineMeta) throws PipelineManagementException;
 
     /**
      * Simple delete method of PipelinePointer just existing in projects-structure.json

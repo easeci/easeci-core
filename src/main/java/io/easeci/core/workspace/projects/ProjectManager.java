@@ -3,9 +3,9 @@ package io.easeci.core.workspace.projects;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.DirUtils;
-import io.easeci.core.engine.pipeline.Pipeline;
 import io.easeci.api.projects.dto.AddProjectGroupRequest;
 import io.easeci.api.projects.dto.AddProjectRequest;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -117,7 +117,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     @Override
-    public PipelinePointer createNewPipelinePointer(Pipeline.Metadata pipelineMeta) {
+    public PipelinePointer createNewPipelinePointer(EasefileObjectModel.Metadata pipelineMeta) {
         validate(pipelineMeta);
         PipelinePointer pointer = new PipelinePointer();
         pointer.setId(nextPipelinePointerId(projectsFile));
@@ -140,7 +140,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         return pointer;
     }
 
-    private void validate(Pipeline.Metadata pipelineMeta) {
+    private void validate(EasefileObjectModel.Metadata pipelineMeta) {
         final Project project = findProject(pipelineMeta.getProjectId());
         validatePipelinePointer(pipelinePointer -> pipelinePointer.getName().equals(pipelineMeta.getName()),
                                 project,

@@ -18,7 +18,7 @@ import io.easeci.core.workspace.vars.Variable;
  * */
 @Getter
 @NoArgsConstructor
-public class Pipeline implements Serializable {
+public class EasefileObjectModel implements Serializable {
     private Metadata metadata;
     private Key key;
     private List<Executor> executors;
@@ -27,7 +27,7 @@ public class Pipeline implements Serializable {
     private byte[] scriptEncoded;
 
     @Builder
-    public Pipeline(Metadata metadata, Key key, List<Executor> executors,
+    public EasefileObjectModel(Metadata metadata, Key key, List<Executor> executors,
                     List<Variable> variables, List<Stage> stages, byte[] scriptEncoded) {
         this.metadata = metadata;
         this.key = key;
@@ -57,8 +57,8 @@ public class Pipeline implements Serializable {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        Pipeline pipeline = (Pipeline) o;
-        return Objects.equals(metadata, pipeline.metadata) && Objects.equals(key, pipeline.key) && Objects.equals(executors, pipeline.executors) && Objects.equals(variables, pipeline.variables) && Objects.equals(stages, pipeline.stages) && Arrays.equals(scriptEncoded, pipeline.scriptEncoded);
+        EasefileObjectModel eom = (EasefileObjectModel) o;
+        return Objects.equals(metadata, eom.metadata) && Objects.equals(key, eom.key) && Objects.equals(executors, eom.executors) && Objects.equals(variables, eom.variables) && Objects.equals(stages, eom.stages) && Arrays.equals(scriptEncoded, eom.scriptEncoded);
     }
 
     @Override

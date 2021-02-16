@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 public class VariableProcessor implements PipelinePartProcessor<List<Variable>> {
 
     @Override
-    public Tuple2<Optional<List<Variable>>, List<SyntaxError>> process(Supplier<String> easefilePartSupplier) {
+    public Tuple2<Optional<List<Variable>>, List<SyntaxError>> process(Supplier<List<Line>> easefilePartSupplier) {
         return null;
     }
 }

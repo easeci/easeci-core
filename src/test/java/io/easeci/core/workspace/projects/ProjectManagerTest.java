@@ -1,7 +1,7 @@
 package io.easeci.core.workspace.projects;
 
 import io.easeci.BaseWorkspaceContextTest;
-import io.easeci.core.engine.pipeline.Pipeline;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.api.projects.dto.AddProjectGroupRequest;
 import io.easeci.api.projects.dto.AddProjectRequest;
 import org.junit.jupiter.api.*;
@@ -37,7 +37,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void createPipelinePointer() {
         // prepare required objects
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
 
         // execute testing method
         PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
@@ -63,7 +63,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void createPipelinePointerIdExists() {
         // prepare required objects
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         pipelineMeta.setName("Another test name");
 
         // execute testing method
@@ -84,7 +84,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void createPipelinePointerNameExists() {
         // prepare required objects
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         pipelineMeta.setPipelineId(UUID.randomUUID());
 
         // execute testing method
@@ -105,7 +105,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void deletePipelinePointerSuccess() {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
         assertNotNull(pipelinePointer);
 
@@ -126,7 +126,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void deletePipelinePointerNotExists() {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
         assertNotNull(pipelinePointer);
 
@@ -147,7 +147,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void deletePipelinePointerProjectNotExists() {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
         assertNotNull(pipelinePointer);
 
@@ -168,7 +168,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void renamePipelinePointerSuccessTest() {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
         assertNotNull(pipelinePointer);
 
@@ -192,7 +192,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void renameTagOfPipelinePointerSuccessTest() {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
         assertNotNull(pipelinePointer);
 
@@ -215,7 +215,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
     void changeDescriptionOfPipelinePointerSuccessTest() {
         PipelinePointerIO pipelinePointerIO = ProjectManager.getInstance();
         ProjectsFile projectsFile = ProjectManager.getInstance().getProjectsFile();
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         PipelinePointer pipelinePointer = pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
         assertNotNull(pipelinePointer);
 
@@ -304,7 +304,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         projectIO.createNewProject(addProjectRequest);
 
         Project projectToRemove = firstAddedProject(projectsFile);
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         pipelineMeta.setProjectId(projectToRemove.getId());
         pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
 
@@ -348,7 +348,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         projectIO.createNewProject(addProjectRequest);
 
         Project projectToRemove = firstAddedProject(projectsFile);
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         pipelineMeta.setProjectId(projectToRemove.getId());
         pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
 
@@ -529,7 +529,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         Project project = newProjectGroup.getProjects().get(0);
 
         // add pipeline pointer
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         pipelineMeta.setProjectId(project.getId());
         pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
 
@@ -569,7 +569,7 @@ class ProjectManagerTest extends BaseWorkspaceContextTest {
         Project project = newProjectGroup.getProjects().get(0);
 
         // add pipeline pointer
-        Pipeline.Metadata pipelineMeta = preparePipelineMetadata();
+        EasefileObjectModel.Metadata pipelineMeta = preparePipelineMetadata();
         pipelineMeta.setProjectId(project.getId());
         pipelinePointerIO.createNewPipelinePointer(pipelineMeta);
 
