@@ -1,0 +1,41 @@
+pipeline:
+  executor:
+    names: [
+        "easefile-node-01-aws",
+        "easefile-node-02-aws"
+    ]
+  meta:
+    projectId: 0
+    tag: 'java maven'
+    description: 'Java project based on Maven, continuous deployment process'
+  variables:
+    _repo_address = https://github.com/easeci/easeci-core-java
+    _repo_clone_target = /var/sources/easeci
+    _artifactory_url = https://easeci-artifactory.io
+    _dev_hosts = [
+        '127.0.0.1',
+        '127.0.0.2',
+        '127.0.0.3',
+        '127.0.0.4',
+        '127.0.0.5',
+        '127.0.0.6'
+    ]
+
+  stage 'Prepare building environment':
+    $ssh mkdir -p {_repo_clone_target}
+
+  stage 'Preparation of project building':
+    $git clone {_repo_address}
+
+  stage 'Unit tests':
+    $mvn test
+    $bash cp -r target/test-result/* /tmp/logs/
+
+  stage 'Building project':
+    $mvn install
+
+  stage 'Publish artifact':
+    $artifactory {_repo_clone_target} {_artifactory_url}
+
+  ?stage 'Deploy to development env':
+    $deploy ssh {_dev_hosts}
