@@ -21,17 +21,17 @@ import io.easeci.core.workspace.vars.Variable;
 public class EasefileObjectModel implements Serializable {
     private Metadata metadata;
     private Key key;
-    private List<Executor> executors;
+    private ExecutorConfiguration executorConfiguration;
     private List<Variable> variables;
     private List<Stage> stages;
     private byte[] scriptEncoded;
 
     @Builder
-    public EasefileObjectModel(Metadata metadata, Key key, List<Executor> executors,
+    public EasefileObjectModel(Metadata metadata, Key key, ExecutorConfiguration executorConfiguration,
                     List<Variable> variables, List<Stage> stages, byte[] scriptEncoded) {
         this.metadata = metadata;
         this.key = key;
-        this.executors = executors;
+        this.executorConfiguration = executorConfiguration;
         this.variables = variables;
         this.stages = stages;
         this.scriptEncoded = scriptEncoded;
@@ -58,12 +58,12 @@ public class EasefileObjectModel implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         EasefileObjectModel eom = (EasefileObjectModel) o;
-        return Objects.equals(metadata, eom.metadata) && Objects.equals(key, eom.key) && Objects.equals(executors, eom.executors) && Objects.equals(variables, eom.variables) && Objects.equals(stages, eom.stages) && Arrays.equals(scriptEncoded, eom.scriptEncoded);
+        return Objects.equals(metadata, eom.metadata) && Objects.equals(key, eom.key) && Objects.equals(executorConfiguration, eom.executorConfiguration) && Objects.equals(variables, eom.variables) && Objects.equals(stages, eom.stages) && Arrays.equals(scriptEncoded, eom.scriptEncoded);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(metadata, key, executors, variables, stages);
+        int result = Objects.hash(metadata, key, executorConfiguration, variables, stages);
         result = 31 * result + Arrays.hashCode(scriptEncoded);
         return result;
     }

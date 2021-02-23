@@ -3,6 +3,11 @@ pipeline:
     names: [
         "easefile-node-01-aws",
         "easefile-node-02-aws"
+    ],
+    nodeUuids: [
+        "16fd18b6-7169-11eb-9439-0242ac130002",
+        "16fd1af0-7169-11eb-9439-0242ac130002",
+        "16fd2158-7169-11eb-9439-0242ac130002"
     ]
   meta:
     projectId: 0

@@ -33,7 +33,7 @@ class MainEasefileParserTest extends BaseWorkspaceContextTest {
 
         assertAll(() -> assertEquals(pipeline.getMetadata(), pipelineDeserialized.getMetadata()),
                 () -> assertEquals(pipeline.getKey(), pipelineDeserialized.getKey()),
-                () -> assertEquals(pipeline.getExecutors(), pipelineDeserialized.getExecutors()),
+                () -> assertEquals(pipeline.getExecutorConfiguration(), pipelineDeserialized.getExecutorConfiguration()),
                 () -> assertEquals(pipeline.getVariables(), pipelineDeserialized.getVariables()),
                 () -> assertEquals(pipeline.getStages(), pipelineDeserialized.getStages()),
                 () -> assertEquals(pipeline.getScriptEncoded().length, pipelineDeserialized.getScriptEncoded().length)
