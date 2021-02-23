@@ -24,7 +24,7 @@ class MainEasefileParser extends EasefileParserTemplate {
 
     private PipelinePartProcessor<EasefileObjectModel.Metadata> metadataProcessor;
     private PipelinePartProcessor<Key> keyProcessor;
-    private PipelinePartProcessor<List<Executor>> executorsProcessor;
+    private PipelinePartProcessor<ExecutorConfiguration> executorsProcessor;
     private PipelinePartProcessor<List<Variable>> varsProcessor;
     private PipelinePartProcessor<List<Stage>> stagesProcessor;
     private PipelinePartProcessor<byte[]> scriptFileProcessor;
@@ -35,7 +35,7 @@ class MainEasefileParser extends EasefileParserTemplate {
                        EasefileExtractor easefileExtractor,
                        PipelinePartProcessor<EasefileObjectModel.Metadata> metadataProcessor,
                        PipelinePartProcessor<Key> keyProcessor,
-                       PipelinePartProcessor<List<Executor>> executorsProcessor,
+                       PipelinePartProcessor<ExecutorConfiguration> executorsProcessor,
                        PipelinePartProcessor<List<Variable>> varsProcessor,
                        PipelinePartProcessor<List<Stage>> stagesProcessor,
                        PipelinePartProcessor<byte[]> scriptFileProcessor) {
@@ -77,7 +77,7 @@ class MainEasefileParser extends EasefileParserTemplate {
 
         Tuple2<Optional<EasefileObjectModel.Metadata>, List<SyntaxError>> metadata = this.metadataProcessor.process(() -> ((MetadataExtractor) easefileExtractor).fetchCrudeMetadata());
         Tuple2<Optional<Key>, List<SyntaxError>> key = this.keyProcessor.process(() -> ((KeyExtractor) easefileExtractor).fetchCrudeKey());
-        Tuple2<Optional<List<Executor>>, List<SyntaxError>> executors = this.executorsProcessor.process(() -> ((ExecutorExtractor) easefileExtractor).fetchCrudeExecutor());
+        Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> executors = this.executorsProcessor.process(() -> ((ExecutorExtractor) easefileExtractor).fetchCrudeExecutor());
         Tuple2<Optional<List<Variable>>, List<SyntaxError>> variables = this.varsProcessor.process(() -> ((VariableExtractor) easefileExtractor).fetchCrudeVariable());
         Tuple2<Optional<List<Stage>>, List<SyntaxError>> stages = this.stagesProcessor.process(() -> ((StageExtractor) easefileExtractor).fetchCrudeStage());
         Tuple2<Optional<byte[]>, List<SyntaxError>> scriptEncoded = this.scriptFileProcessor.process(() -> null);
@@ -100,13 +100,13 @@ class MainEasefileParser extends EasefileParserTemplate {
             return EasefileObjectModel.builder()
                     .metadata(metadata._1.orElse(new EasefileObjectModel.Metadata()))
                     .key(key._1.orElse(Key.of(Key.KeyType.PIPELINE)))
-                    .executors(executors._1.orElse(Collections.emptyList()))
+                    .executorConfiguration(executors._1.orElse(new ExecutorConfiguration()))
                     .variables(variables._1.orElse(Collections.emptyList()))
                     .stages(stages._1.orElse(Collections.emptyList()))
                     .scriptEncoded(scriptEncoded._1.orElse(new byte[0]))
                     .build();
         }
-        throw new StaticAnalyseException(EngineStatus.S_EP_0000, new ArrayList<>(syntaxErrors));
+        throw new StaticAnalyseException(EngineStatus.F_EP_0002, new ArrayList<>(syntaxErrors));
     }
 
     private <T> void collectErrors(Tuple2<Optional<T>, List<SyntaxError>> tuple, Queue<SyntaxError> syntaxErrors) {

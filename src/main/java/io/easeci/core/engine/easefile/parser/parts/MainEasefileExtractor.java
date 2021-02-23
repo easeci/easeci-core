@@ -20,8 +20,7 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
             "executor:",
             "meta:",
             "variables:",
-            "stage",
-            "?stage"
+            "flow:"
     );
 
     @Override
@@ -36,9 +35,9 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
 
         String lastLineLabel = "";
         for (int i = 1; i < lines.length; i++) {
-            final String lineValue = lines[i].trim();
+            final String lineValue = lines[i];
             for (String label : LABELS) {
-                if (lineValue.startsWith(label)) {
+                if (lineValue.trim().startsWith(label)) {
                     lastLineLabel = label;
                     List<String> labelLines = linesByLabel.get(lastLineLabel);
                     if (isNull(labelLines)) {
@@ -61,9 +60,7 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
         this.crudeMetadata = ofNullable(linesIndexed.get("meta:")).orElse(Collections.emptyList());
         this.crudeExecutor = ofNullable(linesIndexed.get("executor:")).orElseThrow(() -> missingEasefilePartException("executor"));
         this.crudeVariable = ofNullable(linesIndexed.get("variables:")).orElse(Collections.emptyList());
-        List<Line> stage = ofNullable(linesIndexed.get("stage")).orElseThrow(() -> missingEasefilePartException("stage"));
-        stage.addAll(ofNullable(linesIndexed.get("?stage")).orElse(Collections.emptyList()));
-        this.crudeStage = stage;
+        this.crudeStage = ofNullable(linesIndexed.get("flow:")).orElseThrow(() -> missingEasefilePartException("flow"));
     }
 
     private Map<String, List<Line>> convert(Map<String, List<String>> linesByLabel) {
