@@ -20,6 +20,10 @@ import static java.util.Objects.nonNull;
 
 public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfiguration> {
 
+    public static final String PARSING_LINE_ERROR_TITLE = "Error occurred while Easefile parsing process";
+    public static final String PARSING_SECTION_ERROR_TITLE = "Cannot parse executor section";
+    public static final String EXECUTOR_NOT_PRESENT_ERROR_TITLE = "At least one executor is required";
+
     private final ObjectMapper objectMapper;
     private final NodesManager nodesManager;
 
@@ -37,16 +41,23 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
         final String joined = lines.subList(1, lines.size()).stream()
                 .map(Line::getContent)
                 .collect(Collectors.joining("\n"));
-        ExecutorSection executorSection = null;
+        ExecutorSection executorSection;
         try {
             executorSection = objectMapper.readValue(joined, ExecutorSection.class);
         } catch (JsonProcessingException e) {
+            final int lineNr = e.getLocation().getLineNr() + 1;
+            syntaxErrors.add(SyntaxError.builder()
+                    .lineNumber(lineNr)
+                    .title(PARSING_LINE_ERROR_TITLE)
+                    .info(e.getMessage())
+                    .build());
             e.printStackTrace();
+            return Tuple.of(Optional.of(executorConfiguration), syntaxErrors);
         }
         if (isNull(executorSection)) {
             syntaxErrors.add(SyntaxError.builder()
                     .lineNumber(lines.get(0).getLineNumber())
-                    .title("Cannot parse executor section")
+                    .title(PARSING_SECTION_ERROR_TITLE)
                     .info("Executor section must be correctly defined in Easefile")
                     .build());
         } else {
@@ -90,7 +101,7 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
             if (executors.isEmpty()) {
                 return List.of(SyntaxError.builder()
                         .lineNumber(line.getLineNumber())
-                        .title("At least one executor is required")
+                        .title(EXECUTOR_NOT_PRESENT_ERROR_TITLE)
                         .info("It is required to define at least one executor in your Easefile. " +
                                 "You can define executingStrategy as AUTO, then system will choose automatically executor that is idle")
                         .build());
@@ -103,7 +114,7 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
             if (executors.isEmpty()) {
                 return List.of(SyntaxError.builder()
                         .lineNumber(line.getLineNumber())
-                        .title("At least one executor is required")
+                        .title(EXECUTOR_NOT_PRESENT_ERROR_TITLE)
                         .info("It is required to define at least one executor in your Easefile. " +
                                 "You can define executingStrategy as AUTO, then system will choose automatically executor that is idle")
                         .build());

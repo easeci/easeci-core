@@ -40,6 +40,6 @@ pipeline:
     - stage 'Publish artifact':
         steps:
             - $artifactory {_repo_clone_target} {_artifactory_url}
-    - ?stage 'Deploy to development env':
+    - stage 'Deploy to development env':
         steps:
             - $deploy ssh {_dev_hosts}
