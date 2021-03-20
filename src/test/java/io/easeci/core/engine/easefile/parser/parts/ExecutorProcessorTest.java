@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static io.easeci.core.engine.easefile.parser.Utils.*;
+import static io.easeci.core.engine.easefile.parser.parts.ExecutorProcessor.PARSING_LINE_ERROR_TITLE;
 import static io.easeci.core.engine.easefile.parser.parts.Feeder.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,6 +45,22 @@ class ExecutorProcessorTest extends BaseWorkspaceContextTest {
                 // predefined executors are null - we ignore these if executing strategy is AUTO
                     () -> assertNull(executorConfiguration.getPredefinedExecutors()),
                     () -> assertEquals(ExecutingStrategy.AUTO, executorConfiguration.getExecutingStrategy()));
+    }
+
+    @Test
+    @DisplayName("Should correctly parse content of executor part - nodeUuids has higher priority than names")
+    void parseOnlyFirstPropertySuccessTest() {
+        Supplier<List<Line>> linesSupplier = provideCorrectExecutor8();
+
+        ExecutorProcessor executorProcessor = new ExecutorProcessor(objectMapper);
+        Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> processingResult = executorProcessor.process(linesSupplier);
+
+        ExecutorConfiguration executorConfiguration = processingResult._1().get();
+        assertAll(
+                    // in content of Easefile there are nodeUuids and names properties...
+                    // in such case nodeUuids has higher priority that names
+                    () -> assertEquals(3, executorConfiguration.getPredefinedExecutors().size()),
+                    () -> assertEquals(ExecutingStrategy.EACH, executorConfiguration.getExecutingStrategy()));
     }
 
     @Test
@@ -126,9 +143,39 @@ class ExecutorProcessorTest extends BaseWorkspaceContextTest {
         Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> processingResult = executorProcessor.process(linesSupplier);
 
         ExecutorConfiguration executorConfiguration = processingResult._1().get();
-        assertAll(
-                () -> assertEquals(1, processingResult._2.size()),
-                () -> assertNull(executorConfiguration.getPredefinedExecutors()),
-                () -> assertEquals(ExecutingStrategy.ONE_OF, executorConfiguration.getExecutingStrategy()));
+        assertAll(() -> assertEquals(1, processingResult._2.size()),
+                  () -> assertNull(executorConfiguration.getPredefinedExecutors()),
+                  () -> assertEquals(ExecutingStrategy.ONE_OF, executorConfiguration.getExecutingStrategy()));
+    }
+
+    @Test
+    @DisplayName("Should failed when UUID in nodeUuids is not well formatted")
+    void parseFailureUuidFormatTest() {
+        Supplier<List<Line>> linesSupplier = provideCorrectExecutor9();
+
+        ExecutorProcessor executorProcessor = new ExecutorProcessor(objectMapper);
+        Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> processingResult = executorProcessor.process(linesSupplier);
+
+        SyntaxError expectedSyntaxError = processingResult._2.get(0);
+
+        assertAll(() -> assertEquals(1, processingResult._2.size()),
+                  () -> assertEquals(4, expectedSyntaxError.getLineNumber()),
+                  () -> assertEquals(PARSING_LINE_ERROR_TITLE, expectedSyntaxError.getTitle()));
+    }
+
+    @Test
+    @DisplayName("Should failed when trying to parse simple content of executor part with ONE_OF strategy and typing empty 'nodeUuids'")
+    void parseFailureEmptyListTest() {
+        Supplier<List<Line>> linesSupplier = provideCorrectExecutor10();
+
+        ExecutorProcessor executorProcessor = new ExecutorProcessor(objectMapper);
+        Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> processingResult = executorProcessor.process(linesSupplier);
+
+        SyntaxError expectedSyntaxError = processingResult._2.get(0);
+
+        System.out.println(expectedSyntaxError);
+
+        assertAll(() -> assertEquals(1, processingResult._2.size()),
+                  () -> assertEquals("At least one executor is required", expectedSyntaxError.getTitle()));
     }
 }
