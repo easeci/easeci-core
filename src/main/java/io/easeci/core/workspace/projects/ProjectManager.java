@@ -447,4 +447,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         return projectGroup;
     }
 
+    public static void destroyInstance() {
+        projectManager = null;
+    }
 }

@@ -16,7 +16,7 @@ import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultPluginConfigTest extends BaseWorkspaceContextTest {
-    private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test.json",
+    private final static String PLUGIN_CONFIG_FILE = "workspace/plugins-config-test-copy-2.json",
                                  NOT_EXISTING_FILE = "workspace/not-exists/plugins-config-test.json",
                                INVALID_CONFIG_FILE = "workspace/plugins-config-test-invalid.json",
            PLUGIN_CONFIG_FILE_WITH_NOT_UNIQUE_UUID = "workspace/plugins-config-test-not-unique-uuid.json";

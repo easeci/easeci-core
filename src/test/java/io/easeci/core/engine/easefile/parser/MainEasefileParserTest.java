@@ -43,6 +43,7 @@ class MainEasefileParserTest extends BaseWorkspaceContextTest {
     @Test
     @DisplayName("Should correctly save pipeline file as serialized and base64 encoded file's content")
     void writePipelineFileTest() {
+        ProjectManager.destroyInstance();
         ProjectManager.getInstance();
 
         MainEasefileParser parser = (MainEasefileParser) ParserFactory.factorize(ParserFactory.ParserType.STANDARD);
