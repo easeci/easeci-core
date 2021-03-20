@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PluginsConfigFileTest {
     private final static ObjectMapper objectMapper = new ObjectMapper();
-    private final static String FILE_CORRECT = "workspace/plugins-config-test.json",
+    private final static String FILE_CORRECT = "workspace/plugins-config-test-copy.json",
                               FILE_INCORRECT = "workspace/plugins-config-test-invalid.json",
                                   FILE_EMPTY = "workspace/plugins-config-test-empty.json";
 
@@ -26,12 +26,12 @@ class PluginsConfigFileTest {
 
         int size = pluginsConfigFile.getConfigDescriptions().size();
 
-        Set<ConfigDescription> configDescriptionListA = pluginsConfigFile.getConfigDescriptions().get("io.easeci.extension.bootstrap.OnStartup");
-        Set<ConfigDescription> configDescriptionListB = pluginsConfigFile.getConfigDescriptions().get("io.easeci.extension.bootstrap.TestPlugin");
+        Set<ConfigDescription> onStartup = pluginsConfigFile.getConfigDescriptions().get("io.easeci.extension.bootstrap.OnStartup");
+        Set<ConfigDescription> testPlugin = pluginsConfigFile.getConfigDescriptions().get("io.easeci.extension.bootstrap.TestPlugin");
 
         assertEquals(2, size);
-        assertEquals(2, configDescriptionListA.size());
-        assertEquals(2, configDescriptionListB.size());
+        assertEquals(2, onStartup.size());
+        assertEquals(2, testPlugin.size());
     }
 
     @Test

@@ -1,0 +1,38 @@
+{
+  "configDescriptions": {
+    "io.easeci.extension.bootstrap.TestPlugin": [
+      {
+        "uuid": "6cb0062e-7773-11ea-bc55-0242ac130003",
+        "name": "test-plugin",
+        "version": "0.0.1",
+        "enabled": true
+      },
+      {
+        "uuid": "7bbce84d-c083-4859-8cca-5d95deb1fa90",
+        "name": "another-test-plugin",
+        "version": "0.0.1",
+        "enabled": false
+      }
+    ],
+    "io.easeci.extension.bootstrap.OnStartup": [
+      {
+        "uuid": "4593a486-776b-11ea-bc55-0242ac130003",
+        "name": "welcome-logo",
+        "version": "0.0.1",
+        "enabled": true
+      },
+      {
+        "uuid": "4593a486-776b-11ea-bc55-0242ac130006",
+        "name": "welcome-logo",
+        "version": "0.0.1",
+        "enabled": false
+      },
+      {
+        "uuid": "919f57ca-776c-11ea-bc55-0242ac130003",
+        "name": "welcome-logo",
+        "version": "0.0.2",
+        "enabled": false
+      }
+    ]
+  }
+}
