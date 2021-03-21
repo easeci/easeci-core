@@ -28,7 +28,7 @@ public class EasefileObjectModel implements Serializable {
 
     @Builder
     public EasefileObjectModel(Metadata metadata, Key key, ExecutorConfiguration executorConfiguration,
-                    List<Variable> variables, List<Stage> stages, byte[] scriptEncoded) {
+                                List<Variable> variables, List<Stage> stages, byte[] scriptEncoded) {
         this.metadata = metadata;
         this.key = key;
         this.executorConfiguration = executorConfiguration;
@@ -47,6 +47,27 @@ public class EasefileObjectModel implements Serializable {
         private Date lastReparseDate;
         private String name;
         private Path pipelineFilePath;
+        private String tag;
+        private String description;
+
+        public Metadata fromInput(MetadataInput metadataInput) {
+            Metadata metadata = new Metadata();
+            metadata.setProjectId(metadataInput.getProjectId());
+            metadata.setName(metadataInput.getName());
+            metadata.setTag(metadataInput.getTag());
+            metadata.setDescription(metadataInput.getDescription());
+            metadata.setPipelineId(UUID.randomUUID());
+            metadata.setLastReparseDate(new Date());
+            return metadata;
+        }
+    }
+
+    // This object is from Easefile, user can enter only this values
+    @Data
+    @ToString
+    public static class MetadataInput {
+        private Long projectId;
+        private String name;
         private String tag;
         private String description;
     }

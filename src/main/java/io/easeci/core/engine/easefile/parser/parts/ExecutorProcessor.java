@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.engine.easefile.parser.parts.Utils.propertyToList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -38,9 +39,7 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
         final List<SyntaxError> syntaxErrors = new ArrayList<>(0);
         final ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
 
-        final String joined = lines.subList(1, lines.size()).stream()
-                .map(Line::getContent)
-                .collect(Collectors.joining("\n"));
+        final String joined = propertyToList(lines);
         ExecutorSection executorSection;
         try {
             executorSection = objectMapper.readValue(joined, ExecutorSection.class);
