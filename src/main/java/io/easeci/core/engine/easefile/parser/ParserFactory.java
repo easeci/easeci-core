@@ -15,7 +15,7 @@ public class ParserFactory {
     public static EasefileParser factorize(ParserType parserType) {
         if (parserType.equals(ParserType.STANDARD)) {
             return MainEasefileParser.builder()
-                    .metadataProcessor(new MetadataProcessor())
+                    .metadataProcessor(new MetadataProcessor(objectMapper))
                     .keyProcessor(new KeyProcessor())
                     .executorsProcessor(new ExecutorProcessor(objectMapper))
                     .varsProcessor(new VariableProcessor())

@@ -130,4 +130,38 @@ public class Feeder {
                 );
     }
 
+    public static Supplier<List<Line>> provideCorrectMetadata() {
+        return () ->
+                wrapLines("meta:\n" +
+                        "    projectId: 133\n" +
+                        "    tag: 'java maven'\n" +
+                        "    name: 'EaseCI Production'\n" +
+                        "    description: 'Java project based on Maven, continuous deployment process'");
+    }
+
+    public static Supplier<List<Line>> provideCorrectMetadata2() {
+        return () ->
+                wrapLines("meta:\n" +
+                        "    pipelineId: '516f99d0-8a85-11eb-8dcd-0242ac130003'\n" +
+                        "    projectId: 133\n" +
+                        "    tag: 'java maven'\n" +
+                        "    name: 'EaseCI Production'\n" +
+                        "    description: 'Java project based on Maven, continuous deployment process'");
+    }
+
+    public static Supplier<List<Line>> provideCorrectMetadata3() {
+        return () ->
+                wrapLines("meta:\n" +
+                        "    projectId: 133\n" +
+                        "    tag: 'java gradle'\n" +
+                        "    tag: 'java maven'\n" +
+                        "    name: 'EaseCI Production'\n" +
+                        "    description: 'Java project based on Maven, continuous deployment process'");
+    }
+
+    public static Supplier<List<Line>> provideCorrectMetadata4() {
+        return () ->
+                wrapLines("meta:");
+    }
+
 }

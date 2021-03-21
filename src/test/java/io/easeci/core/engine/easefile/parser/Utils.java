@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static commons.WorkspaceTestUtils.buildPathFromResources;
 
@@ -32,16 +31,12 @@ public class Utils {
                 .build();
     }
 
-    public static String readValidTestEasefile() {
-        return load("workspace/Easefile");
-    }
-
     public static String readEmptyExecutorTestEasefile() {
         return load("workspace/Easefile_empty_executor");
     }
 
-    public static String readMultiExecutorTestEasefile() {
-        return load("workspace/Easefile_multiexecutor");
+    public static String readEmptyMetadataTestEasefile() {
+        return load("workspace/Easefile_empty_metadata");
     }
 
     public static String readEasefileAsYaml() {
