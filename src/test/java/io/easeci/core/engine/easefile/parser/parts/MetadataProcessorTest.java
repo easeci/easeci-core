@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 import static io.easeci.core.engine.easefile.parser.Utils.readEmptyMetadataTestEasefile;
 import static io.easeci.core.engine.easefile.parser.parts.Feeder.*;
+import static io.easeci.core.engine.easefile.parser.parts.MetadataProcessor.PROJECT_NOT_EXISTS_ERROR_TITLE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MetadataProcessorTest extends BaseWorkspaceContextTest {
@@ -48,7 +48,7 @@ public class MetadataProcessorTest extends BaseWorkspaceContextTest {
         EasefileObjectModel.Metadata metadata = result._1.get();
 
         assertAll(() -> assertTrue(result._2.isEmpty()),
-                  () -> assertEquals(133, metadata.getProjectId()),
+                  () -> assertEquals(0, metadata.getProjectId()),
                   () -> assertEquals("java maven", metadata.getTag()),
                   () -> assertEquals("EaseCI Production", metadata.getName()),
                   () -> assertEquals("Java project based on Maven, continuous deployment process", metadata.getDescription()),
@@ -77,13 +77,13 @@ public class MetadataProcessorTest extends BaseWorkspaceContextTest {
     void parseSuccessDoubledValueTest() {
         MetadataProcessor metadataProcessor = new MetadataProcessor(objectMapper);
 
-        Supplier<List<Line>> lines = provideCorrectMetadata3();
+        Supplier<List<Line>> lines = provideCorrectMetadata6();
 
         Tuple2<Optional<EasefileObjectModel.Metadata>, List<SyntaxError>> result = metadataProcessor.process(lines);
         EasefileObjectModel.Metadata metadata = result._1.get();
 
         assertAll(() -> assertTrue(result._2.isEmpty()),
-                  () -> assertEquals(133, metadata.getProjectId()),
+                  () -> assertEquals(0, metadata.getProjectId()),
                   () -> assertEquals("java maven", metadata.getTag()),
                   () -> assertEquals("EaseCI Production", metadata.getName()),
                   () -> assertEquals("Java project based on Maven, continuous deployment process", metadata.getDescription()),
@@ -107,5 +107,35 @@ public class MetadataProcessorTest extends BaseWorkspaceContextTest {
 
         assertAll(() -> assertFalse(result._2.isEmpty()),
                   () -> assertNotNull(metadata));
+    }
+
+    @Test
+    @DisplayName("Should no throw exception - Metadata may be not present in Easefile")
+    void parseSuccessNoMetadataTest() {
+        MetadataProcessor metadataProcessor = new MetadataProcessor(objectMapper);
+
+        Supplier<List<Line>> lines = provideCorrectMetadata5();
+
+        Tuple2<Optional<EasefileObjectModel.Metadata>, List<SyntaxError>> result = metadataProcessor.process(lines);
+        EasefileObjectModel.Metadata metadata = result._1.get();
+
+        assertAll(() -> assertTrue(result._2.isEmpty()),
+                  () -> assertNotNull(metadata));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when trying to put Pipeline to project that not exists")
+    void parseFailureProjectIdNotExistsTest() {
+        MetadataProcessor metadataProcessor = new MetadataProcessor(objectMapper);
+
+        Supplier<List<Line>> lines = provideCorrectMetadata3();
+
+        Tuple2<Optional<EasefileObjectModel.Metadata>, List<SyntaxError>> result = metadataProcessor.process(lines);
+
+        SyntaxError expectedError = result._2.get(0);
+
+        assertAll(() -> assertNotNull(expectedError),
+                  () -> assertEquals(2, expectedError.getLineNumber()),
+                  () -> assertEquals(PROJECT_NOT_EXISTS_ERROR_TITLE, expectedError.getTitle()));
     }
 }

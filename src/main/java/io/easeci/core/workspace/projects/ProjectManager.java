@@ -6,6 +6,7 @@ import io.easeci.commons.DirUtils;
 import io.easeci.api.projects.dto.AddProjectGroupRequest;
 import io.easeci.api.projects.dto.AddProjectRequest;
 import io.easeci.core.engine.pipeline.EasefileObjectModel;
+import io.easeci.core.workspace.ProjectsValidator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,7 +32,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
-public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGroupIO {
+public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGroupIO, ProjectsValidator {
     public final static String PROJECTS_DIRECTORY = "/projects/";
     public final static String PIPELINES_DIRECTORY = "/projects/pipelines/";
     public final static String PROJECTS_FILE = PROJECTS_DIRECTORY + "projects-structure.json";
@@ -445,6 +446,16 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         save();
         logit(WORKSPACE_EVENT, "Project group's description was changed from '" + oldDescription + "', to: '" + projectGroupDescription + "'");
         return projectGroup;
+    }
+
+    @Override
+    public boolean isProjectExists(Long projectId) {
+        try {
+            findProject(projectId);
+            return true;
+        } catch (PipelineManagementException ex) {
+            return false;
+        }
     }
 
     public static void destroyInstance() {
