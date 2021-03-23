@@ -1,11 +1,14 @@
 package io.easeci.core.engine.easefile.parser.parts;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 
+@Slf4j
 public class MainEasefileExtractor implements EasefileExtractor, MetadataExtractor, KeyExtractor,
                                               VariableExtractor, StageExtractor, ExecutorExtractor {
     private static final int KEY_LINE_POSITION = 0;
@@ -85,7 +88,8 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
     @Override
     public List<Line> fetchCrudeMetadata() throws PipelinePartError {
         if (isNull(this.crudeMetadata)) {
-            throw new PipelinePartError(error("Metadata"));
+            log.info("Metadata section is not present in Easefile");
+            return Collections.emptyList();
         }
         return this.crudeMetadata;
     }
@@ -101,7 +105,8 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
     @Override
     public List<Line> fetchCrudeVariable() throws PipelinePartError {
         if (isNull(this.crudeVariable)) {
-            throw new PipelinePartError(error("Variable"));
+            log.info("Global variables per Easefile section is not present in Easefile");
+            return Collections.emptyList();
         }
         return this.crudeVariable;
     }

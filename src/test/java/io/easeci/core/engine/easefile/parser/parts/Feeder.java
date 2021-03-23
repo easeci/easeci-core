@@ -1,5 +1,6 @@
 package io.easeci.core.engine.easefile.parser.parts;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -133,7 +134,7 @@ public class Feeder {
     public static Supplier<List<Line>> provideCorrectMetadata() {
         return () ->
                 wrapLines("meta:\n" +
-                        "    projectId: 133\n" +
+                        "    projectId: 0\n" +
                         "    tag: 'java maven'\n" +
                         "    name: 'EaseCI Production'\n" +
                         "    description: 'Java project based on Maven, continuous deployment process'");
@@ -163,5 +164,20 @@ public class Feeder {
         return () ->
                 wrapLines("meta:");
     }
+
+    public static Supplier<List<Line>> provideCorrectMetadata5() {
+        return Collections::emptyList;
+    }
+
+    public static Supplier<List<Line>> provideCorrectMetadata6() {
+        return () ->
+                wrapLines("meta:\n" +
+                        "    projectId: 0\n" +
+                        "    tag: 'java gradle'\n" +
+                        "    tag: 'java maven'\n" +
+                        "    name: 'EaseCI Production'\n" +
+                        "    description: 'Java project based on Maven, continuous deployment process'");
+    }
+
 
 }
