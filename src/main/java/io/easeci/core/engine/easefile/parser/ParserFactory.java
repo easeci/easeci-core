@@ -18,7 +18,7 @@ public class ParserFactory {
                     .metadataProcessor(new MetadataProcessor(objectMapper))
                     .keyProcessor(new KeyProcessor())
                     .executorsProcessor(new ExecutorProcessor(objectMapper))
-                    .varsProcessor(new VariableProcessor())
+                    .varsProcessor(new VariableProcessor(objectMapper))
                     .stagesProcessor(new StageProcessor())
                     .scriptFileProcessor(new ScriptFileProcessor())
                     .build();
