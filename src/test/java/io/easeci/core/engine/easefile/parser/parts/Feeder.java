@@ -179,5 +179,57 @@ public class Feeder {
                         "    description: 'Java project based on Maven, continuous deployment process'");
     }
 
+    public static Supplier<List<Line>> provideCorrectVariables() {
+        return () ->
+                wrapLines("variables:\n" +
+                        "    _repo_address: 'https://github.com/easeci/easeci-core-java'\n" +
+                        "    _repo_clone_target: '/var/sources/easeci'\n" +
+                        "    _artifactory_url: 'https://easeci-artifactory.io'\n" +
+                        "    _height: 1.77\n" +
+                        "    _weight: 68,9\n" +
+                        "    _age: 27\n" +
+                        "    _planck: 6.62607004\n" +
+                        "    _decimal: 0436.000000000000000000000000062607004\n" +
+                        "    _long_num: 0436453000000000000000000000000062607004\n" +
+                        "    _dev_hosts:\n" +
+                        "        - '127.0.0.1'\n" +
+                        "        - '127.0.0.2'\n" +
+                        "        - '127.0.0.3'\n" +
+                        "        - '127.0.0.4'\n" +
+                        "        - '127.0.0.5'\n" +
+                        "        - '127.0.0.6'");
+    }
 
+    public static Supplier<List<Line>> provideCorrectVariables2() {
+        return () ->
+                wrapLines("variables:");
+    }
+
+    public static Supplier<List<Line>> provideCorrectVariables3() {
+        return () ->
+                wrapLines("variables:\n" +
+                        "    _nested_object:\n" +
+                        "       human:\n" +
+                        "          _height: 1.77\n" +
+                        "          _weight: 68,9\n" +
+                        "          _age: 27\n" +
+                        "          _friends:\n" +
+                        "             - 'John'\n" +
+                        "             - 'Thomas'\n" +
+                        "             - 'Marry'\n");
+    }
+
+    public static Supplier<List<Line>> provideCorrectVariables4() {
+        return () ->
+                wrapLines("variables:\n" +
+                        "    _nested_object\n" +
+                        "       human:\n" +
+                        "          _height: 1.77\n" +
+                        "          _weight: 68,9\n" +
+                        "          _age: 27\n" +
+                        "          _friends:\n" +
+                        "             - 'John'\n" +
+                        "             - 'Thomas'\n" +
+                        "             - 'Marry'\n");
+    }
 }

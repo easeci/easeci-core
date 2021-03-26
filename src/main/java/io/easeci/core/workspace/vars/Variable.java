@@ -1,10 +1,7 @@
 package io.easeci.core.workspace.vars;
 
 import io.easeci.extension.command.VariableType;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Objects;
 
