@@ -43,6 +43,10 @@ public class Utils {
         return load("workspace/Easefile_yaml");
     }
 
+    public static String readFinalCorrectEasefile() {
+        return load("workspace/Easefile_sample");
+    }
+
     public static List<Line> wrapLines(String easefilePart) {
         String[] split = easefilePart.split("\n");
         int lineNumber = 1;

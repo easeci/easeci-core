@@ -32,6 +32,11 @@ public class WorkspaceLoader implements EasefileLoader {
         throw new IllegalAccessException("Cannot load file out of workspace. Access denied");
     }
 
+    @Override
+    public Path easefileSource() {
+        return Path.of(this.localStoragePath);
+    }
+
     // for test purpose only. No access rights checking
     protected String testProvide() throws IOException {
         Path path = Paths.get(this.localStoragePath);

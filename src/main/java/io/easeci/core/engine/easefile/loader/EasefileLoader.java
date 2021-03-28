@@ -3,6 +3,7 @@ package io.easeci.core.engine.easefile.loader;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Interface responsible for provide Easefile's content
@@ -21,5 +22,11 @@ public interface EasefileLoader {
      * @throws GitAPIException when some error occurred when trying to load Easefile from remote git repository
      * */
     String provide() throws IOException, IllegalAccessException, GitAPIException, EasefileContentMalformed;
+
+    /**
+     * Returns location of Easefile that was loaded to receive content of Easefile as String
+     * @return path to Easefile on local storage. May return null value.
+     * */
+    Path easefileSource();
 }
 

@@ -6,6 +6,7 @@ import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
 
 import java.nio.file.Path;
+import java.util.Date;
 
 import static io.easeci.core.engine.EngineStatus.F_EP_0002;
 import static io.easeci.core.engine.EngineStatus.F_EP_0003;
@@ -21,13 +22,16 @@ abstract class EasefileParserTemplate implements EasefileParser {
     }
 
     @Override
-    public EasefileParseResult parse(String easefileContent) {
+    public EasefileParseResult parse(String easefileContent, Path easefileSource) {
         try {
             EasefileObjectModel eom = process(easefileContent);
+            eom.getMetadata().setEasefilePath(easefileSource);
             return afterParsingSuccess(eom);
         } catch (StaticAnalyseException e) {
+            e.printStackTrace();
             return EasefileParseResult.failure(F_EP_0002, e.getSyntaxErrorList());
         } catch (PipelinePartCriticalError e) {
+            e.printStackTrace();
             return EasefileParseResult.criticalFailure(F_EP_0003, e.getParsingErrors());
         }
     }
@@ -36,11 +40,16 @@ abstract class EasefileParserTemplate implements EasefileParser {
 
     abstract byte[] serialize(EasefileObjectModel pipeline);
 
-    abstract Path writePipelineFile(byte[] content);
+    abstract Path createEmptyPipelineFile();
+
+    abstract Path writePipelineFile(Path pipelineFile, byte[] content);
 
     private EasefileParseResult afterParsingSuccess(EasefileObjectModel eom) {
+        final Path pipelineFilePath = createEmptyPipelineFile();
+        eom.getMetadata().setPipelineFilePath(pipelineFilePath);
+        eom.getMetadata().setCreatedDate(new Date());
         final byte[] serializedPipeline = serialize(eom);
-        final Path pipelineFilePath = writePipelineFile(serializedPipeline);
+        writePipelineFile(pipelineFilePath, serializedPipeline);
         logit(EASEFILE_EVENT, "Pipeline was serialized, wrote to file and placed here: " + pipelineFilePath.toString());
         pipelinePointerIO.createNewPipelinePointer(eom.getMetadata());
         logit(EASEFILE_EVENT, "Easefile parsed successfully and pipeline pointer added with metadata: " + eom.getMetadata());

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static io.easeci.core.engine.easefile.parser.Utils.readEasefileAsYaml;
+import static io.easeci.core.engine.easefile.parser.Utils.readFinalCorrectEasefile;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MainEasefileExtractorTest extends BaseWorkspaceContextTest {
@@ -62,5 +63,19 @@ class MainEasefileExtractorTest extends BaseWorkspaceContextTest {
         String content = "";
 
         assertThrows(PipelinePartCriticalError.class, () -> easefileExtractor.split(content));
+    }
+
+    @Test
+    @DisplayName("Should correctly read lines of well-formatted Easefile")
+    void fetchCrudeStageSuccessTest() throws PipelinePartCriticalError {
+        EasefileExtractor easefileExtractor = new MainEasefileExtractor();
+        StageExtractor stageExtractor = (StageExtractor) easefileExtractor;
+
+        String content = readFinalCorrectEasefile();
+        easefileExtractor.split(content);
+
+        List<Line> stagesPart = stageExtractor.fetchCrudeStage();
+
+        assertAll(() -> assertEquals(34, stagesPart.size()));
     }
 }
