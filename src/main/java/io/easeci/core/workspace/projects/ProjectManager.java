@@ -143,7 +143,10 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
 
     private void validate(EasefileObjectModel.Metadata pipelineMeta) {
         final Project project = findProject(pipelineMeta.getProjectId());
-        validatePipelinePointer(pipelinePointer -> pipelinePointer.getName().equals(pipelineMeta.getName()),
+        // todo exception throwing here is not propagated to http response [core #0031]
+        validatePipelinePointer(pipelinePointer -> ofNullable(pipelinePointer.getName())
+                                                                             .orElse("")
+                                                                             .equals(pipelineMeta.getName()),
                                 project,
                                 PIPELINE_NAME_EXISTS);
         validatePipelinePointer(pipelinePointer -> pipelinePointer.getPipelineId().equals(pipelineMeta.getPipelineId()),

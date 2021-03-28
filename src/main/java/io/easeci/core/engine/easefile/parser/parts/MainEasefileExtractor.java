@@ -38,32 +38,25 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
 
         String lastLineLabel = "";
         for (int i = 1; i < lines.length; i++) {
-            final String lineValue = lines[i];
-            for (String label : LABELS) {
-                if (lineValue.trim().startsWith(label)) {
-                    lastLineLabel = label;
-                    List<String> labelLines = linesByLabel.get(lastLineLabel);
-                    if (isNull(labelLines)) {
-                        List<String> collectedLines = new ArrayList<>();
-                        linesByLabel.put(label, collectedLines);
-                    }
-                } else {
-                    ofNullable(linesByLabel.get(lastLineLabel))
-                            .ifPresent(list -> {
-                                if (!list.contains(lineValue)) {
-                                    list.add(lineValue);
-                                }
-                            });
-                }
+            final String line = lines[i].trim();
+            if (isLineLabelProperty(line)) {
+                linesByLabel.computeIfAbsent(line, v -> new ArrayList<>());
+                lastLineLabel = line;
+                continue;
             }
+            linesByLabel.get(lastLineLabel)
+                        .add(lines[i]);
         }
 
         Map<String, List<Line>> linesIndexed = convert(linesByLabel);
-        linesIndexed.values().forEach(list -> list.remove(list.size() - 1));
         this.crudeMetadata = ofNullable(linesIndexed.get("meta:")).orElse(Collections.emptyList());
         this.crudeExecutor = ofNullable(linesIndexed.get("executor:")).orElseThrow(() -> missingEasefilePartException("executor"));
         this.crudeVariable = ofNullable(linesIndexed.get("variables:")).orElse(Collections.emptyList());
         this.crudeStage = ofNullable(linesIndexed.get("flow:")).orElseThrow(() -> missingEasefilePartException("flow"));
+    }
+
+    private boolean isLineLabelProperty(String line) {
+        return LABELS.contains(line);
     }
 
     private Map<String, List<Line>> convert(Map<String, List<String>> linesByLabel) {

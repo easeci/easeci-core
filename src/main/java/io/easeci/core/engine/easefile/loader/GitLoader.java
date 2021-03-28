@@ -3,6 +3,7 @@ package io.easeci.core.engine.easefile.loader;
 import io.easeci.core.workspace.LocationUtils;
 import io.easeci.core.workspace.cache.CacheGarbageCollector;
 import io.easeci.core.workspace.cache.CacheManager;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -16,9 +17,12 @@ import java.nio.file.Paths;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.EASEFILE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
+import static io.easeci.core.workspace.LocationUtils.getEasefilesStorageLocation;
 
+@Slf4j
 public class GitLoader implements EasefileLoader {
     private String gitRepositoryUrl;
+    private Path easefileLocalStoragePath;
 
     public static EasefileLoader of(String gitRepositoryUrl) {
         GitLoader easefileLoader = new GitLoader();
@@ -42,13 +46,33 @@ public class GitLoader implements EasefileLoader {
                 .setDirectory(repositoryDestination)
                 .call();
 
-        final Path easefile = findEasefile(repositoryDestination.toPath());
-        final String easefileContent = readFile(easefile.toFile());
+        this.easefileLocalStoragePath = findEasefile(repositoryDestination.toPath());
+        this.copyEasefile();
+        final String easefileContent = readFile(this.easefileLocalStoragePath.toFile());
 
         CacheGarbageCollector cacheGarbageCollector = CacheManager.getInstance();
         cacheGarbageCollector.cleanup(repositoryDestination.toPath());
         logit(EASEFILE_EVENT, "Loading content to parsing Easefile from git repository from remote: " + gitRepositoryUrl, THREE);
         return easefileContent;
+    }
+
+    private void copyEasefile() {
+        if (this.easefileLocalStoragePath != null) {
+            String easefilesStorageLocationString = getEasefilesStorageLocation().concat("_")
+                                                                                 .concat(String.valueOf(System.currentTimeMillis()));
+            Path easefilesStorageLocation = Paths.get(easefilesStorageLocationString);
+            try {
+                Files.copy(this.easefileLocalStoragePath, easefilesStorageLocation);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        log.error("Cannot copy easefile downloaded from github, because easefileLocalStoragePath is null");
+    }
+
+    @Override
+    public Path easefileSource() {
+        return this.easefileLocalStoragePath;
     }
 
     private String readFile(File easefile) throws IOException {

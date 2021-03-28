@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public class Utils {
 
     public static String propertyToList(List<Line> lines) {
-        return lines.subList(1, lines.size())
+        return lines
                 .stream()
                 .map(Line::getContent)
                 .collect(Collectors.joining("\n"));

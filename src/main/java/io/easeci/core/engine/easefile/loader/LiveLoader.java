@@ -24,6 +24,7 @@ public class LiveLoader implements EasefileLoader, Serializable {
     private static final String LIVE_CACHED_FILES = "/easefiles-live/";
     private Path localStoragePath;
     private String encodedEasefileContent;
+    private Path easefileLocalPath;
 
     public static LiveLoader of(String localStoragePath, String encodedEasefileContent) {
         LiveLoader liveLoader = new LiveLoader();
@@ -63,6 +64,7 @@ public class LiveLoader implements EasefileLoader, Serializable {
             byte[] decode = Base64.getDecoder().decode(encodedEasefileContent);
             String decodedContent = new String(decode, StandardCharsets.UTF_8);
             Path createdFile = Files.createFile(Paths.get(tmpEasefileName));
+            this.easefileLocalPath = createdFile;
             Files.writeString(createdFile, decodedContent);
             if (nonNull(this.localStoragePath)) {
                 Files.writeString(this.localStoragePath, decodedContent);
@@ -75,5 +77,10 @@ public class LiveLoader implements EasefileLoader, Serializable {
             logit(EASEFILE_EVENT, errorMessage, THREE);
             throw new EasefileContentMalformed(errorMessage);
         }
+    }
+
+    @Override
+    public Path easefileSource() {
+        return this.easefileLocalPath;
     }
 }

@@ -54,15 +54,19 @@ class MainEasefileParser extends EasefileParserTemplate {
         return Base64.getEncoder().encode(serialized);
     }
 
-    Path writePipelineFile(byte[] serializedContent) {
+    @Override
+    Path createEmptyPipelineFile() {
         Path pipelineFilesLocation = getPipelineFilesLocation();
-        Path pipelineFile = Path.of(pipelineFilesLocation.toString()
+        return Path.of(pipelineFilesLocation.toString()
                 .concat("/")
                 .concat("pipeline_")
                 .concat(String.valueOf(System.currentTimeMillis())));
+    }
+
+    @Override
+    Path writePipelineFile(Path pipelineFile, byte[] serializedContent) {
         try {
-            Path file = Files.createFile(pipelineFile);
-            Files.write(file, serializedContent);
+            Files.write(pipelineFile, serializedContent);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -80,21 +84,21 @@ class MainEasefileParser extends EasefileParserTemplate {
         Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> executors = this.executorsProcessor.process(() -> ((ExecutorExtractor) easefileExtractor).fetchCrudeExecutor());
         Tuple2<Optional<List<Variable>>, List<SyntaxError>> variables = this.varsProcessor.process(() -> ((VariableExtractor) easefileExtractor).fetchCrudeVariable());
         Tuple2<Optional<List<Stage>>, List<SyntaxError>> stages = this.stagesProcessor.process(() -> ((StageExtractor) easefileExtractor).fetchCrudeStage());
-        Tuple2<Optional<byte[]>, List<SyntaxError>> scriptEncoded = this.scriptFileProcessor.process(() -> null);
+//        Tuple2<Optional<byte[]>, List<SyntaxError>> scriptEncoded = this.scriptFileProcessor.process(() -> null);
 
         validateProcessingResult(metadata, "Metadata");
         validateProcessingResult(key, "Key");
         validateProcessingResult(executors, "Executors");
         validateProcessingResult(variables, "Variables");
         validateProcessingResult(stages, "Stages");
-        validateProcessingResult(scriptEncoded, "Script collecting");
+//        validateProcessingResult(scriptEncoded, "Script collecting");
 
         collectErrors(metadata, syntaxErrors);
         collectErrors(key, syntaxErrors);
         collectErrors(executors, syntaxErrors);
         collectErrors(variables, syntaxErrors);
         collectErrors(stages, syntaxErrors);
-        collectErrors(scriptEncoded, syntaxErrors);
+//        collectErrors(scriptEncoded, syntaxErrors);
 
         if (syntaxErrors.isEmpty()) {
             return EasefileObjectModel.builder()
@@ -103,7 +107,7 @@ class MainEasefileParser extends EasefileParserTemplate {
                     .executorConfiguration(executors._1.orElse(new ExecutorConfiguration()))
                     .variables(variables._1.orElse(Collections.emptyList()))
                     .stages(stages._1.orElse(Collections.emptyList()))
-                    .scriptEncoded(scriptEncoded._1.orElse(new byte[0]))
+//                    .scriptEncoded(scriptEncoded._1.orElse(new byte[0]))
                     .build();
         }
         throw new StaticAnalyseException(EngineStatus.F_EP_0002, new ArrayList<>(syntaxErrors));

@@ -232,4 +232,51 @@ public class Feeder {
                         "             - 'Thomas'\n" +
                         "             - 'Marry'\n");
     }
+
+    public static Supplier<List<Line>> provideCorrectFlow() {
+        return () ->
+                wrapLines("flow:\n" +
+                        "   -\n" +
+                        "       stage_name: 'Prepare building environment'\n" +
+                        "       steps:\n" +
+                        "           - $ssh mkdir -p {_repo_clone_target}\n" +
+                        "   -\n" +
+                        "       stage_name: 'Preparation of project building'\n" +
+                        "       steps:\n" +
+                        "           - $git clone {_repo_address}\n" +
+                        "   -\n" +
+                        "       stage_name: 'Unit tests'\n" +
+                        "       steps:\n" +
+                        "           - $mvn test\n" +
+                        "           - $bash cp -r target/test-result/* /tmp/logs/\n" +
+                        "   -\n" +
+                        "       stage_name: 'Building project'\n" +
+                        "       steps:\n" +
+                        "           - $mvn install\n" +
+                        "   -\n" +
+                        "       stage_name: 'Publish artifact'\n" +
+                        "       steps:\n" +
+                        "           - $artifactory {_repo_clone_target} {_artifactory_url}\n" +
+                        "   -\n" +
+                        "       stage_name: 'Deploy to development env'\n" +
+                        "       steps:\n" +
+                        "           - $deploy ssh {_dev_hosts}\n" +
+                        "   -\n" +
+                        "       stage_name: 'Deploy to production env'\n" +
+                        "       stage_variables:\n" +
+                        "           log_dir: /tmp/logs/\n" +
+                        "       steps: \n" +
+                        "           - |- \n" +
+                        "                $bash\n" +
+                        "                   echo 'This is multiline bash script'\n" +
+                        "                   cp -r target/test-result/* {log_dir}\n" +
+                        "                   echo 'End of script'\n" +
+                        "           - |- \n" +
+                        "                $bash\n" +
+                        "                   echo 'This is second multiline bash script'\n" +
+                        "                   cp -r target/test-result/* {log_dir}\n" +
+                        "                   echo 'End of script'\n"
+                );
+    }
 }
+

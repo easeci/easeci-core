@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.api.validation.ValidationException;
 import io.easeci.core.engine.easefile.loader.EasefileContentMalformed;
+import io.easeci.core.engine.easefile.loader.EasefileLoader;
 import io.easeci.core.engine.easefile.loader.EasefileLoaderFactory;
 import io.easeci.core.engine.easefile.parser.EasefileParser;
 import io.easeci.core.engine.easefile.parser.ParserFactory;
@@ -40,8 +41,9 @@ public class EasefileParsingHandlers implements InternalHandlers {
                 .endpointUri(MAPPING)
                 .handler(ctx -> extractBody(ctx.getRequest(), RunParseProcess.class)
                         .map(runParseProcess -> {
-                            String easefilePlainContent = EasefileLoaderFactory.factorize(runParseProcess).provide();
-                            return easefileParser.parse(easefilePlainContent);
+                            final EasefileLoader easefileLoader = EasefileLoaderFactory.factorize(runParseProcess);
+                            final String easefilePlainContent = easefileLoader.provide();
+                            return easefileParser.parse(easefilePlainContent, easefileLoader.easefileSource());
                         }).map(ParseProcessResponse::of)
                         .mapError(this::errorMapping)
                         .map(parseProcessResponse -> objectMapper.writeValueAsBytes(parseProcessResponse))
@@ -51,6 +53,7 @@ public class EasefileParsingHandlers implements InternalHandlers {
     }
 
     private ParseProcessResponse errorMapping(Throwable throwable) {
+        throwable.printStackTrace();
         if (throwable instanceof ValidationException) {
             throw (ValidationException) throwable;
         }
