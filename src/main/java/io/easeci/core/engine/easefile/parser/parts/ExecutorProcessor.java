@@ -39,7 +39,7 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
         final List<SyntaxError> syntaxErrors = new ArrayList<>(0);
         final ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
 
-        final String joined = propertyToList(lines);
+        final String joined = propertyToList(lines.subList(1, lines.size()));
         ExecutorSection executorSection;
         try {
             executorSection = objectMapper.readValue(joined, ExecutorSection.class);

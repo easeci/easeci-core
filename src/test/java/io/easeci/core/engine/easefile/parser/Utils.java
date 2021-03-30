@@ -39,10 +39,6 @@ public class Utils {
         return load("workspace/Easefile_empty_metadata");
     }
 
-    public static String readEasefileAsYaml() {
-        return load("workspace/Easefile_yaml");
-    }
-
     public static String readFinalCorrectEasefile() {
         return load("workspace/Easefile_sample");
     }

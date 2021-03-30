@@ -35,7 +35,7 @@ public class VariableProcessor implements PipelinePartProcessor<List<Variable>> 
         if (lines.isEmpty() || lines.size() == 1) {
             return Tuple.of(Optional.of(Collections.emptyList()), syntaxErrors);
         }
-        final String joined = propertyToList(lines);
+        final String joined = propertyToList(lines.subList(1, lines.size()));
         try {
             final Map<String, Object> variables = objectMapper.readValue(joined, new TypeReference<Map<String, Object>>() {});
             Tuple2<List<Variable>, List<SyntaxError>> tupleResult = mapVariables(variables, lines);
