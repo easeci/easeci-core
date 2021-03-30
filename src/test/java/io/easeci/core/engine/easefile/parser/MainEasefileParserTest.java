@@ -50,7 +50,8 @@ class MainEasefileParserTest extends BaseWorkspaceContextTest {
 
         EasefileObjectModel pipeline = provideEmptyPipelineForTest();
         byte[] serializedPipeline = parser.serialize(pipeline);
-        Path path = parser.writePipelineFile(serializedPipeline);
+        final Path emptyPipelineFile = parser.createEmptyPipelineFile();
+        final Path path = parser.writePipelineFile(emptyPipelineFile, serializedPipeline);
 
         boolean isFileExists = Files.exists(path);
 

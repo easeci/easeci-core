@@ -1,37 +1,61 @@
 pipeline:
-  executor: auto
-  meta:
-    projectId: 0
-    tag: 'java maven'
-    description: 'Java project based on Maven, continuous deployment process'
-  variables:
-    _repo_address = https://github.com/easeci/easeci-core-java
-    _repo_clone_target = /var/sources/easeci
-    _artifactory_url = https://easeci-artifactory.io
-    _dev_hosts = [
-        '127.0.0.1',
-        '127.0.0.2',
-        '127.0.0.3',
-        '127.0.0.4',
-        '127.0.0.5',
-        '127.0.0.6'
-    ]
-
-  stage 'Prepare building environment':
-    $ssh mkdir -p {_repo_clone_target}
-
-  stage 'Preparation of project building':
-    $git clone {_repo_address}
-
-  stage 'Unit tests':
-    $mvn test
-    $bash cp -r target/test-result/* /tmp/logs/
-
-  stage 'Building project':
-    $mvn install
-
-  stage 'Publish artifact':
-    $artifactory {_repo_clone_target} {_artifactory_url}
-
-  ?stage 'Deploy to development env':
-    $deploy ssh {_dev_hosts}
+    executor:
+        strategy: auto
+        names:
+            - "easefile-node-01-aws"
+            - "easefile-node-02-aws"
+        nodeUuids:
+            - "16fd18b6-7169-11eb-9439-0242ac130002"
+            - "16fd1af0-7169-11eb-9439-0242ac130002"
+            - "16fd2158-7169-11eb-9439-0242ac130002"
+    meta:
+        projectId: 0
+        tag: 'java maven'
+        description: 'Java project based on Maven, continuous deployment process'
+    variables:
+        _repo_address: https://github.com/easeci/easeci-core-java
+        _repo_clone_target: /var/sources/easeci
+        _artifactory_url: https://easeci-artifactory.io
+        _dev_hosts:
+            - '127.0.0.1'
+            - '127.0.0.2'
+            - '127.0.0.3'
+            - '127.0.0.4'
+            - '127.0.0.5'
+            - '127.0.0.6'
+    flow:
+        -
+            stage_name: 'Prepare building environment'
+            steps:
+                - $ssh mkdir -p {_repo_clone_target}
+        -
+            stage_name: 'Preparation of project building'
+            steps:
+                - $git clone {_repo_address}
+        -
+            stage_name: 'Unit tests'
+            steps:
+                - $mvn test
+                - $bash cp -r target/test-result/* /tmp/logs/
+        -
+            stage_name: 'Building project'
+            steps:
+                - $mvn install
+        -
+            stage_name: 'Publish artifact'
+            steps:
+                - $artifactory {_repo_clone_target} {_artifactory_url}
+        -
+            stage_name: 'Deploy to development env'
+            steps:
+                - $deploy ssh {_dev_hosts}
+        -
+            stage_name: 'Deploy to production env'
+            stage_variables:
+                log_dir: /tmp/logs/
+            steps:
+                - |-
+                    $bash
+                       echo 'This is multiline bash script'
+                       cp -r target/test-result/* {log_dir}
+                       echo 'End of script'

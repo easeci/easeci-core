@@ -40,7 +40,7 @@ public class MetadataProcessor implements PipelinePartProcessor<EasefileObjectMo
             return Tuple.of(Optional.of(metadata), syntaxErrors);
         }
 
-        final String joined = propertyToList(lines);
+        final String joined = propertyToList(lines.subList(1, lines.size()));
         try {
             EasefileObjectModel.MetadataInput metadataInput = objectMapper.readValue(joined, EasefileObjectModel.MetadataInput.class);
             metadata = metadata.fromInput(metadataInput);

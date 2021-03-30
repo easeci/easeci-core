@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static io.easeci.core.engine.easefile.parser.Utils.readEmptyMetadataTestEasefile;
+import static io.easeci.core.engine.easefile.parser.Utils.readFinalCorrectEasefile;
 import static io.easeci.core.engine.easefile.parser.parts.Feeder.*;
 import static io.easeci.core.engine.easefile.parser.parts.MetadataProcessor.PROJECT_NOT_EXISTS_ERROR_TITLE;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +27,7 @@ public class MetadataProcessorTest extends BaseWorkspaceContextTest {
     @DisplayName("Should correctly parse Easefile with simple metadata declaration")
     void baseTrialParseTest() throws PipelinePartCriticalError {
         EasefileExtractor easefileExtractor = new MainEasefileExtractor();
-        String content = readEmptyMetadataTestEasefile();
+        String content = readFinalCorrectEasefile();
 
         easefileExtractor.split(content);
 
@@ -34,7 +35,7 @@ public class MetadataProcessorTest extends BaseWorkspaceContextTest {
 
         List<Line> lines = metadataExtractor.fetchCrudeMetadata();
 
-        assertEquals(4, lines.size());
+        assertEquals(3, lines.size());
     }
 
     @Test

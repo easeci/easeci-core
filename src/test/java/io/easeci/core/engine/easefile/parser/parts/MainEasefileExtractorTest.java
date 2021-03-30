@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static io.easeci.core.engine.easefile.parser.Utils.readEasefileAsYaml;
 import static io.easeci.core.engine.easefile.parser.Utils.readFinalCorrectEasefile;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,7 +30,7 @@ class MainEasefileExtractorTest extends BaseWorkspaceContextTest {
         VariableExtractor variableExtractor = (VariableExtractor) easefileExtractor;
         StageExtractor stageExtractor = (StageExtractor) easefileExtractor;
 
-        String content = readEasefileAsYaml();
+        String content = readFinalCorrectEasefile();
         easefileExtractor.split(content);
 
         List<Line> keyPart = keyExtractor.fetchCrudeKey();
@@ -40,9 +39,9 @@ class MainEasefileExtractorTest extends BaseWorkspaceContextTest {
         List<Line> stagesPart = stageExtractor.fetchCrudeStage();
 
         assertAll(() -> assertEquals(1, keyPart.size()),
-                () -> assertEquals(9, executorPart.size()),
-                () -> assertEquals(11, variablesPart.size()),
-                () -> assertEquals(13, stagesPart.size()));
+                () -> assertEquals(8, executorPart.size()),
+                () -> assertEquals(10, variablesPart.size()),
+                () -> assertEquals(35, stagesPart.size()));
     }
 
     @Test
@@ -76,6 +75,6 @@ class MainEasefileExtractorTest extends BaseWorkspaceContextTest {
 
         List<Line> stagesPart = stageExtractor.fetchCrudeStage();
 
-        assertAll(() -> assertEquals(34, stagesPart.size()));
+        assertAll(() -> assertEquals(35, stagesPart.size()));
     }
 }
