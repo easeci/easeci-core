@@ -1,5 +1,6 @@
 package io.easeci.core.engine.easefile.parser;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.easeci.core.engine.EngineStatus;
 import io.easeci.core.engine.easefile.parser.analyse.SyntaxError;
@@ -14,6 +15,7 @@ import java.util.List;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EasefileParseResult {
+    @JsonIgnore
     private boolean success;
     private Path pipelineFilePath;
     private EngineStatus engineStatus;
