@@ -15,8 +15,10 @@ public class ParserFactory {
 
     public static EasefileParser factorize(ParserType parserType) {
         if (parserType.equals(ParserType.STANDARD)) {
+            final ProjectManager projectManager = ProjectManager.getInstance();
             return MainEasefileParser.builder()
-                    .pipelinePointerIO(ProjectManager.getInstance())
+                    .pipelinePointerIO(projectManager)
+                    .pipelineIO(projectManager)
                     .easefileExtractor(new MainEasefileExtractor())
                     .metadataProcessor(new MetadataProcessor(objectMapper))
                     .keyProcessor(new KeyProcessor())

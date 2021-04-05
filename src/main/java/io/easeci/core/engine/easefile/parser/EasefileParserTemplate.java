@@ -38,18 +38,15 @@ abstract class EasefileParserTemplate implements EasefileParser {
 
     abstract EasefileObjectModel process(String easefileContent) throws StaticAnalyseException, PipelinePartCriticalError;
 
-    abstract byte[] serialize(EasefileObjectModel pipeline);
-
     abstract Path createEmptyPipelineFile();
 
-    abstract Path writePipelineFile(Path pipelineFile, byte[] content);
+    abstract Path writePipelineFile(Path pipelineFile, EasefileObjectModel easefileObjectModel);
 
     private EasefileParseResult afterParsingSuccess(EasefileObjectModel eom) {
         final Path pipelineFilePath = createEmptyPipelineFile();
         eom.getMetadata().setPipelineFilePath(pipelineFilePath);
         eom.getMetadata().setCreatedDate(new Date());
-        final byte[] serializedPipeline = serialize(eom);
-        writePipelineFile(pipelineFilePath, serializedPipeline);
+        writePipelineFile(pipelineFilePath, eom);
         logit(EASEFILE_EVENT, "Pipeline was serialized, wrote to file and placed here: " + pipelineFilePath.toString());
         pipelinePointerIO.createNewPipelinePointer(eom.getMetadata());
         logit(EASEFILE_EVENT, "Easefile parsed successfully and pipeline pointer added with metadata: " + eom.getMetadata());
