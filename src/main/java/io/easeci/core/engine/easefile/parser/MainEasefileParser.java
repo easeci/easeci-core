@@ -5,19 +5,16 @@ import io.easeci.core.engine.easefile.parser.analyse.StaticAnalyseException;
 import io.easeci.core.engine.easefile.parser.analyse.SyntaxError;
 import io.easeci.core.engine.easefile.parser.parts.*;
 import io.easeci.core.engine.pipeline.*;
-import io.easeci.core.workspace.SerializeUtils;
+import io.easeci.core.workspace.projects.PipelineIO;
 import io.easeci.core.workspace.projects.PipelinePointerIO;
 import io.easeci.core.workspace.vars.Variable;
 import io.vavr.Tuple2;
 import lombok.Builder;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static io.easeci.core.workspace.LocationUtils.getPipelineFilesLocation;
 import static java.util.Objects.isNull;
 
 class MainEasefileParser extends EasefileParserTemplate {
@@ -29,6 +26,7 @@ class MainEasefileParser extends EasefileParserTemplate {
     private PipelinePartProcessor<List<Stage>> stagesProcessor;
     private PipelinePartProcessor<byte[]> scriptFileProcessor;
     private EasefileExtractor easefileExtractor;
+    private PipelineIO pipelineIO;
 
     @Builder
     MainEasefileParser(PipelinePointerIO pipelinePointerIO,
@@ -38,7 +36,8 @@ class MainEasefileParser extends EasefileParserTemplate {
                        PipelinePartProcessor<ExecutorConfiguration> executorsProcessor,
                        PipelinePartProcessor<List<Variable>> varsProcessor,
                        PipelinePartProcessor<List<Stage>> stagesProcessor,
-                       PipelinePartProcessor<byte[]> scriptFileProcessor) {
+                       PipelinePartProcessor<byte[]> scriptFileProcessor,
+                       PipelineIO pipelineIO) {
         super(pipelinePointerIO);
         this.easefileExtractor = easefileExtractor;
         this.metadataProcessor = metadataProcessor;
@@ -47,30 +46,17 @@ class MainEasefileParser extends EasefileParserTemplate {
         this.varsProcessor = varsProcessor;
         this.stagesProcessor = stagesProcessor;
         this.scriptFileProcessor = scriptFileProcessor;
-    }
-
-    byte[] serialize(EasefileObjectModel pipeline) {
-        byte[] serialized = SerializeUtils.write(pipeline);
-        return Base64.getEncoder().encode(serialized);
+        this.pipelineIO = pipelineIO;
     }
 
     @Override
     Path createEmptyPipelineFile() {
-        Path pipelineFilesLocation = getPipelineFilesLocation();
-        return Path.of(pipelineFilesLocation.toString()
-                .concat("/")
-                .concat("pipeline_")
-                .concat(String.valueOf(System.currentTimeMillis())));
+        return this.pipelineIO.createPipelineFile();
     }
 
     @Override
-    Path writePipelineFile(Path pipelineFile, byte[] serializedContent) {
-        try {
-            Files.write(pipelineFile, serializedContent);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return pipelineFile;
+    Path writePipelineFile(Path pipelineFile, EasefileObjectModel easefileObjectModel) {
+        return this.pipelineIO.writePipelineFile(pipelineFile, easefileObjectModel);
     }
 
     @Override

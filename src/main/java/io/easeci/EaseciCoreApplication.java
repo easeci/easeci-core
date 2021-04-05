@@ -9,6 +9,7 @@ import io.easeci.api.projects.PipelinePointerExtensionHandlers;
 import io.easeci.api.projects.ProjectExtensionHandlers;
 import io.easeci.api.projects.ProjectGroupExtensionHandlers;
 import io.easeci.api.projects.ProjectStructureExtensionHandlers;
+import io.easeci.api.runtime.RuntimeHandlers;
 import io.easeci.core.bootstrap.BootstrapperFactory;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
@@ -36,7 +37,8 @@ public class EaseciCoreApplication {
                                                new ProjectGroupExtensionHandlers(),
                                                new ProjectExtensionHandlers(),
                                                new PipelinePointerExtensionHandlers(),
-                                               new ProjectStructureExtensionHandlers()),
+                                               new ProjectStructureExtensionHandlers(),
+                                               new RuntimeHandlers()),
                                        BaseExternalHandlers.get());
         ServerBootstrapper.getInstance().run();
     }

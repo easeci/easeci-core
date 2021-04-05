@@ -7,23 +7,23 @@ import io.easeci.api.projects.dto.AddProjectGroupRequest;
 import io.easeci.api.projects.dto.AddProjectRequest;
 import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.workspace.ProjectsValidator;
+import io.easeci.core.workspace.SerializeUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.TWO;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
-import static io.easeci.core.workspace.LocationUtils.getProjectsStructureFileLocation;
-import static io.easeci.core.workspace.LocationUtils.getWorkspaceLocation;
+import static io.easeci.core.workspace.LocationUtils.*;
 import static io.easeci.core.workspace.projects.PipelineManagementException.PipelineManagementStatus.*;
 import static io.easeci.core.workspace.projects.ProjectUtils.*;
 import static io.easeci.core.workspace.projects.ProjectsFile.defaultProjectGroupId;
@@ -32,7 +32,8 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 
-public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGroupIO, ProjectsValidator {
+@Slf4j
+public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGroupIO, ProjectsValidator, PipelineIO {
     public final static String PROJECTS_DIRECTORY = "/projects/";
     public final static String PIPELINES_DIRECTORY = "/projects/pipelines/";
     public final static String PROJECTS_FILE = PROJECTS_DIRECTORY + "projects-structure.json";
@@ -78,7 +79,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
 
     private Path initializeProjectsFile() {
         final String workspaceLocation = getWorkspaceLocation();
-        Path projectsStructureFile = Paths.get(workspaceLocation.concat(PROJECTS_FILE));
+        final Path projectsStructureFile = Paths.get(workspaceLocation.concat(PROJECTS_FILE));
         if (Files.exists(projectsStructureFile)) {
             logit(WORKSPACE_EVENT, PROJECTS_FILE + " just exists here: " + projectsStructureFile + ", not created again", THREE);
             return projectsStructureFile;
@@ -459,6 +460,71 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         } catch (PipelineManagementException ex) {
             return false;
         }
+    }
+
+    @Override
+    public Path createPipelineFile() {
+        final Path pipelineFilesLocation = getPipelineFilesLocation();
+        try {
+            return Files.createFile(Path.of(pipelineFilesLocation.toString()
+                    .concat("/")
+                    .concat("pipeline_")
+                    .concat(String.valueOf(System.currentTimeMillis()))));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public Path writePipelineFile(Path pipelineFile, EasefileObjectModel easefileObjectModel) {
+        try {
+            final byte[] serialized = serialize(easefileObjectModel);
+            Files.write(pipelineFile, serialized);
+            log.info("Correctly saved pipeline file here: {}", pipelineFile);
+            return pipelineFile;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return pipelineFile;
+    }
+
+    @Override
+    public Optional<EasefileObjectModel> loadPipelineFile(UUID pipelineId) {
+        if (isNull(pipelineId)) {
+            log.error("Error - pipelineId is null so null was returned");
+            return Optional.empty();
+        }
+        return projectsFile.getProjectGroups()
+                           .stream()
+                           .flatMap(projectGroup -> projectGroup.getProjects()
+                                   .stream()
+                                   .flatMap(project -> project.getPipelines().stream()))
+                           .collect(Collectors.toList()).stream()
+                           .filter(Objects::nonNull)
+                           .filter(pipelinePointer -> pipelineId.equals(pipelinePointer.getPipelineId()))
+                           .findFirst()
+                           .map(PipelinePointer::getPipelineFilePath)
+                           .map(path -> {
+                               try {
+                                   log.info("Pipeline with pipelineId: {}, found here: {}", pipelineId, path);
+                                   final byte[] decodedBytes = Files.readAllBytes(path);
+                                   final byte[] deserialized = this.deserialize(decodedBytes);
+                                   return OBJECT_MAPPER.readValue(deserialized, EasefileObjectModel.class);
+                               } catch (IOException e) {
+                                   e.printStackTrace();
+                                   return null;
+                               }
+                });
+    }
+
+    private byte[] serialize(EasefileObjectModel pipeline) {
+        byte[] serialized = SerializeUtils.write(pipeline);
+        return Base64.getEncoder().encode(serialized);
+    }
+
+    private byte[] deserialize(byte[] bytes) {
+        return Base64.getDecoder().decode(bytes);
     }
 
     public static void destroyInstance() {
