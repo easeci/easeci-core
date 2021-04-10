@@ -120,10 +120,11 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
 
     @Override
     public PipelinePointer createNewPipelinePointer(EasefileObjectModel.Metadata pipelineMeta) {
+        assignProject(pipelineMeta);
         validate(pipelineMeta);
         PipelinePointer pointer = new PipelinePointer();
         pointer.setId(nextPipelinePointerId(projectsFile));
-        pointer.setProjectId(ofNullable(pipelineMeta.getProjectId()).orElse(defaultProjectId()));
+        pointer.setProjectId(pipelineMeta.getProjectId());
         pointer.setPipelineId(pipelineMeta.getPipelineId());
         pointer.setPipelineFilePath(pipelineMeta.getPipelineFilePath());
         pointer.setCreatedDate(pipelineMeta.getCreatedDate());
@@ -142,9 +143,13 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         return pointer;
     }
 
+    private void assignProject(EasefileObjectModel.Metadata pipelineMeta) {
+        final Long projectId = ofNullable(pipelineMeta.getProjectId()).orElse(defaultProjectId());
+        pipelineMeta.setProjectId(projectId);
+    }
+
     private void validate(EasefileObjectModel.Metadata pipelineMeta) {
         final Project project = findProject(pipelineMeta.getProjectId());
-        // todo exception throwing here is not propagated to http response [core #0031]
         validatePipelinePointer(pipelinePointer -> ofNullable(pipelinePointer.getName())
                                                                              .orElse("")
                                                                              .equals(pipelineMeta.getName()),
