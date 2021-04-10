@@ -1,12 +1,14 @@
 package io.easeci.core.engine.pipeline;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class Step {
-    private final int order;
-    private final String directiveName;
-    private final String invocationBody;
+    private int order;
+    private String directiveName;
+    private String invocationBody;
 }

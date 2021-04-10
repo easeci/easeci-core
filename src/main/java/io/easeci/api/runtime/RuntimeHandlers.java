@@ -2,9 +2,7 @@ package io.easeci.api.runtime;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.easeci.core.engine.runtime.PipelineRunContext;
-import io.easeci.core.engine.runtime.PipelineRunStatus;
-import io.easeci.core.engine.runtime.StandardPipelineRunContext;
+import io.easeci.core.engine.runtime.*;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +20,11 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 public class RuntimeHandlers implements InternalHandlers {
 
     private final static String MAPPING = "pipeline/runtime";
-    private final PipelineRunContext pipelineRunContext;
+    private final ExecutionQueue executionQueue;
     private final ObjectMapper objectMapper;
 
     public RuntimeHandlers() {
-        this.pipelineRunContext = new StandardPipelineRunContext();
+        this.executionQueue = ScheduledExecutionQueue.getInstance();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -43,7 +41,7 @@ public class RuntimeHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "/run")
                 .handler(ctx -> extractBody(ctx, RunPipelineRequest.class)
                         .next(runPipelineRequest -> log.info("Request to start pipeline runtime occurred for pipelineId: {}", runPipelineRequest.getPipelineId()))
-                        .map(runPipelineRequest -> pipelineRunContext.runPipeline(runPipelineRequest.getPipelineId()))
+                        .map(runPipelineRequest -> executionQueue.runPipeline(runPipelineRequest.getPipelineId()))
                         .map(pipelineRunStatus -> handleSuccess(ctx, pipelineRunStatus))
                         .mapError(throwable -> handleException(ctx, throwable))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes))
