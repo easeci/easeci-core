@@ -1,4 +1,4 @@
-package io.easeci.core.engine.runtime;
+package io.easeci.core.engine.runtime.assemble;
 
 import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.engine.pipeline.Stage;
