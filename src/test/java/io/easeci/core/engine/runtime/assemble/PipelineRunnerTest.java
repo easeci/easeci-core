@@ -1,4 +1,4 @@
-package io.easeci.core.engine.runtime;
+package io.easeci.core.engine.runtime.assemble;
 
 import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.engine.pipeline.EasefileObjectModel;
@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static io.easeci.core.engine.runtime.Utils.provideEasefileObjectModel;
+import static io.easeci.core.engine.runtime.assemble.Utils.provideEasefileObjectModel;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PipelineRunnerTest extends BaseWorkspaceContextTest {
@@ -18,9 +18,9 @@ class PipelineRunnerTest extends BaseWorkspaceContextTest {
 
         EasefileObjectModel eom = provideEasefileObjectModel();
 
-        PipelineRunner pipelineRunner = new PipelineRunner(eom, null, null);
+        StepsCollector stepsCollector = new StepsCollector();
 
-        List<PerformerCommand> performerCommands = pipelineRunner.collectSteps();
+        List<PerformerCommand> performerCommands = stepsCollector.collectSteps(eom.getStages());
 
         assertAll(() -> assertEquals(14, performerCommands.size()),
 

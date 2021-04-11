@@ -1,6 +1,6 @@
 package io.easeci.api.runtime;
 
-import io.easeci.core.engine.runtime.PipelineRunStatus;
+import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

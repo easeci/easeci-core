@@ -1,4 +1,4 @@
-package io.easeci.core.engine.runtime;
+package io.easeci.core.engine.runtime.commons;
 
 public enum PipelineRunStatus {
     PIPELINE_EXEC_QUEUED {
