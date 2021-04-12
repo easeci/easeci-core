@@ -1,5 +1,6 @@
 package io.easeci.core.engine.runtime;
 
+import io.easeci.core.engine.runtime.assemble.*;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +17,9 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
 
     private PipelineContextFactory factory;
     private List<PipelineContext> contextList;
+    private PerformerTaskDistributor performerTaskDistributor;
+    private VariableResolver variableResolver;
+    private ScriptAssembler scriptAssembler;
 
     public static PipelineContextSystem getInstance() {
         if (isNull(system)) {
@@ -27,13 +31,18 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private PipelineContextSystem() {
         this.contextList = new LinkedList<>();
         this.factory = new PipelineContextFactory();
+        this.performerTaskDistributor = new StandardPerformerTaskDistributor();
+        this.variableResolver = new StandardVariableResolver();
+        this.scriptAssembler = new PythonScriptAssembler();
     }
 
     @Override
     public PipelineRunStatus runPipeline(UUID pipelineId) {
         log.info("Started to run pipeline with pipelineId: {}", pipelineId);
 
-        final PipelineContext pipelineContext = this.factory.factorize(pipelineId, this);
+        final PipelineContext pipelineContext = this.factory.factorize(pipelineId, this,
+                                                                        performerTaskDistributor, variableResolver, scriptAssembler);
+        log.info("New PipelineContext created for pipelineId: {}", pipelineId);
         this.contextList.add(pipelineContext);
         pipelineContext.buildScript();
 
@@ -42,6 +51,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
 
     @Override
     public void receive(PipelineContextInfo event) {
-        log.info("Message received: {}", event.toString());
+        log.info("Event from PipelineContext received: {}", event.toString());
+        // todo w tym momencie wiemy, że kontekst skończył budować skrypt i jest gotowy do odpalenia jako kontener
     }
 }
