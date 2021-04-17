@@ -2,38 +2,60 @@ package io.easeci.core.engine.runtime;
 
 import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.engine.runtime.assemble.*;
+import io.easeci.core.engine.runtime.commons.PipelineContextState;
+import io.easeci.core.engine.runtime.commons.PipelineState;
+import io.easeci.core.workspace.projects.PipelineIO;
+import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.extension.directive.CodeChunk;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.engine.runtime.commons.PipelineState.NEW;
+
 @Slf4j
 public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder, EventPublisher<PipelineContextInfo> {
 
+    private final UUID pipelineContextId;
+    private final LocalDateTime contextCreatedDate;
     private final UUID pipelineId;
     private final EventListener<PipelineContextInfo> eventListener;
     private final PerformerTaskDistributor performerTaskDistributor;
     private final VariableResolver variableResolver;
     private final ScriptAssembler scriptAssembler;
+    private final EasefileObjectModel eom;
+    private final PipelineIO pipelineIO;
 
-    private EasefileObjectModel eom;
     private String scriptAssembled;
+    private PipelineState pipelineState;
 
     public PipelineContext(UUID pipelineId,
                            EventListener<PipelineContextInfo> eventListener,
                            PerformerTaskDistributor performerTaskDistributor,
                            VariableResolver variableResolver,
-                           ScriptAssembler scriptAssembler) {
+                           ScriptAssembler scriptAssembler) throws PipelineNotExists {
+        this.pipelineContextId = UUID.randomUUID();
+        this.contextCreatedDate = LocalDateTime.now();
         this.pipelineId = pipelineId;
         this.eventListener = eventListener;
         this.performerTaskDistributor = performerTaskDistributor;
         this.variableResolver = variableResolver;
         this.scriptAssembler = scriptAssembler;
+        this.pipelineState = NEW;
+        this.pipelineIO = ProjectManager.getInstance();
+        // load file from file in constructor - cannot create object when pipeline file not exists
+        this.eom = this.loadFromFile(this.pipelineId);
+    }
+
+    private EasefileObjectModel loadFromFile(UUID pipelineId) throws PipelineNotExists {
+        return pipelineIO.loadPipelineFile(pipelineId)
+                         .orElseThrow(() -> new PipelineNotExists(pipelineId));
     }
 
     @Override
@@ -46,15 +68,15 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         CompletableFuture.runAsync(() -> {
             log.info("Starting collecting script chunks and waiting for all Performers to end these jobs");
 
-            // load file from file
-            this.eom = loadFromFile(this.pipelineId);
             // resolve variables
-            this.eom = this.variableResolver.resolve(this.eom);
+            final EasefileObjectModel eomResolved =  this.variableResolver.resolve(this.eom);
+
+            // collect all steps
+            final StepsCollector stepsCollector = new StepsCollector();
+            final List<PerformerCommand> performerCommands = stepsCollector.collectSteps(eomResolved.getStages());
+            final List<PerformerProduct> performerProducts = new ArrayList<>(performerCommands.size());
 
             // call performer for each directive
-            StepsCollector stepsCollector = new StepsCollector();
-            final List<PerformerCommand> performerCommands = stepsCollector.collectSteps(this.eom.getStages());
-            final List<PerformerProduct> performerProducts = new ArrayList<>(performerCommands.size());
             performerCommands.stream()
                     .map(this.performerTaskDistributor::callPerformer)
                     .forEach(future -> future.thenApply(performerProduct -> {
@@ -70,7 +92,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
             log.info("Script chunks collecting finished");
             PipelineContextInfo info = new PipelineContextInfo();
-            info.setPipelineContextId(UUID.randomUUID());
+            info.setPipelineContextId(this.pipelineContextId);
             this.publish(info);
         });
     }
@@ -81,14 +103,13 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         this.eventListener.receive(event);
     }
 
-    private EasefileObjectModel loadFromFile(UUID pipelineId) {
-        return null;
-    }
-
     private Path saveScript(String fullScript) {
         // zapisz skrypt do pliku
         // zapisz sumę kontrolną -> przemyśl i stwórz odpowiedni mechanizm
         return null;
     }
 
+    public PipelineContextState state() {
+        return PipelineContextState.of(this.pipelineContextId, pipelineId, pipelineState, this.contextCreatedDate);
+    }
 }
