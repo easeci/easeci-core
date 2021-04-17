@@ -10,7 +10,6 @@ import java.util.UUID;
 @Data
 @ToString
 public class PipelineContextInfo {
-
     private UUID pipelineContextId;
     private PipelineState pipelineState;
     private Date creationDate;

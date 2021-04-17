@@ -12,7 +12,7 @@ public class PipelineContextFactory {
                                      EventListener<PipelineContextInfo> eventListener,
                                      PerformerTaskDistributor performerTaskDistributor,
                                      VariableResolver variableResolver,
-                                     ScriptAssembler scriptAssembler) {
+                                     ScriptAssembler scriptAssembler) throws PipelineNotExists {
         return new PipelineContext(pipelineId, eventListener, performerTaskDistributor, variableResolver, scriptAssembler);
     }
 }
