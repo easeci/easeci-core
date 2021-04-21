@@ -6,6 +6,7 @@ import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineState;
 import io.easeci.core.workspace.projects.PipelineIO;
 import io.easeci.core.workspace.projects.ProjectManager;
+import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.extension.directive.CodeChunk;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +28,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     private final UUID pipelineId;
     private final EventListener<PipelineContextInfo> eventListener;
     private final PerformerTaskDistributor performerTaskDistributor;
-    private final VariableResolver variableResolver;
+    private final GlobalVariablesFinder globalVariablesFinder;
     private final ScriptAssembler scriptAssembler;
     private final EasefileObjectModel eom;
     private final PipelineIO pipelineIO;
@@ -38,14 +39,14 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     public PipelineContext(UUID pipelineId,
                            EventListener<PipelineContextInfo> eventListener,
                            PerformerTaskDistributor performerTaskDistributor,
-                           VariableResolver variableResolver,
+                           GlobalVariablesFinder globalVariablesFinder,
                            ScriptAssembler scriptAssembler) throws PipelineNotExists {
         this.pipelineContextId = UUID.randomUUID();
         this.contextCreatedDate = LocalDateTime.now();
         this.pipelineId = pipelineId;
         this.eventListener = eventListener;
         this.performerTaskDistributor = performerTaskDistributor;
-        this.variableResolver = variableResolver;
+        this.globalVariablesFinder = globalVariablesFinder;
         this.scriptAssembler = scriptAssembler;
         this.pipelineState = NEW;
         this.pipelineIO = ProjectManager.getInstance();
@@ -69,7 +70,8 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
             log.info("Starting collecting script chunks and waiting for all Performers to end these jobs");
 
             // resolve variables
-            final EasefileObjectModel eomResolved =  this.variableResolver.resolve(this.eom);
+            final VariableResolver variableResolver = new StandardVariableResolver(this.eom, this.globalVariablesFinder);
+            final EasefileObjectModel eomResolved =  variableResolver.resolve();
 
             // collect all steps
             final StepsCollector stepsCollector = new StepsCollector();

@@ -3,10 +3,10 @@ package io.easeci.core.engine.runtime;
 import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.engine.runtime.assemble.PerformerTaskDistributor;
 import io.easeci.core.engine.runtime.assemble.ScriptAssembler;
-import io.easeci.core.engine.runtime.assemble.VariableResolver;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
 import io.easeci.core.engine.runtime.commons.PipelineState;
+import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -34,7 +34,7 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
             Mockito.when(pipelineContextFactory.factorize(any(UUID.class),
                                                           any(PipelineContextSystem.class),
                                                           any(PerformerTaskDistributor.class),
-                                                          any(VariableResolver.class),
+                                                          any(GlobalVariablesFinder.class),
                                                           any(ScriptAssembler.class)))
                    .thenReturn(createPipelineContext(pipelineContextSystem));
         } catch (PipelineNotExists pipelineNotExists) {
@@ -54,7 +54,7 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
     private PipelineContext createPipelineContext(PipelineContextSystem system) throws PipelineNotExists {
         return new PipelineContext(this.pipelineId, system,
                     Mockito.mock(PerformerTaskDistributor.class),
-                    Mockito.mock(VariableResolver.class),
+                    Mockito.mock(GlobalVariablesFinder.class),
                     Mockito.mock(ScriptAssembler.class)
                 );
     }
@@ -70,7 +70,7 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
             Mockito.when(pipelineContextFactory.factorize(any(UUID.class),
                                                           any(PipelineContextSystem.class),
                                                           any(PerformerTaskDistributor.class),
-                                                          any(VariableResolver.class),
+                                                          any(GlobalVariablesFinder.class),
                                                           any(ScriptAssembler.class)))
                     .thenThrow(new PipelineNotExists(this.pipelineId));
         } catch (PipelineNotExists pipelineNotExists) {

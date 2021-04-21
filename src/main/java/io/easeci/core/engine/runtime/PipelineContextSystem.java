@@ -3,6 +3,8 @@ package io.easeci.core.engine.runtime;
 import io.easeci.core.engine.runtime.assemble.*;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
+import io.easeci.core.workspace.vars.GlobalVariablesFinder;
+import io.easeci.core.workspace.vars.GlobalVariablesManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.LinkedList;
@@ -21,7 +23,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private PipelineContextFactory factory;
     private List<PipelineContext> contextList;
     private PerformerTaskDistributor performerTaskDistributor;
-    private VariableResolver variableResolver;
+    private GlobalVariablesFinder globalVariablesFinder;
     private ScriptAssembler scriptAssembler;
 
     public static PipelineContextSystem getInstance() {
@@ -42,7 +44,6 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.contextList = new LinkedList<>();
         this.factory = new PipelineContextFactory();
         this.performerTaskDistributor = new StandardPerformerTaskDistributor();
-        this.variableResolver = new StandardVariableResolver();
         this.scriptAssembler = new PythonScriptAssembler();
     }
 
@@ -50,7 +51,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.contextList = new LinkedList<>();
         this.factory = factory;
         this.performerTaskDistributor = new StandardPerformerTaskDistributor();
-        this.variableResolver = new StandardVariableResolver();
+        this.globalVariablesFinder = GlobalVariablesManager.getInstance();
         this.scriptAssembler = new PythonScriptAssembler();
     }
 
@@ -62,7 +63,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         try {
             pipelineContext = this.factory.factorize(
                     pipelineId, this,
-                    performerTaskDistributor, variableResolver,
+                    performerTaskDistributor, this.globalVariablesFinder,
                     scriptAssembler
             );
         } catch (PipelineNotExists e) {

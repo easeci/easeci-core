@@ -18,7 +18,7 @@ import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static io.easeci.core.workspace.LocationUtils.getVarsFileLocation;
 import static java.util.Objects.isNull;
 
-public class GlobalVariablesManager implements GlobalVariables {
+public class GlobalVariablesManager implements GlobalVariables, GlobalVariablesFinder {
     private static GlobalVariablesManager instance;
     private static Map<String, Variable<?>> varsMap;
     private static Path varsFile;
@@ -107,6 +107,11 @@ public class GlobalVariablesManager implements GlobalVariables {
         return ImmutableMap.<String, Variable<?>>builder()
                 .putAll(varsMap)
                 .build();
+    }
+
+    @Override
+    public Optional<Variable<?>> find(String variableName) {
+        return Optional.ofNullable(varsMap.get(variableName));
     }
 
     private void save() {
