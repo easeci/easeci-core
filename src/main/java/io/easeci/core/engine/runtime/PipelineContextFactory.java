@@ -2,7 +2,7 @@ package io.easeci.core.engine.runtime;
 
 import io.easeci.core.engine.runtime.assemble.PerformerTaskDistributor;
 import io.easeci.core.engine.runtime.assemble.ScriptAssembler;
-import io.easeci.core.engine.runtime.assemble.VariableResolver;
+import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 
 import java.util.UUID;
 
@@ -11,8 +11,8 @@ public class PipelineContextFactory {
     public PipelineContext factorize(UUID pipelineId,
                                      EventListener<PipelineContextInfo> eventListener,
                                      PerformerTaskDistributor performerTaskDistributor,
-                                     VariableResolver variableResolver,
+                                     GlobalVariablesFinder globalVariablesFinder,
                                      ScriptAssembler scriptAssembler) throws PipelineNotExists {
-        return new PipelineContext(pipelineId, eventListener, performerTaskDistributor, variableResolver, scriptAssembler);
+        return new PipelineContext(pipelineId, eventListener, performerTaskDistributor, globalVariablesFinder, scriptAssembler);
     }
 }

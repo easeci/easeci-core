@@ -1,0 +1,12 @@
+{
+  "appName": {
+    "type":"STRING",
+    "name":"appName",
+    "value":"EaseCI Core"
+  },
+  "author": {
+    "type":"STRING",
+    "name":"author",
+    "value":"Karol Meksuła"
+  }
+}
