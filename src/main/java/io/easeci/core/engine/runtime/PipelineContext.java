@@ -66,12 +66,24 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
     @Override
     public void buildScript() {
+        // todo teraz napotkałem się na problem, że będziemy mieli eventy już na tym etapie
+        //      bo jak chcemy wiedzieć, że na przykład zmienna się nie rozwiązała, to już tutaj musimy sobie wszystko zbierać
+        //      i wrzucać na jakiś stos logów
+        //      Przyda się teraz ten mechanizm logów, który już wcześniej robiłem. Wrzucamy sobie i po zakończeniu działania
+        //      runtime'u danego pipeline'u zapisujemy do pliku, dzięki czemu, użytkownik będzie mógł sobie otworzyć logi w GUI
         CompletableFuture.runAsync(() -> {
             log.info("Starting collecting script chunks and waiting for all Performers to end these jobs");
 
             // resolve variables
             final VariableResolver variableResolver = new StandardVariableResolver(this.eom, this.globalVariablesFinder);
-            final EasefileObjectModel eomResolved =  variableResolver.resolve();
+            EasefileObjectModel eomResolved;
+            try {
+                eomResolved = variableResolver.resolve();
+            } catch (VariableResolveException e) {
+                // todo trzeba tutaj obsłużyć ten wyjątek i publikować już jakieś logi dla tego contextu
+                e.printStackTrace();
+                return;
+            }
 
             // collect all steps
             final StepsCollector stepsCollector = new StepsCollector();
