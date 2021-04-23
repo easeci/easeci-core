@@ -1,17 +1,20 @@
 package io.easeci.core.engine.runtime;
 
 import io.easeci.BaseWorkspaceContextTest;
+import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.engine.runtime.assemble.PerformerTaskDistributor;
 import io.easeci.core.engine.runtime.assemble.ScriptAssembler;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
 import io.easeci.core.engine.runtime.commons.PipelineState;
+import io.easeci.core.workspace.projects.PipelineIO;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static io.easeci.core.engine.runtime.commons.PipelineRunStatus.PIPELINE_EXEC_STARTED;
@@ -30,13 +33,17 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
         PipelineContextSystem.destroyInstance();
         final PipelineContextSystem pipelineContextSystem = PipelineContextSystem.getInstance(pipelineContextFactory);
 
+        PipelineIO pipelineIOMock = Mockito.mock(PipelineIO.class);
+        Mockito.when(pipelineIOMock.loadPipelineFile(pipelineId)).thenReturn(Optional.of(new EasefileObjectModel()));
+
         try {
             Mockito.when(pipelineContextFactory.factorize(any(UUID.class),
                                                           any(PipelineContextSystem.class),
                                                           any(PerformerTaskDistributor.class),
                                                           any(GlobalVariablesFinder.class),
-                                                          any(ScriptAssembler.class)))
-                   .thenReturn(createPipelineContext(pipelineContextSystem));
+                                                          any(ScriptAssembler.class),
+                                                          any(PipelineIO.class)))
+                   .thenReturn(new PipelineContext(pipelineId, pipelineContextSystem, null, null, null, pipelineIOMock));
         } catch (PipelineNotExists pipelineNotExists) {
             pipelineNotExists.printStackTrace();
         }
@@ -51,14 +58,6 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
                   () -> assertNotNull(states.get(0).getPipelineContextId()));
     }
 
-    private PipelineContext createPipelineContext(PipelineContextSystem system) throws PipelineNotExists {
-        return new PipelineContext(this.pipelineId, system,
-                    Mockito.mock(PerformerTaskDistributor.class),
-                    Mockito.mock(GlobalVariablesFinder.class),
-                    Mockito.mock(ScriptAssembler.class)
-                );
-    }
-
     @Test
     @DisplayName("Should cannot find pipeline - not exists")
     void notFoundTest() {
@@ -71,7 +70,8 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
                                                           any(PipelineContextSystem.class),
                                                           any(PerformerTaskDistributor.class),
                                                           any(GlobalVariablesFinder.class),
-                                                          any(ScriptAssembler.class)))
+                                                          any(ScriptAssembler.class),
+                                                          any(PipelineIO.class)))
                     .thenThrow(new PipelineNotExists(this.pipelineId));
         } catch (PipelineNotExists pipelineNotExists) {
             pipelineNotExists.printStackTrace();
