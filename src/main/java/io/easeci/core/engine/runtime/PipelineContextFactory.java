@@ -2,6 +2,7 @@ package io.easeci.core.engine.runtime;
 
 import io.easeci.core.engine.runtime.assemble.PerformerTaskDistributor;
 import io.easeci.core.engine.runtime.assemble.ScriptAssembler;
+import io.easeci.core.workspace.projects.PipelineIO;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 
 import java.util.UUID;
@@ -12,7 +13,8 @@ public class PipelineContextFactory {
                                      EventListener<PipelineContextInfo> eventListener,
                                      PerformerTaskDistributor performerTaskDistributor,
                                      GlobalVariablesFinder globalVariablesFinder,
-                                     ScriptAssembler scriptAssembler) throws PipelineNotExists {
-        return new PipelineContext(pipelineId, eventListener, performerTaskDistributor, globalVariablesFinder, scriptAssembler);
+                                     ScriptAssembler scriptAssembler,
+                                     PipelineIO pipelineIO) throws PipelineNotExists {
+        return new PipelineContext(pipelineId, eventListener, performerTaskDistributor, globalVariablesFinder, scriptAssembler, pipelineIO);
     }
 }

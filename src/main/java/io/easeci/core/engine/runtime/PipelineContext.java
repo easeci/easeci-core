@@ -30,9 +30,9 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     private final PerformerTaskDistributor performerTaskDistributor;
     private final GlobalVariablesFinder globalVariablesFinder;
     private final ScriptAssembler scriptAssembler;
-    private final EasefileObjectModel eom;
     private final PipelineIO pipelineIO;
 
+    private EasefileObjectModel eom;
     private String scriptAssembled;
     private PipelineState pipelineState;
 
@@ -40,7 +40,8 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
                            EventListener<PipelineContextInfo> eventListener,
                            PerformerTaskDistributor performerTaskDistributor,
                            GlobalVariablesFinder globalVariablesFinder,
-                           ScriptAssembler scriptAssembler) throws PipelineNotExists {
+                           ScriptAssembler scriptAssembler,
+                           PipelineIO pipelineIO) throws PipelineNotExists {
         this.pipelineContextId = UUID.randomUUID();
         this.contextCreatedDate = LocalDateTime.now();
         this.pipelineId = pipelineId;
@@ -49,13 +50,16 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         this.globalVariablesFinder = globalVariablesFinder;
         this.scriptAssembler = scriptAssembler;
         this.pipelineState = NEW;
-        this.pipelineIO = ProjectManager.getInstance();
-        // load file from file in constructor - cannot create object when pipeline file not exists
-        this.eom = this.loadFromFile(this.pipelineId);
+        this.pipelineIO = pipelineIO;
     }
 
-    private EasefileObjectModel loadFromFile(UUID pipelineId) throws PipelineNotExists {
+    // load file from file in constructor - cannot create object when pipeline file not exists
+    public EasefileObjectModel loadFromFile(UUID pipelineId) throws PipelineNotExists {
         return pipelineIO.loadPipelineFile(pipelineId)
+                         .map(easefileObjectModel -> {
+                             this.eom = easefileObjectModel;
+                             return easefileObjectModel;
+                         })
                          .orElseThrow(() -> new PipelineNotExists(pipelineId));
     }
 

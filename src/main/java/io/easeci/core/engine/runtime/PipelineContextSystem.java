@@ -3,6 +3,8 @@ package io.easeci.core.engine.runtime;
 import io.easeci.core.engine.runtime.assemble.*;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
+import io.easeci.core.workspace.projects.PipelineIO;
+import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.core.workspace.vars.GlobalVariablesManager;
 import lombok.extern.slf4j.Slf4j;
@@ -64,8 +66,9 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
             pipelineContext = this.factory.factorize(
                     pipelineId, this,
                     performerTaskDistributor, this.globalVariablesFinder,
-                    scriptAssembler
+                    scriptAssembler, ProjectManager.getInstance()
             );
+            pipelineContext.loadFromFile(pipelineId);
         } catch (PipelineNotExists e) {
             log.error(e.getMessage());
             return PipelineRunStatus.PIPELINE_NOT_FOUND;
