@@ -133,7 +133,7 @@ public class GlobalVariablesManager implements GlobalVariables, GlobalVariablesF
         }
     }
 
-    void clear() {
+    public void clear() {
         varsMap.clear();
     }
 }
