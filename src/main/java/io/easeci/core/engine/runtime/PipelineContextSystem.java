@@ -3,12 +3,15 @@ package io.easeci.core.engine.runtime;
 import io.easeci.core.engine.runtime.assemble.*;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
-import io.easeci.core.workspace.projects.PipelineIO;
+import io.easeci.core.engine.runtime.logs.LogBuffer;
+import io.easeci.core.engine.runtime.logs.LogEntry;
+import io.easeci.core.engine.runtime.logs.LogRail;
 import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.core.workspace.vars.GlobalVariablesManager;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -61,12 +64,20 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     public PipelineRunStatus runPipeline(UUID pipelineId) {
         log.info("Started to run pipeline with pipelineId: {}", pipelineId);
 
+        LogBuffer logBuffer = new LogBuffer();
+        logBuffer.publish(LogEntry.builder()
+                              .author("easeci-core-master")
+                              .header("[INFO]")
+                              .createdDateTime(LocalDateTime.now())
+                              .text("Started to run pipeline with pipelineId: " + pipelineId)
+                              .build());
         PipelineContext pipelineContext;
         try {
             pipelineContext = this.factory.factorize(
                     pipelineId, this,
                     performerTaskDistributor, this.globalVariablesFinder,
-                    scriptAssembler, ProjectManager.getInstance()
+                    scriptAssembler, ProjectManager.getInstance(),
+                    logBuffer
             );
             pipelineContext.loadFromFile(pipelineId);
         } catch (PipelineNotExists e) {
@@ -87,6 +98,15 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
                 .map(PipelineContext::state)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public LogRail getLogRail(UUID pipelineContextId) {
+        return contextList.stream()
+                .filter(pipelineContext -> pipelineContext.getPipelineContextId().equals(pipelineContextId))
+                .map(PipelineContext::logRail)
+                .findFirst()
+                .orElseThrow(() -> new PipelineContextNotExists(pipelineContextId));
     }
 
     @Override

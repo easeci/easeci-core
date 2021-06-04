@@ -4,18 +4,20 @@ import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.engine.runtime.assemble.*;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineState;
+import io.easeci.core.engine.runtime.logs.LogBuffer;
+import io.easeci.core.engine.runtime.logs.LogEntry;
+import io.easeci.core.engine.runtime.logs.LogRail;
 import io.easeci.core.workspace.projects.PipelineIO;
-import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.extension.directive.CodeChunk;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.engine.runtime.commons.PipelineState.NEW;
@@ -23,6 +25,7 @@ import static io.easeci.core.engine.runtime.commons.PipelineState.NEW;
 @Slf4j
 public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder, EventPublisher<PipelineContextInfo> {
 
+    @Getter
     private final UUID pipelineContextId;
     private final LocalDateTime contextCreatedDate;
     private final UUID pipelineId;
@@ -35,13 +38,15 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     private EasefileObjectModel eom;
     private String scriptAssembled;
     private PipelineState pipelineState;
+    private LogBuffer logBuffer;
 
     public PipelineContext(UUID pipelineId,
                            EventListener<PipelineContextInfo> eventListener,
                            PerformerTaskDistributor performerTaskDistributor,
                            GlobalVariablesFinder globalVariablesFinder,
                            ScriptAssembler scriptAssembler,
-                           PipelineIO pipelineIO) throws PipelineNotExists {
+                           PipelineIO pipelineIO,
+                           LogBuffer logBuffer) throws PipelineNotExists {
         this.pipelineContextId = UUID.randomUUID();
         this.contextCreatedDate = LocalDateTime.now();
         this.pipelineId = pipelineId;
@@ -51,6 +56,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         this.scriptAssembler = scriptAssembler;
         this.pipelineState = NEW;
         this.pipelineIO = pipelineIO;
+        this.logBuffer = logBuffer;
     }
 
     // load file from file in constructor - cannot create object when pipeline file not exists
@@ -76,7 +82,13 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         //      Przyda się teraz ten mechanizm logów, który już wcześniej robiłem. Wrzucamy sobie i po zakończeniu działania
         //      runtime'u danego pipeline'u zapisujemy do pliku, dzięki czemu, użytkownik będzie mógł sobie otworzyć logi w GUI
         CompletableFuture.runAsync(() -> {
-            log.info("Starting collecting script chunks and waiting for all Performers to end these jobs");
+            log.info("Starting collecting script chunks and waiting for all Performers to end these jobs, pipelineContextId: {}", pipelineContextId);
+            logBuffer.publish(LogEntry.builder()
+                                  .author("easeci-core-master")
+                                  .header("[INFO]")
+                                  .createdDateTime(LocalDateTime.now())
+                                  .text("Starting collecting script chunks and waiting for all Performers to end these jobs")
+                                  .build());
 
             // resolve variables
             final VariableResolver variableResolver = new StandardVariableResolver(this.eom, this.globalVariablesFinder);
@@ -129,5 +141,9 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
     public PipelineContextState state() {
         return PipelineContextState.of(this.pipelineContextId, pipelineId, pipelineState, this.contextCreatedDate);
+    }
+
+    public LogRail logRail() {
+        return logBuffer;
     }
 }

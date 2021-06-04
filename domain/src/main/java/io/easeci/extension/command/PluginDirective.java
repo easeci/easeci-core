@@ -18,7 +18,7 @@ public class PluginDirective implements Directive {
     }
 
     @Override
-    public CodeChunk provideCode(List<Command> commands) throws IllegalAccessException {
+    public CodeChunk provideCode(String parameters) throws IllegalAccessException {
         throw new IllegalAccessException("Method not implemented. Override it or not use.");
     }
 }

@@ -34,3 +34,11 @@ out/
 .run.yml
 workspace/
 plugins/
+
+easeci-artifactory/
+easeci-bash/
+easeci-deploy/
+easeci-git/
+easeci-maven/
+easeci-ssh/
+easeci-java-essentials/

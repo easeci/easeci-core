@@ -7,6 +7,7 @@ import io.easeci.core.engine.runtime.assemble.ScriptAssembler;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
 import io.easeci.core.engine.runtime.commons.PipelineState;
+import io.easeci.core.engine.runtime.logs.LogBuffer;
 import io.easeci.core.workspace.projects.PipelineIO;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import org.junit.jupiter.api.DisplayName;
@@ -42,8 +43,9 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
                                                           any(PerformerTaskDistributor.class),
                                                           any(GlobalVariablesFinder.class),
                                                           any(ScriptAssembler.class),
-                                                          any(PipelineIO.class)))
-                   .thenReturn(new PipelineContext(pipelineId, pipelineContextSystem, null, null, null, pipelineIOMock));
+                                                          any(PipelineIO.class),
+                                                          any(LogBuffer.class)))
+                   .thenReturn(new PipelineContext(pipelineId, pipelineContextSystem, null, null, null, pipelineIOMock, null));
         } catch (PipelineNotExists pipelineNotExists) {
             pipelineNotExists.printStackTrace();
         }
@@ -71,7 +73,8 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
                                                           any(PerformerTaskDistributor.class),
                                                           any(GlobalVariablesFinder.class),
                                                           any(ScriptAssembler.class),
-                                                          any(PipelineIO.class)))
+                                                          any(PipelineIO.class),
+                                                          any(LogBuffer.class)))
                     .thenThrow(new PipelineNotExists(this.pipelineId));
         } catch (PipelineNotExists pipelineNotExists) {
             pipelineNotExists.printStackTrace();
