@@ -2,6 +2,7 @@ package io.easeci.core.engine.runtime;
 
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
+import io.easeci.core.engine.runtime.logs.LogRail;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,4 +29,11 @@ public interface PipelineRunEntryPoint {
      * @return list of object with basic fields informing us about state of Pipeline runtime.
      * */
     List<PipelineContextState> contextQueueState();
+
+    /**
+     * Use it to find proxy object that allows to read in stream way logs of Pipeline execution.
+     * Notice that `pipelineId` and `pipelineContextId` are not the same.
+     * @return LogRail that can be use to read logs of PipelineContext (runtime of pipeline)
+     * */
+    LogRail getLogRail(UUID pipelineContextId);
 }
