@@ -33,6 +33,7 @@ class ExtensionSystemTest extends BaseWorkspaceContextTest {
     @Test
     @DisplayName("Should correctly instantiate ExtensionSystem with expected thread pool's size")
     void extensionSystemInitTest() throws PluginSystemCriticalException {
+        ExtensionSystem.destroyInstance();
         ExtensionSystem instance = ExtensionSystem.getInstance();
 
         assertEquals(1, instance.getPluginThreadPool().getThreadPoolMaxSize());
