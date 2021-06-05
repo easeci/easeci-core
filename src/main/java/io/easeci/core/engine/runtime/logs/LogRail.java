@@ -1,6 +1,5 @@
 package io.easeci.core.engine.runtime.logs;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public interface LogRail {
