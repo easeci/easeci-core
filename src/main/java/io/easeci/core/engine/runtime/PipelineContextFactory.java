@@ -11,12 +11,13 @@ import java.util.UUID;
 public class PipelineContextFactory {
 
     public PipelineContext factorize(UUID pipelineId,
+                                     UUID pipelineContextId,
                                      EventListener<PipelineContextInfo> eventListener,
                                      PerformerTaskDistributor performerTaskDistributor,
                                      GlobalVariablesFinder globalVariablesFinder,
                                      ScriptAssembler scriptAssembler,
                                      PipelineIO pipelineIO,
                                      LogBuffer logBuffer) throws PipelineNotExists {
-        return new PipelineContext(pipelineId, eventListener, performerTaskDistributor, globalVariablesFinder, scriptAssembler, pipelineIO, logBuffer);
+        return new PipelineContext(pipelineId, pipelineContextId, eventListener, performerTaskDistributor, globalVariablesFinder, scriptAssembler, pipelineIO, logBuffer);
     }
 }

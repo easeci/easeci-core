@@ -4,9 +4,15 @@ import java.util.function.Consumer;
 
 public interface LogRail {
 
-    void onPublish(Consumer<String> logConsumer);
+    void initPublishing(Consumer<String> logPublisher);
 
-    void initPublishing();
+    /**
+     * After invocation of this method logs cannot be published to this on LogRail instance.
+     * This is signal that pipeline was finished and any log will not attached.
+     * */
+    void finalizePublishing();
 
     void publish(LogEntry logEntry);
+
+    long entryQueueSize();
 }

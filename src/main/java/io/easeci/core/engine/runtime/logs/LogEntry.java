@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LogEntry implements Serializable {
-    private int index;
+    private long index;
     private String header;
     private String author;
     private LocalDateTime createdDateTime;
@@ -22,7 +22,7 @@ public class LogEntry implements Serializable {
     private FontWeight fontWeight;
     private FontStyle fontStyle;
 
-    public LogEntry(int index, LogExtent logExtent, String header, String author, LocalDateTime createdDateTime, String text) {
+    public LogEntry(long index, LogExtent logExtent, String header, String author, LocalDateTime createdDateTime, String text) {
         this.index = index;
         this.author = author;
         this.createdDateTime = createdDateTime;
@@ -35,7 +35,7 @@ public class LogEntry implements Serializable {
         this.fontStyle = FontStyle.NORMAL;
     }
 
-    protected void setIndex(int index) {
+    protected void setIndex(long index) {
         this.index = index;
     }
 

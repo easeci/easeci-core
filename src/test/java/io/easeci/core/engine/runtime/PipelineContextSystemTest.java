@@ -39,13 +39,14 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
 
         try {
             Mockito.when(pipelineContextFactory.factorize(any(UUID.class),
+                                                          any(UUID.class),
                                                           any(PipelineContextSystem.class),
                                                           any(PerformerTaskDistributor.class),
                                                           any(GlobalVariablesFinder.class),
                                                           any(ScriptAssembler.class),
                                                           any(PipelineIO.class),
                                                           any(LogBuffer.class)))
-                   .thenReturn(new PipelineContext(pipelineId, pipelineContextSystem, null, null, null, pipelineIOMock, null));
+                   .thenReturn(new PipelineContext(pipelineId, UUID.randomUUID(), pipelineContextSystem, null, null, null, pipelineIOMock, null));
         } catch (PipelineNotExists pipelineNotExists) {
             pipelineNotExists.printStackTrace();
         }
@@ -69,6 +70,7 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
 
         try {
             Mockito.when(pipelineContextFactory.factorize(any(UUID.class),
+                                                          any(UUID.class),
                                                           any(PipelineContextSystem.class),
                                                           any(PerformerTaskDistributor.class),
                                                           any(GlobalVariablesFinder.class),

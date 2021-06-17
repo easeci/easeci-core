@@ -91,4 +91,9 @@ public class LocationUtils {
         return Paths.get(getWorkspaceLocation()
                     .concat(PIPELINES_DIRECTORY));
     }
+
+    public static Path getPipelineRunLogLocation() {
+        return Paths.get(getWorkspaceLocation()
+                    .concat("/log/context"));
+    }
 }

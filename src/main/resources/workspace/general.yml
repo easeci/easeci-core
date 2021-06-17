@@ -6,6 +6,7 @@ output:
     max-size: 15
   pipeline-context:
     buffer-max-size: 50
+    file-save-interval: 5
 
 # Global settings of EaseRunner, if in the Pipeline it is not specified parameters,
 # default will be taken
