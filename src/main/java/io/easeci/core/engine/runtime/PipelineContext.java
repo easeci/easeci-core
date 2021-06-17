@@ -40,13 +40,14 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     private LogBuffer logBuffer;
 
     public PipelineContext(UUID pipelineId,
+                           UUID pipelineContextId,
                            EventListener<PipelineContextInfo> eventListener,
                            PerformerTaskDistributor performerTaskDistributor,
                            GlobalVariablesFinder globalVariablesFinder,
                            ScriptAssembler scriptAssembler,
                            PipelineIO pipelineIO,
                            LogBuffer logBuffer) throws PipelineNotExists {
-        this.pipelineContextId = UUID.randomUUID();
+        this.pipelineContextId = pipelineContextId;
         this.contextCreatedDate = LocalDateTime.now();
         this.pipelineId = pipelineId;
         this.eventListener = eventListener;

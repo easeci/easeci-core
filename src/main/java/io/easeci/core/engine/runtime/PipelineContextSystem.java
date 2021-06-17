@@ -62,22 +62,23 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
 
     @Override
     public PipelineRunStatus runPipeline(UUID pipelineId) {
-        log.info("Started to run pipeline with pipelineId: {}", pipelineId);
+        final UUID pipelineContextId = UUID.randomUUID();
+        log.info("Started to run pipeline with pipelineId: {}, and pipelineContextId: {}", pipelineId, pipelineContextId);
 
-        LogBuffer logBuffer = new LogBuffer();
+        LogBuffer logBuffer = new LogBuffer(pipelineId, pipelineContextId);
         logBuffer.publish(LogEntry.builder()
-                              .author("easeci-core-master")
-                              .header("[INFO]")
-                              .createdDateTime(LocalDateTime.now())
-                              .text("Started to run pipeline with pipelineId: " + pipelineId)
-                              .build());
+                .author("easeci-core-master")
+                .header("[INFO]")
+                .createdDateTime(LocalDateTime.now())
+                .text("Started to run pipeline with pipelineId: " + pipelineId)
+                .build());
+
         PipelineContext pipelineContext;
         try {
             pipelineContext = this.factory.factorize(
-                    pipelineId, this,
+                    pipelineId, pipelineContextId, this,
                     performerTaskDistributor, this.globalVariablesFinder,
-                    scriptAssembler, ProjectManager.getInstance(),
-                    logBuffer
+                    scriptAssembler, ProjectManager.getInstance(), logBuffer
             );
             pipelineContext.loadFromFile(pipelineId);
         } catch (PipelineNotExists e) {

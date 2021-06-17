@@ -21,8 +21,7 @@ public class Commands {
             try {
                 UUID pipelineContextId = extractUuid(input);
                 logRail = PipelineContextSystem.getInstance().getLogRail(pipelineContextId);
-                logRail.onPublish(webSocket::send);
-                logRail.initPublishing();
+                logRail.initPublishing(webSocket::send);
                 log.info("Websocket connected log streaming of pipelineContextId: {}", pipelineContextId);
             }
             catch (PipelineContextNotExists e) {
