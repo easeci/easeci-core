@@ -36,4 +36,10 @@ public interface PipelineRunEntryPoint {
      * @return LogRail that can be use to read logs of PipelineContext (runtime of pipeline)
      * */
     LogRail getLogRail(UUID pipelineContextId);
+
+    /**
+     * Use it to get LogRail object that is able to streaming historical logs to client.
+     * @return LogRail that can be use to read logs of historical PipelineContext
+     * */
+    LogRail getFileLogRail(UUID pipelineContextId);
 }
