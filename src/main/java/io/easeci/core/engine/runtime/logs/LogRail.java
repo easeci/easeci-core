@@ -1,5 +1,6 @@
 package io.easeci.core.engine.runtime.logs;
 
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public interface LogRail {
@@ -15,4 +16,6 @@ public interface LogRail {
     void publish(LogEntry logEntry);
 
     long entryQueueSize();
+
+    void readLog(UUID pipelineContextId, long batchSize, int offset);
 }

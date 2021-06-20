@@ -73,6 +73,11 @@ public class LogBuffer implements LogRail {
         return this.logEntriesQueue.size();
     }
 
+    @Override
+    public void readLog(UUID pipelineContextId, long batchSize, int offset) {
+        log.info("Reading logs from file for pipelineContextId: {}, batchSize: {}, offset: {}", pipelineContextId, batchSize, offset);
+    }
+
     protected Iterator<LogEntry> getQueueIterator() {
         return this.logEntriesQueue.iterator();
     }

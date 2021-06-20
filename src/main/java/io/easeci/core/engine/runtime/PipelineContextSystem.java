@@ -30,6 +30,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private PerformerTaskDistributor performerTaskDistributor;
     private GlobalVariablesFinder globalVariablesFinder;
     private ScriptAssembler scriptAssembler;
+    private PipelineContextHistory pipelineContextHistory;
 
     public static PipelineContextSystem getInstance() {
         if (isNull(system)) {
@@ -50,6 +51,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.factory = new PipelineContextFactory();
         this.performerTaskDistributor = new StandardPerformerTaskDistributor();
         this.scriptAssembler = new PythonScriptAssembler();
+        this.pipelineContextHistory = new PipelineContextHistoryDefault();
     }
 
     private PipelineContextSystem(PipelineContextFactory factory) {
@@ -58,6 +60,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.performerTaskDistributor = new StandardPerformerTaskDistributor();
         this.globalVariablesFinder = GlobalVariablesManager.getInstance();
         this.scriptAssembler = new PythonScriptAssembler();
+        this.pipelineContextHistory = new PipelineContextHistoryDefault();
     }
 
     @Override
@@ -65,6 +68,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         final UUID pipelineContextId = UUID.randomUUID();
         log.info("Started to run pipeline with pipelineId: {}, and pipelineContextId: {}", pipelineId, pipelineContextId);
 
+        this.pipelineContextHistory.saveHistoricalLogEntity(pipelineContextId, pipelineId);
         LogBuffer logBuffer = new LogBuffer(pipelineId, pipelineContextId);
         logBuffer.publish(LogEntry.builder()
                 .author("easeci-core-master")
@@ -108,6 +112,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
                 .map(PipelineContext::logRail)
                 .findFirst()
                 .orElseThrow(() -> new PipelineContextNotExists(pipelineContextId));
+    }
+
+    @Override
+    public LogRail getFileLogRail(UUID pipelineContextId) {
+        return pipelineContextHistory.findHistoricalLogs(pipelineContextId);
     }
 
     @Override
