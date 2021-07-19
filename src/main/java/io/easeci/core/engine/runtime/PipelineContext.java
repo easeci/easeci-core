@@ -15,14 +15,17 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.engine.runtime.commons.PipelineState.CLOSED;
 import static io.easeci.core.engine.runtime.commons.PipelineState.NEW;
 
 @Slf4j
-public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder, EventPublisher<PipelineContextInfo> {
+public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder, EventPublisher<PipelineContextInfo>,
+                                        PipelineContextLivenessProbe {
 
     @Getter
     private final UUID pipelineContextId;
@@ -133,6 +136,11 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         this.eventListener.receive(event);
     }
 
+    @Override
+    public boolean isMaximumIdleTimePassed(long clt) {
+        return this.logBuffer.isMaximumIdleTimePassed(clt);
+    }
+
     private Path saveScript(String fullScript) {
         // zapisz skrypt do pliku
         // zapisz sumę kontrolną -> przemyśl i stwórz odpowiedni mechanizm
@@ -145,5 +153,17 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
     public LogRail logRail() {
         return logBuffer;
+    }
+
+    public void closeContext() {
+        this.pipelineState = CLOSED;
+        log.info("Gently closing context with id: {}", this.pipelineContextId);
+        PipelineContextInfo pci = new PipelineContextInfo();
+        pci.setPipelineContextId(this.pipelineContextId);
+        pci.setPipelineState(this.pipelineState);
+        pci.setCreationDate(Date.from(this.contextCreatedDate.atZone(ZoneId.systemDefault()).toInstant()));
+        pci.setFinishDate(new Date());
+        this.logBuffer.closeLogging();
+        this.eventListener.receive(pci);
     }
 }

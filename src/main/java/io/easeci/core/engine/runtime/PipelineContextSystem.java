@@ -3,9 +3,11 @@ package io.easeci.core.engine.runtime;
 import io.easeci.core.engine.runtime.assemble.*;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
+import io.easeci.core.engine.runtime.commons.PipelineState;
 import io.easeci.core.engine.runtime.logs.LogBuffer;
 import io.easeci.core.engine.runtime.logs.LogEntry;
 import io.easeci.core.engine.runtime.logs.LogRail;
+import io.easeci.core.workspace.LocationUtils;
 import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.core.workspace.vars.GlobalVariablesManager;
@@ -16,12 +18,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
 @Slf4j
-public class PipelineContextSystem implements PipelineRunEntryPoint, EventListener<PipelineContextInfo> {
+public class PipelineContextSystem implements PipelineRunEntryPoint, EventListener<PipelineContextInfo>, PipelineContextCloser {
 
     private static PipelineContextSystem system;
 
@@ -31,6 +36,8 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private GlobalVariablesFinder globalVariablesFinder;
     private ScriptAssembler scriptAssembler;
     private PipelineContextHistory pipelineContextHistory;
+    private long maxPipelineContextLivenessTime;
+    private ScheduledExecutorService contextLivenessCheckScheduler;
 
     public static PipelineContextSystem getInstance() {
         if (isNull(system)) {
@@ -52,6 +59,9 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.performerTaskDistributor = new StandardPerformerTaskDistributor();
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
+        this.maxPipelineContextLivenessTime = this.retrieveClt();
+        this.contextLivenessCheckScheduler = Executors.newScheduledThreadPool(1);
+        this.schedulePipelineContextLivenessCheck();
     }
 
     private PipelineContextSystem(PipelineContextFactory factory) {
@@ -61,6 +71,20 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.globalVariablesFinder = GlobalVariablesManager.getInstance();
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
+        this.maxPipelineContextLivenessTime = this.retrieveClt();
+        this.contextLivenessCheckScheduler = Executors.newScheduledThreadPool(1);
+        this.schedulePipelineContextLivenessCheck();
+    }
+
+    private long retrieveClt() {
+        long clt = 60;   // CLT default value
+        try {
+            clt = LocationUtils.retrieveFromGeneralInt("output.pipeline-context.clt");
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        log.info("output.pipeline-context.clt = {}", clt);
+        return clt;
     }
 
     @Override
@@ -123,6 +147,25 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     public void receive(PipelineContextInfo event) {
         log.info("Event from PipelineContext received: {}", event.toString());
         // todo w tym momencie wiemy, że kontekst skończył budować skrypt i jest gotowy do odpalenia jako kontener
+
+        if (PipelineState.CLOSED.equals(event.getPipelineState())) {
+            this.contextList.removeIf(pipelineContext -> pipelineContext.getPipelineContextId().equals(event.getPipelineContextId()));
+            log.info("PluginContext with id: {} ends his life right now. Started at: {}, ends at: {}", event.getPipelineContextId(), event.getCreationDate(), event.getFinishDate());
+        }
+    }
+
+    @Override
+    public void closeExpiredContexts() {
+        this.contextList.forEach(pipelineContext -> {
+            boolean contextExpired = pipelineContext.isMaximumIdleTimePassed(this.maxPipelineContextLivenessTime);
+            if (contextExpired) {
+                pipelineContext.closeContext();
+            }
+        });
+    }
+
+    private void schedulePipelineContextLivenessCheck() {
+        this.contextLivenessCheckScheduler.scheduleAtFixedRate(this::closeExpiredContexts, maxPipelineContextLivenessTime, maxPipelineContextLivenessTime / 4, TimeUnit.SECONDS);
     }
 
     static void destroyInstance() {

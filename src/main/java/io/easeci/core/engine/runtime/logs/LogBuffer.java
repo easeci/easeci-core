@@ -1,11 +1,14 @@
 package io.easeci.core.engine.runtime.logs;
 
+import io.easeci.core.engine.runtime.PipelineContextLivenessProbe;
 import io.easeci.core.workspace.LocationUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -13,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Slf4j
-public class LogBuffer implements LogRail {
+public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
     private static int maxBufferSize;
 
     private Queue<LogEntry> logEntriesQueue;
@@ -21,8 +24,12 @@ public class LogBuffer implements LogRail {
     private Consumer<String> logPublisher;
     private boolean isPublishingMode = false;
     private long currentIndex = 0;
+    private LocalDateTime logBufferInitTime;
+    private UUID pipelineContextId;
 
     public LogBuffer(UUID pipelineId, UUID pipelineContextId) {
+        this.pipelineContextId = pipelineContextId;
+        this.logBufferInitTime = LocalDateTime.now();
         this.logEntriesQueue = new LinkedList<>();
         try {
             maxBufferSize = LocationUtils.retrieveFromGeneralInt("output.pipeline-context.buffer-max-size");
@@ -86,6 +93,18 @@ public class LogBuffer implements LogRail {
         return Optional.ofNullable(this.logBufferFileManager.logFilePath);
     }
 
+    @Override
+    public boolean isMaximumIdleTimePassed(long clt) {
+        long secondsPassed = logBufferInitTime.until(this.logBufferFileManager.lastLogFileSave, ChronoUnit.SECONDS);
+        log.info("Idling time for pipeline context id: {} [seconds], is: {}, maximum idle time (CLT): {}", this.pipelineContextId, secondsPassed, clt);
+        return secondsPassed >= clt;
+    }
+
+    public void closeLogging() {
+        this.logBufferFileManager.executorService.shutdown();
+
+    }
+
     private class LogBufferFileManager {
         private final static int DEFAULT_INTERVAL = 5;
         private final static String FILE_SAVE_INTERVAL_PATH = "output.pipeline-context.file-save-interval";
@@ -95,6 +114,7 @@ public class LogBuffer implements LogRail {
         private int logToFileInterval;
         private UUID pipelineId;
         private UUID pipelineContextId;
+        private LocalDateTime lastLogFileSave;
 
         private LogBufferFileManager(Queue<LogEntry> logEntryQueue, UUID pipelineId, UUID pipelineContextId) {
             try {
@@ -129,10 +149,10 @@ public class LogBuffer implements LogRail {
                     log.error("Cannot write logs to file: " + this.logFilePath.toString());
                     e.printStackTrace();
                 }
-
             } else {
                 log.info("There is no logs left in context: " + this.pipelineContextId);
             }
+            this.lastLogFileSave = LocalDateTime.now();
         }
 
         private Path initFile() {

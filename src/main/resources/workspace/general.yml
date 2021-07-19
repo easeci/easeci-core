@@ -7,6 +7,7 @@ output:
   pipeline-context:
     buffer-max-size: 50
     file-save-interval: 5
+    clt: 120 # (seconds) Context Live Time - inform how much time Pipeline Context is alive as idling object
 
 # Global settings of EaseRunner, if in the Pipeline it is not specified parameters,
 # default will be taken
