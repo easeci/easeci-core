@@ -1,5 +1,6 @@
 package io.easeci.core.engine.runtime.logs;
 
+import io.easeci.api.socket.Commands;
 import io.easeci.core.engine.runtime.PipelineContextLivenessProbe;
 import io.easeci.core.workspace.LocationUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -81,8 +82,11 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
     }
 
     @Override
-    public void readLog(UUID pipelineContextId, long batchSize, int offset) {
-        log.info("Reading logs from file for pipelineContextId: {}, batchSize: {}, offset: {}", pipelineContextId, batchSize, offset);
+    public String readLog(UUID pipelineContextId, long batchSize, int offset, Commands.LogFetchMode mode) {
+        log.info("Reading logs from file for pipelineContextId: {}, batchSize: {}, offset: {}, mode: {}", pipelineContextId, batchSize, offset, mode);
+        // TODO
+        LogReader logReader = new LogReader();
+        return logReader.read(pipelineContextId, batchSize, offset, mode);
     }
 
     protected Iterator<LogEntry> getQueueIterator() {
