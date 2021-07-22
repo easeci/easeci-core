@@ -13,7 +13,7 @@ import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.core.workspace.vars.GlobalVariablesManager;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +37,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private ScriptAssembler scriptAssembler;
     private PipelineContextHistory pipelineContextHistory;
     private long maxPipelineContextLivenessTime;
+    private long pipelineContextLivenessCheckInterval;
     private ScheduledExecutorService contextLivenessCheckScheduler;
 
     public static PipelineContextSystem getInstance() {
@@ -60,6 +61,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
         this.maxPipelineContextLivenessTime = this.retrieveClt();
+        this.pipelineContextLivenessCheckInterval = this.retrieveLivenessCheckInterval();
         this.contextLivenessCheckScheduler = Executors.newScheduledThreadPool(1);
         this.schedulePipelineContextLivenessCheck();
     }
@@ -72,12 +74,13 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
         this.maxPipelineContextLivenessTime = this.retrieveClt();
+        this.pipelineContextLivenessCheckInterval = this.retrieveLivenessCheckInterval();
         this.contextLivenessCheckScheduler = Executors.newScheduledThreadPool(1);
         this.schedulePipelineContextLivenessCheck();
     }
 
     private long retrieveClt() {
-        long clt = 60;   // CLT default value
+        long clt = 60;                  // CLT default value
         try {
             clt = LocationUtils.retrieveFromGeneralInt("output.pipeline-context.clt");
         } catch (Throwable throwable) {
@@ -85,6 +88,17 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         }
         log.info("output.pipeline-context.clt = {}", clt);
         return clt;
+    }
+
+    private long retrieveLivenessCheckInterval() {
+        long livenessInterval = 15;     //  liveness-check-interval default value
+        try {
+            livenessInterval = LocationUtils.retrieveFromGeneralInt("output.pipeline-context.liveness-check-interval");
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        log.info("output.pipeline-context.liveness-check-interval = {}", livenessInterval);
+        return livenessInterval;
     }
 
     @Override
@@ -97,7 +111,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         logBuffer.publish(LogEntry.builder()
                 .author("easeci-core-master")
                 .header("[INFO]")
-                .createdDateTime(LocalDateTime.now())
+                .timestamp(Instant.now().getEpochSecond())
                 .text("Started to run pipeline with pipelineId: " + pipelineId)
                 .build());
 
@@ -165,7 +179,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     }
 
     private void schedulePipelineContextLivenessCheck() {
-        this.contextLivenessCheckScheduler.scheduleAtFixedRate(this::closeExpiredContexts, maxPipelineContextLivenessTime, maxPipelineContextLivenessTime / 4, TimeUnit.SECONDS);
+        this.contextLivenessCheckScheduler.scheduleAtFixedRate(this::closeExpiredContexts, 0, this.pipelineContextLivenessCheckInterval, TimeUnit.SECONDS);
     }
 
     static void destroyInstance() {

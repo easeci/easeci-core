@@ -3,7 +3,6 @@ package io.easeci.core.engine.runtime.logs;
 import lombok.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -14,7 +13,7 @@ public class LogEntry implements Serializable {
     private long index;
     private String header;
     private String author;
-    private LocalDateTime createdDateTime;
+    private long timestamp;
     private String text;
     private EndChar endChar;
     private LogExtent logExtent;
@@ -22,10 +21,10 @@ public class LogEntry implements Serializable {
     private FontWeight fontWeight;
     private FontStyle fontStyle;
 
-    public LogEntry(long index, LogExtent logExtent, String header, String author, LocalDateTime createdDateTime, String text) {
+    public LogEntry(long index, LogExtent logExtent, String header, String author, long timestamp, String text) {
         this.index = index;
         this.author = author;
-        this.createdDateTime = createdDateTime;
+        this.timestamp = timestamp;
         this.text = text;
         this.header = header;
         this.logExtent = logExtent;

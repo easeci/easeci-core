@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -89,7 +90,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
             logBuffer.publish(LogEntry.builder()
                                   .author("easeci-core-master")
                                   .header("[INFO]")
-                                  .createdDateTime(LocalDateTime.now())
+                                  .timestamp(Instant.now().getEpochSecond())
                                   .text("Starting collecting script chunks and waiting for all Performers to end these jobs")
                                   .build());
 

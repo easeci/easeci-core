@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +31,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
                 .text("Test log published from LogBufferTest instance")
                 .author("system")
                 .header("system-log-header")
-                .createdDateTime(LocalDateTime.now())
+                .timestamp(Instant.now().getEpochSecond())
                 .color(LogEntry.Color.BLACK)
                 .endChar(LogEntry.EndChar.NEXT_LINE)
                 .fontStyle(LogEntry.FontStyle.NORMAL)
@@ -54,7 +55,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
                 .text("First test log published from LogBufferTest instance")
                 .author("system")
                 .header("system-log-header")
-                .createdDateTime(LocalDateTime.now())
+                .timestamp(Instant.now().getEpochSecond())
                 .color(LogEntry.Color.BLACK)
                 .endChar(LogEntry.EndChar.NEXT_LINE)
                 .fontStyle(LogEntry.FontStyle.NORMAL)
@@ -67,7 +68,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
                 .text("Second test log published from LogBufferTest instance")
                 .author("system")
                 .header("system-log-header")
-                .createdDateTime(LocalDateTime.now())
+                .timestamp(Instant.now().getEpochSecond())
                 .color(LogEntry.Color.BLACK)
                 .endChar(LogEntry.EndChar.NEXT_LINE)
                 .fontStyle(LogEntry.FontStyle.NORMAL)
@@ -80,7 +81,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
                 .text("Third test log published from LogBufferTest instance")
                 .author("system")
                 .header("system-log-header")
-                .createdDateTime(LocalDateTime.now())
+                .timestamp(Instant.now().getEpochSecond())
                 .color(LogEntry.Color.BLACK)
                 .endChar(LogEntry.EndChar.NEXT_LINE)
                 .fontStyle(LogEntry.FontStyle.NORMAL)
@@ -121,7 +122,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
                     .text("Test log published from LogBufferTest instance, no. " + i)
                     .author("system")
                     .header("system-log-header")
-                    .createdDateTime(LocalDateTime.now())
+                    .timestamp(Instant.now().getEpochSecond())
                     .color(LogEntry.Color.BLACK)
                     .endChar(LogEntry.EndChar.NEXT_LINE)
                     .fontStyle(LogEntry.FontStyle.NORMAL)

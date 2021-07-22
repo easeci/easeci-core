@@ -3,7 +3,7 @@ package io.easeci;
 import io.easeci.api.client.ClientHandlers;
 import io.easeci.api.easefile.EasefileManagementHandlers;
 import io.easeci.api.extension.ExtensionHandlers;
-import io.easeci.api.log.LogHandler;
+import io.easeci.api.socket.log.LogHandler;
 import io.easeci.api.parsing.EasefileParsingHandlers;
 import io.easeci.api.projects.PipelinePointerExtensionHandlers;
 import io.easeci.api.projects.ProjectExtensionHandlers;

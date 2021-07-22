@@ -95,14 +95,11 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
 
     @Override
     public boolean isMaximumIdleTimePassed(long clt) {
-        long secondsPassed = logBufferInitTime.until(this.logBufferFileManager.lastLogFileSave, ChronoUnit.SECONDS);
-        log.info("Idling time for pipeline context id: {} [seconds], is: {}, maximum idle time (CLT): {}", this.pipelineContextId, secondsPassed, clt);
-        return secondsPassed >= clt;
+        return this.logBufferFileManager.isMaximumIdleTimePassed(clt);
     }
 
     public void closeLogging() {
         this.logBufferFileManager.executorService.shutdown();
-
     }
 
     private class LogBufferFileManager {
@@ -114,6 +111,8 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
         private int logToFileInterval;
         private UUID pipelineId;
         private UUID pipelineContextId;
+        // assign time when saved content to file
+        private LocalDateTime lastLogFileSaveTry;
         private LocalDateTime lastLogFileSave;
 
         private LogBufferFileManager(Queue<LogEntry> logEntryQueue, UUID pipelineId, UUID pipelineContextId) {
@@ -135,6 +134,7 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
         }
 
         private void writeToFile(int iterations) {
+            this.lastLogFileSaveTry = LocalDateTime.now();
             if (!this.logEntryQueue.isEmpty()) {
                 String linesAggregated = "";
                 for (int i = 0; i < iterations; i++) {
@@ -145,6 +145,7 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
                 }
                 try {
                     Files.write(this.logFilePath, linesAggregated.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+                    this.lastLogFileSave = LocalDateTime.now();
                 } catch (IOException e) {
                     log.error("Cannot write logs to file: " + this.logFilePath.toString());
                     e.printStackTrace();
@@ -152,7 +153,6 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
             } else {
                 log.info("There is no logs left in context: " + this.pipelineContextId);
             }
-            this.lastLogFileSave = LocalDateTime.now();
         }
 
         private Path initFile() {
@@ -181,6 +181,12 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
             int iterations = this.logEntryQueue.size();
             writeToFile(iterations);
             log.info("Closed log saving to file for pipelineId: {}, and pipelineContextId: {}", this.pipelineId, this.pipelineContextId);
+        }
+
+        public boolean isMaximumIdleTimePassed(long clt) {
+            long secondsPassed = this.lastLogFileSave.until(this.lastLogFileSaveTry, ChronoUnit.SECONDS);
+            log.info("Idling time for pipeline context id: {} [seconds], is: {}, maximum idle time (CLT): {}", this.pipelineContextId, secondsPassed, clt);
+            return secondsPassed >= clt;
         }
     }
 }
