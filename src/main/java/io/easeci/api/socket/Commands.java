@@ -13,6 +13,12 @@ import java.util.UUID;
 @Slf4j
 public class Commands {
 
+    public enum LogFetchMode {
+        HEAD,
+        TAIL,
+        LIVE
+    }
+
     public void action(WebSocketMessage<String> frame) {
         final String input = frame.getText();
         WebSocket webSocket = frame.getConnection();
@@ -41,9 +47,11 @@ public class Commands {
                 long batchSize = Long.parseLong(extractProperty(input, "--batch"));
                 int offset = Integer.parseInt(extractProperty(input, "--offset"));
                 UUID pipelineContextId = UUID.fromString(extractProperty(input, "--pipelineContextId"));
+                LogFetchMode mode = extractMode(input, "--mode");
                 log.info("Websocket connected historical log streaming from file for pipelineContextId: {}", pipelineContextId);
                 logRail = PipelineContextSystem.getInstance().getLogRail(pipelineContextId);
-                logRail.readLog(pipelineContextId, batchSize, offset);
+                String logLoaded = logRail.readLog(pipelineContextId, batchSize, offset, mode);
+                frame.getConnection().send(logLoaded);
             }
             catch (PipelineContextNotExists e) {
                 openResponseCommunicate = e.getMessage();
@@ -73,7 +81,7 @@ public class Commands {
     /**
      * @param propertyKey value to find in command for example: --batch or --offset
      * */
-    private String extractProperty(String input, String propertyKey) {
+    String extractProperty(String input, String propertyKey) {
         try {
             return List.of(input.split("\\s"))
                     .stream()
@@ -92,6 +100,22 @@ public class Commands {
             log.error("Cannot retrieve property '{}' from command '{}'", propertyKey, input);
             t.printStackTrace();
             return "";
+        }
+    }
+
+    private LogFetchMode extractMode(String input, String propertyKey) {
+        try {
+            String result = extractProperty(input, propertyKey);
+            if (result != null) {
+                try {
+                    return LogFetchMode.valueOf(result);
+                } catch (Throwable t) {
+                    return LogFetchMode.HEAD;
+                }
+            }
+            return LogFetchMode.HEAD;
+        } catch (Throwable t) {
+            return LogFetchMode.HEAD;
         }
     }
 }
