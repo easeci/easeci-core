@@ -25,12 +25,11 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
     private Consumer<String> logPublisher;
     private boolean isPublishingMode = false;
     private long currentIndex = 0;
-    private LocalDateTime logBufferInitTime;
-    private UUID pipelineContextId;
+
+    // use it for read-only from file mode
+    public LogBuffer() {}
 
     public LogBuffer(UUID pipelineId, UUID pipelineContextId) {
-        this.pipelineContextId = pipelineContextId;
-        this.logBufferInitTime = LocalDateTime.now();
         this.logEntriesQueue = new LinkedList<>();
         try {
             maxBufferSize = LocationUtils.retrieveFromGeneralInt("output.pipeline-context.buffer-max-size");
@@ -84,7 +83,6 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
     @Override
     public String readLog(UUID pipelineContextId, long batchSize, int offset, Commands.LogFetchMode mode) {
         log.info("Reading logs from file for pipelineContextId: {}, batchSize: {}, offset: {}, mode: {}", pipelineContextId, batchSize, offset, mode);
-        // TODO
         LogReader logReader = new LogReader();
         return logReader.read(pipelineContextId, batchSize, offset, mode);
     }

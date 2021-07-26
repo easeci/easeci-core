@@ -7,10 +7,8 @@ import org.apache.commons.io.input.ReversedLinesFileReader;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static io.easeci.api.socket.Commands.LogFetchMode.HEAD;
 import static io.easeci.api.socket.Commands.LogFetchMode.TAIL;

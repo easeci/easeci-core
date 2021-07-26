@@ -41,27 +41,23 @@ public class Commands {
             }
             webSocket.send(openResponseCommunicate);
         }
+        // example: read --batch=50 --offset=0 --pipelineContextId=50679665-ad74-4ac5-9701-1b6e2eeea193 --mode=HEAD
         else if (input.startsWith("read")) {
-            LogRail logRail;
             try {
                 long batchSize = Long.parseLong(extractProperty(input, "--batch"));
                 int offset = Integer.parseInt(extractProperty(input, "--offset"));
                 UUID pipelineContextId = UUID.fromString(extractProperty(input, "--pipelineContextId"));
                 LogFetchMode mode = extractMode(input, "--mode");
                 log.info("Websocket connected historical log streaming from file for pipelineContextId: {}", pipelineContextId);
-                logRail = PipelineContextSystem.getInstance().getLogRail(pipelineContextId);
-                String logLoaded = logRail.readLog(pipelineContextId, batchSize, offset, mode);
-                frame.getConnection().send(logLoaded);
+                String output = PipelineContextSystem.getInstance().getArchiveFileLogRail(pipelineContextId, batchSize, offset, mode);
+                frame.getConnection().send(output);
             }
             catch (PipelineContextNotExists e) {
-                openResponseCommunicate = e.getMessage();
                 log.error(e.getMessage());
             } catch (Throwable t) {
                 String msg = "Bad input. Error: " + t.getMessage();
                 log.error(msg);
-                openResponseCommunicate = msg;
             }
-            webSocket.send(openResponseCommunicate);
         } else {
             webSocket.send("Command not supported: '" + input + "'");
         }
