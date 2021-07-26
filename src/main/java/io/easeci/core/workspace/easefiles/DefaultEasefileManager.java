@@ -105,6 +105,12 @@ public class DefaultEasefileManager extends EasefileManager {
     }
 
     @Override
+    public EasefileOut save(String filename, String easefileAsString) {
+        final Path easefilesDirPath = Paths.get(getEasefilesStorageLocation().concat(filename));
+        return this.save(easefilesDirPath, easefileAsString);
+    }
+
+    @Override
     public EasefileOut update(Path path, String easefileNewContent) {
         if (!hasAccessRight(path)) {
             return EasefileOut.of(EDIT_FAILED, null, "Access denied");

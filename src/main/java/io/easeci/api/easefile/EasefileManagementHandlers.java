@@ -20,6 +20,7 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 
 public class EasefileManagementHandlers implements InternalHandlers {
     private final static String MAPPING = "easefile/";
+    private final static String API_V2_MAPPING = "api/v2/" + MAPPING;
     private EasefileManager easefileManager;
     private ObjectMapper objectMapper;
 
@@ -37,7 +38,8 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 createDirectory(),
                 deleteDirectory(),
                 getEasefileContent(),
-                addEasefile(),
+                addEasefileFullPath(),
+                addEasefileByName(),
                 updateEasefile(),
                 deleteEasefile()
         );
@@ -137,7 +139,7 @@ public class EasefileManagementHandlers implements InternalHandlers {
         return EasefileResponse.of(easefileOut.getEasefileStatus(), easefileOut.getErrorMessage(), encodedContentAsString);
     }
 
-    public EndpointDeclaration addEasefile() {
+    public EndpointDeclaration addEasefileFullPath() {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.POST)
                 .endpointUri(MAPPING + "save")
@@ -146,6 +148,22 @@ public class EasefileManagementHandlers implements InternalHandlers {
                             AddEasefileRequest addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequest.class);
                             String decodedEasefileContent = decode(addEasefileRequest.getEncodedEasefileContent());
                             return easefileManager.save(Paths.get(addEasefileRequest.getPath()), decodedEasefileContent);
+                        }).map(this::mapSaveResponse)
+                        .mapError(this::addEasefileErrorMapping)
+                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    public EndpointDeclaration addEasefileByName() {
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(API_V2_MAPPING + "save")
+                .handler(ctx -> ctx.getRequest().getBody()
+                        .map(typedData -> {
+                            AddEasefileRequestV2 addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequestV2.class);
+                            String decodedEasefileContent = decode(addEasefileRequest.getEncodedEasefileContent());
+                            return easefileManager.save(addEasefileRequest.getFilename(), decodedEasefileContent);
                         }).map(this::mapSaveResponse)
                         .mapError(this::addEasefileErrorMapping)
                         .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))

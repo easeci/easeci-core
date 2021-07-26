@@ -21,6 +21,7 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 
 public class EasefileParsingHandlers implements InternalHandlers {
     private final static String MAPPING = "parse";
+    private final static String API_V2_MAPPING = "api/v2/" + MAPPING;
     private ObjectMapper objectMapper;
     private EasefileParser easefileParser;
 
@@ -31,7 +32,7 @@ public class EasefileParsingHandlers implements InternalHandlers {
 
     @Override
     public List<EndpointDeclaration> endpoints() {
-        return List.of(makePipeline());
+        return List.of(makePipeline(), makePipelineV2());
     }
 
     // Create Pipeline from Easefile
@@ -39,6 +40,24 @@ public class EasefileParsingHandlers implements InternalHandlers {
         return EndpointDeclaration.builder()
                 .httpMethod(HttpMethod.POST)
                 .endpointUri(MAPPING)
+                .handler(ctx -> extractBody(ctx.getRequest(), RunParseProcess.class)
+                        .map(runParseProcess -> {
+                            final EasefileLoader easefileLoader = EasefileLoaderFactory.factorize(runParseProcess);
+                            final String easefilePlainContent = easefileLoader.provide();
+                            return easefileParser.parse(easefilePlainContent, easefileLoader.easefileSource());
+                        }).map(ParseProcessResponse::of)
+                        .mapError(this::errorMapping)
+                        .map(parseProcessResponse -> objectMapper.writeValueAsBytes(parseProcessResponse))
+                        .mapError(ApiRequestValidator::handleException)
+                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                .build();
+    }
+
+    // Create Pipeline from Easefile v2 (without whole path to file, but only with filename)
+    private EndpointDeclaration makePipelineV2() {
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.POST)
+                .endpointUri(API_V2_MAPPING)
                 .handler(ctx -> extractBody(ctx.getRequest(), RunParseProcess.class)
                         .map(runParseProcess -> {
                             final EasefileLoader easefileLoader = EasefileLoaderFactory.factorize(runParseProcess);
