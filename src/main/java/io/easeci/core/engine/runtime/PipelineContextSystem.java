@@ -1,9 +1,11 @@
 package io.easeci.core.engine.runtime;
 
+import io.easeci.api.socket.Commands;
 import io.easeci.core.engine.runtime.assemble.*;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
 import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
 import io.easeci.core.engine.runtime.commons.PipelineState;
+import io.easeci.core.engine.runtime.logs.ArchiveLogReader;
 import io.easeci.core.engine.runtime.logs.LogBuffer;
 import io.easeci.core.engine.runtime.logs.LogEntry;
 import io.easeci.core.engine.runtime.logs.LogRail;
@@ -26,7 +28,8 @@ import java.util.stream.Collectors;
 import static java.util.Objects.isNull;
 
 @Slf4j
-public class PipelineContextSystem implements PipelineRunEntryPoint, EventListener<PipelineContextInfo>, PipelineContextCloser {
+public class PipelineContextSystem implements PipelineRunEntryPoint, EventListener<PipelineContextInfo>,
+                                              PipelineContextCloser, ArchiveLogReader {
 
     private static PipelineContextSystem system;
 
@@ -184,5 +187,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
 
     static void destroyInstance() {
         system = null;
+    }
+
+    @Override
+    public String getArchiveFileLogRail(UUID pipelineContextId, long batchSize, int offset, Commands.LogFetchMode mode) {
+        LogBuffer logBuffer = new LogBuffer();
+        return logBuffer.readLog(pipelineContextId, batchSize, offset, mode);
     }
 }
