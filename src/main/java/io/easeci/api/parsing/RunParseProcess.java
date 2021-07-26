@@ -13,6 +13,7 @@ import static io.easeci.api.validation.CommonValidatorSet.*;
 @Data
 public class RunParseProcess implements Validator {
     private Source source;
+    private String filename;
     private String localStoragePath;
     private String gitRepositoryUrl;
     private String encodedEasefileContent;
@@ -23,10 +24,12 @@ public class RunParseProcess implements Validator {
                 nullCheck(this.source, "source"),
                 atLeastOne(Arrays.asList(this.localStoragePath,
                                          this.gitRepositoryUrl,
-                                         this.encodedEasefileContent),
+                                         this.encodedEasefileContent,
+                                         this.filename),
                            Arrays.asList("localStoragePath",
                                          "gitRepositoryUrl",
-                                         "encodedEasefileContent")
+                                         "encodedEasefileContent",
+                                         "filename")
                 )
         ));
     }

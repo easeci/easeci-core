@@ -27,6 +27,15 @@ public interface EasefileIO {
     EasefileOut save(Path path, String easefileAsString);
 
     /**
+     * @param filename is a name of file where Easefile's content will placed.
+     * @param easefileAsString is a content string representation of Easefile.
+     * Use this method to read pipeline Easefile from storage.
+     * @return EasefileOut that has status, errorMessage or file
+     *         content as String representation of loaded Easefile
+     * */
+    EasefileOut save(String filename, String easefileAsString);
+
+    /**
      * @param path is a path where Easefile is placed on storage.
      * @param easefileNewContent is a string representation of content to replace with.
      * Use this method to update pipeline Easefile existing
