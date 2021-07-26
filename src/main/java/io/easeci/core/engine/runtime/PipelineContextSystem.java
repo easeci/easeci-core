@@ -182,6 +182,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     }
 
     private void schedulePipelineContextLivenessCheck() {
+        log.info("contextLivenessCheckScheduler just started");
         this.contextLivenessCheckScheduler.scheduleAtFixedRate(this::closeExpiredContexts, 0, this.pipelineContextLivenessCheckInterval, TimeUnit.SECONDS);
     }
 
