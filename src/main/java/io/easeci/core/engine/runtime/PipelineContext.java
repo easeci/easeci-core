@@ -149,7 +149,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     }
 
     public PipelineContextState state() {
-        return PipelineContextState.of(this.pipelineContextId, pipelineId, pipelineState, this.contextCreatedDate);
+        return PipelineContextState.of(this.pipelineContextId, pipelineId, pipelineState, this.contextCreatedDate.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond());
     }
 
     public LogRail logRail() {
