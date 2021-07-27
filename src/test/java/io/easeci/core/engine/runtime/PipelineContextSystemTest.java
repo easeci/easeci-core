@@ -51,10 +51,10 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
             pipelineNotExists.printStackTrace();
         }
 
-        PipelineRunStatus pipelineRunStatus = pipelineContextSystem.runPipeline(pipelineId);
+        PipelineRunStatus.PipelineRunStatusWrapper pipelineRunStatus = pipelineContextSystem.runPipeline(pipelineId);
         List<PipelineContextState> states = pipelineContextSystem.contextQueueState();
 
-        assertAll(() -> assertEquals(PIPELINE_EXEC_STARTED, pipelineRunStatus),
+        assertAll(() -> assertEquals(PIPELINE_EXEC_STARTED, pipelineRunStatus.getPipelineRunStatus()),
                   () -> assertEquals(1, states.size()),
                   () -> assertEquals(this.pipelineId, states.get(0).getPipelineId()),
                   () -> assertEquals(PipelineState.NEW, states.get(0).getPipelineState()),
@@ -82,8 +82,8 @@ class PipelineContextSystemTest extends BaseWorkspaceContextTest {
             pipelineNotExists.printStackTrace();
         }
 
-        PipelineRunStatus pipelineRunStatus = pipelineContextSystem.runPipeline(notExistingPipelineId);
+        PipelineRunStatus.PipelineRunStatusWrapper pipelineRunStatus = pipelineContextSystem.runPipeline(notExistingPipelineId);
 
-        assertEquals(PIPELINE_NOT_FOUND, pipelineRunStatus);
+        assertEquals(PIPELINE_NOT_FOUND, pipelineRunStatus.getPipelineRunStatus());
     }
 }

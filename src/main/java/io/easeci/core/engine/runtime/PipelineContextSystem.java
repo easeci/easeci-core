@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.engine.runtime.commons.PipelineRunStatus.PIPELINE_NOT_FOUND;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -105,7 +106,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     }
 
     @Override
-    public PipelineRunStatus runPipeline(UUID pipelineId) {
+    public PipelineRunStatus.PipelineRunStatusWrapper runPipeline(UUID pipelineId) {
         final UUID pipelineContextId = UUID.randomUUID();
         log.info("Started to run pipeline with pipelineId: {}, and pipelineContextId: {}", pipelineId, pipelineContextId);
 
@@ -128,14 +129,14 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
             pipelineContext.loadFromFile(pipelineId);
         } catch (PipelineNotExists e) {
             log.error(e.getMessage());
-            return PipelineRunStatus.PIPELINE_NOT_FOUND;
+            return PipelineRunStatus.PipelineRunStatusWrapper.of(PIPELINE_NOT_FOUND, pipelineContextId);
         }
 
         log.info("New PipelineContext created for pipelineId: {}", pipelineId);
         this.contextList.add(pipelineContext);
         pipelineContext.buildScript();
 
-        return PipelineRunStatus.PIPELINE_EXEC_STARTED;
+        return PipelineRunStatus.PipelineRunStatusWrapper.of(PipelineRunStatus.PIPELINE_EXEC_STARTED, pipelineContextId);
     }
 
     @Override

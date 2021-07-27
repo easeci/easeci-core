@@ -10,6 +10,7 @@ import lombok.ToString;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @ToString
@@ -18,14 +19,16 @@ public class EasefileParseResult {
     @JsonIgnore
     private boolean success;
     private Path pipelineFilePath;
+    private UUID pipelineId;
     private EngineStatus engineStatus;
     private List<SyntaxError> syntaxErrors;
     private List<ParsingError> parsingErrors;
 
-    public static EasefileParseResult success(boolean success, Path pipelineFilePath) {
+    public static EasefileParseResult success(boolean success, Path pipelineFilePath, UUID pipelineId) {
         EasefileParseResult easefileParseResult = new EasefileParseResult();
         easefileParseResult.success = success;
         easefileParseResult.pipelineFilePath = pipelineFilePath;
+        easefileParseResult.pipelineId = pipelineId;
         easefileParseResult.engineStatus = EngineStatus.S_EP_0000;
         return easefileParseResult;
     }

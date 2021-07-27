@@ -20,9 +20,9 @@ public interface PipelineRunEntryPoint {
      * Use this method to start pipeline created after Easefile parse process.
      * @param pipelineId is id of pipeline defined in project-structure.json
      *                   Pipeline must exists in system, must be added before.
-     * @return status of pipeline execution. Inform us is pipeline started or not.
+     * @return status of pipeline execution with pipelineContextId. Inform us is pipeline started or not.
      * */
-    PipelineRunStatus runPipeline(UUID pipelineId);
+    PipelineRunStatus.PipelineRunStatusWrapper runPipeline(UUID pipelineId);
 
     /**
      * Use this method to check state of Pipeline runtime.
