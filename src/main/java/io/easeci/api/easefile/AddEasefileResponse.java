@@ -15,6 +15,7 @@ public class AddEasefileResponse {
     private String easefileStatus;
     private String errorMessage;
     private Path path;
+    private String filename;
 
     public static AddEasefileResponse withError(String errorMessage, EasefileStatus easefileStatus) {
         AddEasefileResponse addEasefileResponse = new AddEasefileResponse();
@@ -27,6 +28,7 @@ public class AddEasefileResponse {
         AddEasefileResponse addEasefileResponse = new AddEasefileResponse();
         addEasefileResponse.easefileStatus = easefileStatus.name();
         addEasefileResponse.path = path;
+        addEasefileResponse.filename = getEasefileName(path);
         return addEasefileResponse;
     }
 
@@ -34,5 +36,14 @@ public class AddEasefileResponse {
         AddEasefileResponse addEasefileResponse = new AddEasefileResponse();
         addEasefileResponse.easefileStatus = easefileStatus.name();
         return addEasefileResponse;
+    }
+
+    private static String getEasefileName(Path path) {
+        try {
+            String[] split = path.toString().split("/");
+            return split[split.length - 1];
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            return "";
+        }
     }
 }

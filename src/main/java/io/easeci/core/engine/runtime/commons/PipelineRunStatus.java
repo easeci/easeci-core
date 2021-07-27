@@ -1,5 +1,10 @@
 package io.easeci.core.engine.runtime.commons;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.util.UUID;
+
 public enum PipelineRunStatus {
     PIPELINE_EXEC_QUEUED {
         @Override
@@ -27,4 +32,11 @@ public enum PipelineRunStatus {
     };
 
     public abstract String getMessage();
+
+    @Data
+    @AllArgsConstructor(staticName = "of")
+    public static class PipelineRunStatusWrapper {
+        private PipelineRunStatus pipelineRunStatus;
+        private UUID pipelineContextId;
+    }
 }

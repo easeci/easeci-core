@@ -72,14 +72,15 @@ public class RuntimeHandlers implements InternalHandlers {
     private byte[] handleException(Context ctx, Throwable throwable) throws JsonProcessingException {
         throwable.printStackTrace();
         ctx.getResponse().status(Status.BAD_REQUEST);
-        RunPipelineResponse response = RunPipelineResponse.of(PIPELINE_EXEC_FAILED, PIPELINE_EXEC_FAILED.getMessage(), throwable);
+        RunPipelineResponse response = RunPipelineResponse.of(PipelineRunStatus.PipelineRunStatusWrapper.of(PIPELINE_EXEC_FAILED, null),
+                                                              PIPELINE_EXEC_FAILED.getMessage(), throwable);
         return objectMapper.writeValueAsBytes(response);
     }
 
-    private byte[] handleSuccess(Context ctx, PipelineRunStatus pipelineRunStatus) throws JsonProcessingException {
+    private byte[] handleSuccess(Context ctx, PipelineRunStatus.PipelineRunStatusWrapper pipelineRunStatusWrapper) throws JsonProcessingException {
         log.info("Successfully processed run pipeline request");
         ctx.getResponse().status(Status.OK);
-        RunPipelineResponse response = RunPipelineResponse.of(pipelineRunStatus, pipelineRunStatus.getMessage(), null);
+        RunPipelineResponse response = RunPipelineResponse.of(pipelineRunStatusWrapper, pipelineRunStatusWrapper.getPipelineRunStatus().getMessage(), null);
         return objectMapper.writeValueAsBytes(response);
     }
 

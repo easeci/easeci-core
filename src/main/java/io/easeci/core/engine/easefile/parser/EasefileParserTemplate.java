@@ -50,6 +50,6 @@ abstract class EasefileParserTemplate implements EasefileParser {
         logit(EASEFILE_EVENT, "Easefile parsed successfully and pipeline pointer added with metadata: " + eom.getMetadata());
         writePipelineFile(pipelineFilePath, eom);
         logit(EASEFILE_EVENT, "Pipeline was serialized, wrote to file and placed here: " + pipelineFilePath.toString());
-        return EasefileParseResult.success(true, eom.getMetadata().getPipelineFilePath());
+        return EasefileParseResult.success(true, eom.getMetadata().getPipelineFilePath(), eom.getMetadata().getPipelineId());
     }
 }
