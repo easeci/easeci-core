@@ -7,8 +7,7 @@ import org.apache.commons.io.input.ReversedLinesFileReader;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 import static io.easeci.api.socket.Commands.LogFetchMode.HEAD;
 import static io.easeci.api.socket.Commands.LogFetchMode.TAIL;
@@ -80,6 +79,44 @@ public class LogReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return buffered;
+    }
+
+    /**
+     * This method reads logs from file, before parameter lastIndex
+     * Example:
+     * readBefore("8bfbb0ff-6a3f-4b68-998a-86f155b24ae9", 50, 102);
+     * So, read logs of pipelineContextId, batch logs size is equals 50.
+     * Indexes in range 51-101 will read and return as output of method
+     * */
+    public List<String> readTail(UUID pipelineContextId, long batchSize) {
+        File logFile = findFile(LocationUtils.getPipelineRunLogLocation(), pipelineContextId);
+        List<String> buffered = new ArrayList<>();
+        if (logFile == null) {
+            return buffered;
+        }
+        ReversedLinesFileReader reversedLinesFileReader;
+        try {
+            reversedLinesFileReader = new ReversedLinesFileReader(logFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return buffered;
+        }
+        while (true) {
+            try {
+                String line = reversedLinesFileReader.readLine();
+                if (line == null) {
+                    break;
+                } else {
+                    if (buffered.size() < batchSize) {
+                        buffered.add(line);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Collections.reverse(buffered);
         return buffered;
     }
 

@@ -4,7 +4,7 @@ import requests
 import json
 import time
 
-iterations = 5 # how many request will be sent
+iterations = 200 # how many request will be sent
 interval = 2 # seconds
 
 def publish_log(uuid):
@@ -30,6 +30,7 @@ if len(ctx_list) == 0:
     print('No context is running')
 else:
     first_ctx_uuid = ctx_list[0]['pipelineContextId']
+    print('Starting publishing to context: ' + first_ctx_uuid)
     publish_log(first_ctx_uuid)
 
 
