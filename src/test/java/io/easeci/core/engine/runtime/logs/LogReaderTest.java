@@ -1,6 +1,8 @@
 package io.easeci.core.engine.runtime.logs;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.api.socket.Commands;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -8,6 +10,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
@@ -16,12 +19,36 @@ import java.util.stream.Stream;
 import static commons.WorkspaceTestUtils.buildPathFromResources;
 import static io.easeci.core.engine.runtime.logs.Utils.extractIndex;
 import static io.easeci.core.engine.runtime.logs.Utils.oneStringToLines;
+import static io.easeci.core.workspace.LocationUtils.getPipelineRunLogLocation;
 import static org.junit.jupiter.api.Assertions.*;
 
-class LogReaderTest {
+class LogReaderTest extends BaseWorkspaceContextTest {
 
     private static final String TEST_LOG_FILE = "logs/pipeline-run-4b74129e-8e1c-429c-8c16-fe86b3cc4571_50679665-ad74-4ac5-9701-1b6e2eeea193";
     private static final UUID PIPELINE_CONTEXT_UUID = UUID.fromString("50679665-ad74-4ac5-9701-1b6e2eeea193");
+    private static final String FILE_NAME = "pipeline-run-4b74129e-8e1c-429c-8c16-fe86b3cc4571_50679665-ad74-4ac5-9701-1b6e2eeea193";
+
+    @BeforeEach
+    void setupEach() {
+        Path source = buildPathFromResources(TEST_LOG_FILE);
+        Path targetDir = getPipelineRunLogLocation();
+        String targetStr = targetDir.toString().concat("/").concat(FILE_NAME);
+        Path target = Path.of(targetStr);
+        if (!Files.exists(targetDir)) {
+            try {
+                Files.createDirectory(targetDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!Files.exists(target)) {
+            try {
+                Files.copy(source, target);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Test
     @DisplayName("Should correctly load file from test/resources and return anything from this file")
@@ -145,4 +172,19 @@ class LogReaderTest {
                 () -> assertEquals(201, extractIndex(entries.get(1))),
                 () -> assertEquals(202, extractIndex(entries.get(2))));
     }
+
+    @Test
+    @DisplayName("Should correctly read batch from log file from tail of file")
+    void readContentOfLogFileFromIndexTest() {
+        LogReader logReader = new LogReader();
+
+        final int EXPECTED_BATCH_SIZE = 20;
+
+        List<String> entries = logReader.readTail(PIPELINE_CONTEXT_UUID, EXPECTED_BATCH_SIZE);
+
+        assertAll(() -> assertEquals(EXPECTED_BATCH_SIZE, entries.size()),
+                () -> assertEquals(183, extractIndex(entries.get(0))),
+                () -> assertEquals(202, extractIndex(entries.get(entries.size() - 1))));
+    }
+
 }

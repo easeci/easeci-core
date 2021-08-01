@@ -2,12 +2,14 @@ package io.easeci.api.socket;
 
 import io.easeci.core.engine.runtime.PipelineContextNotExists;
 import io.easeci.core.engine.runtime.PipelineContextSystem;
+import io.easeci.core.engine.runtime.logs.LogBuffer;
 import io.easeci.core.engine.runtime.logs.LogRail;
 import lombok.extern.slf4j.Slf4j;
 import ratpack.websocket.WebSocket;
 import ratpack.websocket.WebSocketMessage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -26,9 +28,13 @@ public class Commands {
         if (input.startsWith("stream --pipelineContextId")) {
             LogRail logRail;
             try {
+                Optional<String> offset = extractOptionalProperty(input, "--offset");
                 UUID pipelineContextId = extractUuid(input);
                 logRail = PipelineContextSystem.getInstance().getLogRail(pipelineContextId);
-                logRail.initPublishing(webSocket::send);
+                offset.filter(s -> !s.isEmpty())
+                        .map(LogBuffer.Options::valueOf)
+                        .ifPresentOrElse(options -> logRail.initPublishing(webSocket::send, options),
+                                        () -> logRail.initPublishing(webSocket::send));
                 log.info("Websocket connected log streaming of pipelineContextId: {}", pipelineContextId);
             }
             catch (PipelineContextNotExists e) {
@@ -96,6 +102,14 @@ public class Commands {
             log.error("Cannot retrieve property '{}' from command '{}'", propertyKey, input);
             t.printStackTrace();
             return "";
+        }
+    }
+
+    Optional<String> extractOptionalProperty(String input, String propertyKey) {
+        try {
+            return Optional.ofNullable(extractProperty(input, propertyKey));
+        } catch (Throwable ex) {
+            return Optional.empty();
         }
     }
 

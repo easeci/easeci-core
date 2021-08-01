@@ -52,15 +52,43 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
     }
 
     @Override
-    public void initPublishing(Consumer<String> logPublisher) {
+    public void initPublishing(Consumer<String> logPublisher, Options... options) {
         if (logPublisher == null) {
             throw new IllegalStateException("Cannot start publish Logs when logPublisher is not set");
         }
+        List<Options> optionsList = Arrays.asList(options);
         this.logPublisher = logPublisher;
         this.isPublishingMode = true;
+        if (optionsList.contains(Options.NO_OFFSET)) {
+            this.readMissingLogsFromFile();
+            this.readRemainingLogsInCache();
+        }
+        //default option
+        if (optionsList.isEmpty() || optionsList.contains(Options.OFFSET)) {
+            this.readRemainingLogsInCache();
+        }
+    }
+
+    // This method should read and publish logs that are gathered only in this instance object's list 'logEntriesQueue'
+    private void readRemainingLogsInCache() {
         if (!this.logEntriesQueue.isEmpty()) {
             this.logEntriesQueue.forEach(logEntry -> this.logPublisher.accept(logEntry.toString()));
         }
+    }
+
+    private void readMissingLogsFromFile() {
+//        long index = assignLastLogIndexPublished();
+        LogReader logReader = new LogReader();
+        logReader.readTail(this.logBufferFileManager.pipelineContextId, 1000)
+                 .forEach(line -> logPublisher.accept(line));
+    }
+
+    private long assignLastLogIndexPublished() {
+        return Optional.ofNullable(this.logEntriesQueue.peek())
+                       .orElse(LogEntry.builder()
+                               .index(0)
+                               .build())
+                       .getIndex();
     }
 
     @Override
@@ -102,6 +130,11 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
 
     public void closeLogging() {
         this.logBufferFileManager.executorService.shutdown();
+    }
+
+    public enum Options {
+        NO_OFFSET,
+        OFFSET
     }
 
     private class LogBufferFileManager {
