@@ -5,4 +5,6 @@ import java.util.concurrent.CompletableFuture;
 public interface PerformerTaskDistributor {
 
     CompletableFuture<PerformerProduct> callPerformer(PerformerCommand performerCommand);
+
+    PerformerProduct callPerformerSync(PerformerCommand performerCommand);
 }
