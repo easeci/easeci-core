@@ -173,7 +173,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
             // here we know that we can start run container with building process
         }
         else if (PipelineState.ABORTED_PREPARATION_ERROR.equals(event.getPipelineState())) {
-            log.info("Pipeline with pipelineContextId: {}, is aborted now", event.getPipelineContextId());
+            log.info("Pipeline with pipelineContextId: {}, is aborted now by domain error", event.getPipelineContextId());
+            this.closeContext(event.getPipelineContextId());
+        }
+        else if (PipelineState.ABORTED_CRITICAL_ERROR.equals(event.getPipelineState())) {
+            log.info("Pipeline with pipelineContextId: {}, is aborted now by critical system error", event.getPipelineContextId());
             this.closeContext(event.getPipelineContextId());
         }
         // only when job was CLOSED by easeci-worker - pipeline was executed
