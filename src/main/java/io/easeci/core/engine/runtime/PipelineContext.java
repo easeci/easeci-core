@@ -13,7 +13,6 @@ import io.easeci.extension.directive.CodeChunk;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.engine.runtime.commons.PipelineState.*;
+import static java.util.Objects.isNull;
 
 @Slf4j
 public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder, EventPublisher<PipelineContextInfo>,
@@ -80,104 +80,230 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
     @Override
     public void buildScript() {
-        // todo teraz napotkałem się na problem, że będziemy mieli eventy już na tym etapie
-        //      bo jak chcemy wiedzieć, że na przykład zmienna się nie rozwiązała, to już tutaj musimy sobie wszystko zbierać
-        //      i wrzucać na jakiś stos logów
-        //      Przyda się teraz ten mechanizm logów, który już wcześniej robiłem. Wrzucamy sobie i po zakończeniu działania
-        //      runtime'u danego pipeline'u zapisujemy do pliku, dzięki czemu, użytkownik będzie mógł sobie otworzyć logi w GUI
         CompletableFuture.runAsync(() -> {
             this.startTimestamp = Instant.now().getEpochSecond();
             log.info("Starting collecting script chunks and waiting for all Performers to end these jobs, pipelineContextId: {}", pipelineContextId);
-            logBuffer.publish(LogEntry.builder()
-                                  .author("easeci-core-master")
-                                  .header("[INFO]")
-                                  .timestamp(this.startTimestamp)
-                                  .text("Starting collecting script chunks and waiting for all Performers to end these jobs")
-                                  .build());
+            this.logBuffer.publish(LogEntry.builder()
+                                           .author("easeci-core-master")
+                                           .header("[INFO]")
+                                           .timestamp(this.startTimestamp)
+                                           .text("Script build initialized. Starting collecting script chunks and waiting for all Performers to end these jobs")
+                                           .build());
 
             // resolve variables
             EasefileObjectModel eomResolved;
             try {
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Variables resolving started")
+                                               .build());
                 final VariableResolver variableResolver = new StandardVariableResolver(this.eom, this.globalVariablesFinder);
                 eomResolved = variableResolver.resolve();
-                log.info("Variables resolved correctly, pipelineContextId: {}", pipelineContextId);
+                log.info("Variables resolved correctly, pipelineContextId: {}", this.pipelineContextId);
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Variables resolving process ends with success")
+                                               .build());
             } catch (VariableResolveException e) {
-                // todo trzeba tutaj obsłużyć ten wyjątek i publikować już jakieś logi dla tego contextu
-                // oprócz tego, wyślij event, że sory, ale pipeline się nie zbudował.
                 e.printStackTrace();
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Variables resolving process ends with failure with message: " + e.getMessage())
+                                               .build());
+                this.pipelineState = ABORTED_PREPARATION_ERROR;
+                this.publish(prepareContextInfo());
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
-                // tutaj wysłać event, że wystąpił niezidentyfikowany błąd
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Variables resolving process ends with critical failure with exception message: " + e.getMessage())
+                                               .build());
+                this.pipelineState = ABORTED_CRITICAL_ERROR;
+                this.publish(prepareContextInfo());
                 return;
             }
 
             // collect all steps
             // aggregate steps from all stages to one list
-            final List<PerformerProduct> performerProducts;
             final List<PerformerCommand> performerCommands;
             try {
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Collecting steps from all stages to one entity")
+                                               .build());
                 final StepsCollector stepsCollector = new StepsCollector();
                 performerCommands = new ArrayList<>(stepsCollector.collectSteps(eomResolved.getStages()));
-                log.info("Steps collecting finished, pipelineContextId: {}", pipelineContextId);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                log.info("Steps collecting finished, pipelineContextId: {}", this.pipelineContextId);
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Collecting steps ends successfully")
+                                               .build());
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Collecting steps ends with critical failure with exception message: " + e.getMessage())
+                                               .build());
+                this.pipelineState = ABORTED_CRITICAL_ERROR;
+                this.publish(prepareContextInfo());
                 return;
             }
 
             // call performer for each directive gathered in before steps
+            final List<PerformerProduct> performerProducts;
             try {
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Call each performer for declared directive in Easefile")
+                                               .build());
                 performerProducts = performerCommands.stream()
-                        .map(this.performerTaskDistributor::callPerformerSync)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-                log.info("PerformerTaskDistributor finished work right now, pipelineContextId: {}", pipelineContextId);
+                                                     .map(this.performerTaskDistributor::callPerformerSync)
+                                                     .filter(Objects::nonNull)
+                                                     .collect(Collectors.toList());
                 if (performerProducts.isEmpty()) {
-                    log.info("PerformerTaskDistributor finished work but there are any PerformerProduct that is not null! Processing pipelineContext aborted, pipelineContextId: {}", pipelineContextId);
+                    log.info("PerformerTaskDistributor finished work but there are any PerformerProduct that is not null! Processing pipelineContext aborted, pipelineContextId: {}", this.pipelineContextId);
+                    this.logBuffer.publish(LogEntry.builder()
+                                                   .author("easeci-core-master")
+                                                   .header("[INFO]")
+                                                   .timestamp(Instant.now().getEpochSecond())
+                                                   .text("All Performers returns no product. Some error occurred, please check your Easefile and add some Steps or fix/reinstall Performer")
+                                                   .build());
                     this.pipelineState = ABORTED_PREPARATION_ERROR;
                     PipelineContextInfo contextInfo = this.prepareContextInfo();
                     this.publish(contextInfo);
                     return;
+                } else {
+                    log.info("PerformerTaskDistributor finished work right now, pipelineContextId: {}", this.pipelineContextId);
+                    this.logBuffer.publish(LogEntry.builder()
+                                                   .author("easeci-core-master")
+                                                   .header("[INFO]")
+                                                   .timestamp(Instant.now().getEpochSecond())
+                                                   .text("Call each performer ends successfully")
+                                                   .build());
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Call performers step ends with critical failure with exception message: " + e.getMessage())
+                                               .build());
+                this.pipelineState = ABORTED_CRITICAL_ERROR;
+                this.publish(prepareContextInfo());
                 return;
             }
 
             // merge-assemble code chunks to complete list of code chunks
             List<CodeChunk> codeChunks;
             try {
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Merging code chunks produced by performers into one single entity")
+                                               .build());
                 codeChunks = performerProducts.stream()
-                        .map(PerformerProduct::getCodeChunk)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-                log.info("CodeChunks now are merged to one CodeChunk list, pipelineContextId: {}", pipelineContextId);
+                                              .map(PerformerProduct::getCodeChunk)
+                                              .filter(Objects::nonNull)
+                                              .collect(Collectors.toList());
                 if (codeChunks.isEmpty()) {
-                    log.info("CodeChunks merged list is empty, so next execution steps will be aborted, pipelineContextId: {}", pipelineContextId);
+                    log.info("CodeChunks merged list is empty, so next execution steps will be aborted, pipelineContextId: {}", this.pipelineContextId);
+                    this.logBuffer.publish(LogEntry.builder()
+                                                   .author("easeci-core-master")
+                                                   .header("[INFO]")
+                                                   .timestamp(Instant.now().getEpochSecond())
+                                                   .text("There are no chunks of code produced by Performers! Occurred unexpected error.")
+                                                   .build());
                     this.pipelineState = ABORTED_PREPARATION_ERROR;
                     PipelineContextInfo contextInfo = this.prepareContextInfo();
                     this.publish(contextInfo);
                     return;
+                } else {
+                    log.info("CodeChunks now are merged to one CodeChunk list, pipelineContextId: {}", this.pipelineContextId);
+                    this.logBuffer.publish(LogEntry.builder()
+                                                   .author("easeci-core-master")
+                                                   .header("[INFO]")
+                                                   .timestamp(Instant.now().getEpochSecond())
+                                                   .text("Merging code chunks ends successfully")
+                                                   .build());
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Call performers step ends with critical failure with exception message: " + e.getMessage())
+                                               .build());
+                this.pipelineState = ABORTED_CRITICAL_ERROR;
+                this.publish(prepareContextInfo());
                 return;
             }
 
             // assembling complete script ready for use
             try {
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Assembling executable script from result from previous steps")
+                                               .build());
                 log.info("Script chunks assembling started, pipelineContextId: {}", pipelineContextId);
                 this.scriptAssembled = this.scriptAssembler.assemble(codeChunks);
                 log.info("Script chunks collecting finished, pipelineContextId: {}", pipelineContextId);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Executable script assembled correctly")
+                                               .build());
+                if (isNull(this.scriptAssembled)) {
+                    log.info("Assembled script is null, so next execution steps will be aborted, pipelineContextId: {}", this.pipelineContextId);
+                    this.logBuffer.publish(LogEntry.builder()
+                                                   .author("easeci-core-master")
+                                                   .header("[INFO]")
+                                                   .timestamp(Instant.now().getEpochSecond())
+                                                   .text("Assembled script is null! Occurred unexpected error. Debug of ScriptAssembler.class may be required")
+                                                   .build());
+                    this.pipelineState = ABORTED_PREPARATION_ERROR;
+                    PipelineContextInfo contextInfo = this.prepareContextInfo();
+                    this.publish(contextInfo);
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.logBuffer.publish(LogEntry.builder()
+                                               .author("easeci-core-master")
+                                               .header("[INFO]")
+                                               .timestamp(Instant.now().getEpochSecond())
+                                               .text("Assembling all code chunks ends with critical failure with exception message: " + e.getMessage())
+                                               .build());
+                this.pipelineState = ABORTED_CRITICAL_ERROR;
+                this.publish(prepareContextInfo());
                 return;
             }
 
             log.info("buildScript() method finished with no errors so, sending event to PipelineContextSystem. Now pipeline is ready and queued for scheduling process");
             // here event is publishing to PipelineContextSystem, script will be ready for scheduling
-            PipelineContextInfo info = this.prepareContextInfo();
-            this.publish(info);
+            this.publish(prepareContextInfo());
         });
     }
 
@@ -192,6 +318,12 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     @Override
     public void publish(PipelineContextInfo event) {
         log.info("Event from PipelineContext published to EventListener: {}", event.toString());
+        this.logBuffer.publish(LogEntry.builder()
+                                       .author("easeci-core-master")
+                                       .header("[INFO]")
+                                       .timestamp(Instant.now().getEpochSecond())
+                                       .text("Executable script preparation ends with status: " + event.getPipelineState())
+                                       .build());
         this.eventListener.receive(event);
     }
 
@@ -218,5 +350,9 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         pci.setFinishDate(new Date());
         this.logBuffer.closeLogging();
         this.eventListener.receive(pci);
+    }
+
+    static class ScriptBuildHelper {
+
     }
 }
