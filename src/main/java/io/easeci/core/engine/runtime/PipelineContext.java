@@ -83,12 +83,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         CompletableFuture.runAsync(() -> {
             this.startTimestamp = Instant.now().getEpochSecond();
             log.info("Starting collecting script chunks and waiting for all Performers to end these jobs, pipelineContextId: {}", pipelineContextId);
-            this.logBuffer.publish(LogEntry.builder()
-                                           .author("easeci-core-master")
-                                           .header("[INFO]")
-                                           .timestamp(this.startTimestamp)
-                                           .text("Script build initialized. Starting collecting script chunks and waiting for all Performers to end these jobs")
-                                           .build());
+            info("Script build initialized. Starting collecting script chunks and waiting for all Performers to end these jobs");
             try {
                 ScriptBuildHelper helper = new ScriptBuildHelper();
                 EasefileObjectModel eomResolved = helper.variableResolve();
@@ -97,12 +92,10 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
                 List<CodeChunk> codeChunks = helper.mergeCodeChunks(performerProducts);
                 this.scriptAssembled = helper.assembleExecutableScript(codeChunks);
             } catch (ScriptBuildStepException e) {
-                e.printStackTrace();
                 return;
             }
-
             log.info("buildScript() method finished with no errors so, sending event to PipelineContextSystem. Now pipeline is ready and queued for scheduling process. " +
-                    "Assembled result script has length: " + this.scriptAssembled.length());
+                     "Assembled result script has length: " + this.scriptAssembled.length());
             this.publish(prepareContextInfo());
         });
     }
@@ -118,12 +111,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     @Override
     public void publish(PipelineContextInfo event) {
         log.info("Event from PipelineContext published to EventListener: {}", event.toString());
-        this.logBuffer.publish(LogEntry.builder()
-                                       .author("easeci-core-master")
-                                       .header("[INFO]")
-                                       .timestamp(Instant.now().getEpochSecond())
-                                       .text("Executable script preparation ends with status: " + event.getPipelineState())
-                                       .build());
+        info("Executable script preparation ends with status: " + event.getPipelineState());
         this.eventListener.receive(event);
     }
 
@@ -152,46 +140,46 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         this.eventListener.receive(pci);
     }
 
+    // log to output available for user
+    private void error(String message) {
+        logBuffer.publish(LogEntry.builder()
+                                  .author("easeci-core-master")
+                                  .header("[ERROR]")
+                                  .timestamp(Instant.now().getEpochSecond())
+                                  .text(message)
+                                  .build());
+    }
+
+    // log to output available for user
+    private void info(String message) {
+        logBuffer.publish(LogEntry.builder()
+                                  .author("easeci-core-master")
+                                  .header("[INFO]")
+                                  .timestamp(Instant.now().getEpochSecond())
+                                  .text(message)
+                                  .build());
+    }
+
     private class ScriptBuildHelper {
 
-        // resolve variables
+        // resolve variables declared in Easefile
         EasefileObjectModel variableResolve() throws ScriptBuildStepException {
             try {
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Variables resolving started")
-                        .build());
+                info("Variables resolving started");
                 final VariableResolver variableResolver = new StandardVariableResolver(eom, globalVariablesFinder);
                 final EasefileObjectModel eomResolved = variableResolver.resolve();
                 log.info("Variables resolved correctly, pipelineContextId: {}", pipelineContextId);
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Variables resolving process ends with success")
-                        .build());
+                info("Variables resolving process ends with success");
                 return eomResolved;
             } catch (VariableResolveException e) {
                 e.printStackTrace();
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Variables resolving process ends with failure with message: " + e.getMessage())
-                        .build());
+                error("Variables resolving process ends with failure with message: " + e.getMessage());
                 pipelineState = ABORTED_PREPARATION_ERROR;
                 publish(prepareContextInfo());
                 throw new ScriptBuildStepException("variableResolve");
             } catch (Exception e) {
                 e.printStackTrace();
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Variables resolving process ends with critical failure with exception message: " + e.getMessage())
-                        .build());
+                error("Variables resolving process ends with critical failure with exception message: " + e.getMessage());
                 pipelineState = ABORTED_CRITICAL_ERROR;
                 publish(prepareContextInfo());
                 throw new ScriptBuildStepException("variableResolve");
@@ -202,30 +190,15 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         // aggregate steps from all stages to one list
         List<PerformerCommand> aggregatePerformerCommands(EasefileObjectModel eomResolved) throws ScriptBuildStepException {
             try {
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Collecting steps from all stages to one entity")
-                        .build());
+                info("Collecting steps from all stages to one entity");
                 final StepsCollector stepsCollector = new StepsCollector();
                 final List<PerformerCommand> performerCommands = new ArrayList<>(stepsCollector.collectSteps(eomResolved.getStages()));
                 log.info("Steps collecting finished, pipelineContextId: {}", pipelineContextId);
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Collecting steps ends successfully")
-                        .build());
+                info("Collecting steps ends successfully");
                 return performerCommands;
             } catch (Exception e) {
                 e.printStackTrace();
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Collecting steps ends with critical failure with exception message: " + e.getMessage())
-                        .build());
+                error("Collecting steps ends with critical failure with exception message: " + e.getMessage());
                 pipelineState = ABORTED_CRITICAL_ERROR;
                 publish(prepareContextInfo());
                 throw new ScriptBuildStepException("aggregatePerformerCommands");
@@ -236,46 +209,26 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         List<PerformerProduct> callPerformerForEach(List<PerformerCommand> performerCommands) throws ScriptBuildStepException {
             final List<PerformerProduct> performerProducts;
             try {
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Call each performer for declared directive in Easefile")
-                        .build());
+                info("Call each performer for declared directive in Easefile");
                 performerProducts = performerCommands.stream()
                         .map(performerTaskDistributor::callPerformerSync)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
                 if (performerProducts.isEmpty()) {
                     log.info("PerformerTaskDistributor finished work but there are any PerformerProduct that is not null! Processing pipelineContext aborted, pipelineContextId: {}", pipelineContextId);
-                    logBuffer.publish(LogEntry.builder()
-                            .author("easeci-core-master")
-                            .header("[INFO]")
-                            .timestamp(Instant.now().getEpochSecond())
-                            .text("All Performers returns no product. Some error occurred, please check your Easefile and add some Steps or fix/reinstall Performer")
-                            .build());
+                    error("All Performers returns no product. Some error occurred, please check your Easefile and add some Steps or fix/reinstall Performer");
                     pipelineState = ABORTED_PREPARATION_ERROR;
                     PipelineContextInfo contextInfo = prepareContextInfo();
                     publish(contextInfo);
                     throw new ScriptBuildStepException("callPerformerForEach");
                 } else {
                     log.info("PerformerTaskDistributor finished work right now, pipelineContextId: {}", pipelineContextId);
-                    logBuffer.publish(LogEntry.builder()
-                            .author("easeci-core-master")
-                            .header("[INFO]")
-                            .timestamp(Instant.now().getEpochSecond())
-                            .text("Call each performer ends successfully")
-                            .build());
+                    info("Call each performer ends successfully");
                     return performerProducts;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Call performers step ends with critical failure with exception message: " + e.getMessage())
-                        .build());
+                error("Call performers step ends with critical failure with exception message: " + e.getMessage());
                 pipelineState = ABORTED_CRITICAL_ERROR;
                 publish(prepareContextInfo());
                 throw new ScriptBuildStepException("callPerformerForEach");
@@ -286,46 +239,26 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         public List<CodeChunk> mergeCodeChunks(List<PerformerProduct> performerProducts) throws ScriptBuildStepException {
             List<CodeChunk> codeChunks;
             try {
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Merging code chunks produced by performers into one single entity")
-                        .build());
+                info("Merging code chunks produced by performers into one single entity");
                 codeChunks = performerProducts.stream()
                         .map(PerformerProduct::getCodeChunk)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
                 if (codeChunks.isEmpty()) {
                     log.info("CodeChunks merged list is empty, so next execution steps will be aborted, pipelineContextId: {}", pipelineContextId);
-                    logBuffer.publish(LogEntry.builder()
-                            .author("easeci-core-master")
-                            .header("[INFO]")
-                            .timestamp(Instant.now().getEpochSecond())
-                            .text("There are no chunks of code produced by Performers! Occurred unexpected error.")
-                            .build());
+                    error("There are no chunks of code produced by Performers! Occurred unexpected error.");
                     pipelineState = ABORTED_PREPARATION_ERROR;
                     PipelineContextInfo contextInfo = prepareContextInfo();
                     publish(contextInfo);
                     throw new ScriptBuildStepException("mergeCodeChunks");
                 } else {
                     log.info("CodeChunks now are merged to one CodeChunk list, pipelineContextId: {}", pipelineContextId);
-                    logBuffer.publish(LogEntry.builder()
-                            .author("easeci-core-master")
-                            .header("[INFO]")
-                            .timestamp(Instant.now().getEpochSecond())
-                            .text("Merging code chunks ends successfully")
-                            .build());
+                    info("Merging code chunks ends successfully");
                     return codeChunks;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Call performers step ends with critical failure with exception message: " + e.getMessage())
-                        .build());
+                info("Call performers step ends with critical failure with exception message: " + e.getMessage());
                 pipelineState = ABORTED_CRITICAL_ERROR;
                 publish(prepareContextInfo());
                 throw new ScriptBuildStepException("mergeCodeChunks");
@@ -335,29 +268,14 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         // assembling complete script ready for use
         public String assembleExecutableScript(List<CodeChunk> codeChunks) throws ScriptBuildStepException {
             try {
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Assembling executable script from result from previous steps")
-                        .build());
+                info("Assembling executable script from result from previous steps");
                 log.info("Script chunks assembling started, pipelineContextId: {}", pipelineContextId);
                 final String scriptAssembled = scriptAssembler.assemble(codeChunks);
                 log.info("Script chunks collecting finished, pipelineContextId: {}", pipelineContextId);
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Executable script assembled correctly")
-                        .build());
+                info("Executable script assembled correctly");
                 if (isNull(scriptAssembled)) {
                     log.info("Assembled script is null, so next execution steps will be aborted, pipelineContextId: {}", pipelineContextId);
-                    logBuffer.publish(LogEntry.builder()
-                            .author("easeci-core-master")
-                            .header("[INFO]")
-                            .timestamp(Instant.now().getEpochSecond())
-                            .text("Assembled script is null! Occurred unexpected error. Debug of ScriptAssembler.class may be required")
-                            .build());
+                    error("Assembled script is null! Occurred unexpected error. Debug of ScriptAssembler.class may be required");
                     pipelineState = ABORTED_PREPARATION_ERROR;
                     PipelineContextInfo contextInfo = prepareContextInfo();
                     publish(contextInfo);
@@ -366,12 +284,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
                 return scriptAssembled;
             } catch (Exception e) {
                 e.printStackTrace();
-                logBuffer.publish(LogEntry.builder()
-                        .author("easeci-core-master")
-                        .header("[INFO]")
-                        .timestamp(Instant.now().getEpochSecond())
-                        .text("Assembling all code chunks ends with critical failure with exception message: " + e.getMessage())
-                        .build());
+                error("Assembling all code chunks ends with critical failure with exception message: " + e.getMessage());
                 pipelineState = ABORTED_CRITICAL_ERROR;
                 publish(prepareContextInfo());
                 throw new ScriptBuildStepException("assembleExecutableScript");
