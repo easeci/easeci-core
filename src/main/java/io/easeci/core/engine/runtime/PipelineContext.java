@@ -36,11 +36,11 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     private final GlobalVariablesFinder globalVariablesFinder;
     private final ScriptAssembler scriptAssembler;
     private final PipelineIO pipelineIO;
+    private final LogBuffer logBuffer;
 
     private EasefileObjectModel eom;
     private String scriptAssembled;
     private PipelineState pipelineState;
-    private LogBuffer logBuffer;
     private long startTimestamp;
 
     public PipelineContext(UUID pipelineId,
@@ -96,6 +96,8 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
             }
             log.info("buildScript() method finished with no errors so, sending event to PipelineContextSystem. Now pipeline is ready and queued for scheduling process. " +
                      "Assembled result script has length: " + this.scriptAssembled.length());
+            this.pipelineState = WAITING_FOR_SCHEDULE;
+            System.out.println(this.scriptAssembled);
             this.publish(prepareContextInfo());
         });
     }
@@ -217,6 +219,16 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
                 if (performerProducts.isEmpty()) {
                     log.info("PerformerTaskDistributor finished work but there are any PerformerProduct that is not null! Processing pipelineContext aborted, pipelineContextId: {}", pipelineContextId);
                     error("All Performers returns no product. Some error occurred, please check your Easefile and add some Steps or fix/reinstall Performer");
+                    pipelineState = ABORTED_PREPARATION_ERROR;
+                    PipelineContextInfo contextInfo = prepareContextInfo();
+                    publish(contextInfo);
+                    throw new ScriptBuildStepException("callPerformerForEach");
+                } else if (performerProducts.size() != performerCommands.size()) {
+                    log.info("PerformerTaskDistributor finished work but desired PerformerProduct (size={}) is not equal to PerformerCommand (size={}) size!! Processing pipelineContext aborted, pipelineContextId: {}",
+                            performerProducts.size(), performerCommands.size(), pipelineContextId);
+                    error("PerformerTaskDistributor finished work but desired PerformerProduct (size="
+                            + performerProducts.size()+") is not equal to PerformerCommand (size="
+                            + performerCommands.size()+") size!!. Some error occurred, please check your Easefile and add some Steps or fix/reinstall Performer");
                     pipelineState = ABORTED_PREPARATION_ERROR;
                     PipelineContextInfo contextInfo = prepareContextInfo();
                     publish(contextInfo);

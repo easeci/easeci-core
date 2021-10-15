@@ -103,6 +103,21 @@ public class ExtensionSystem implements ExtensionControllable, DirectivesCollect
         return getAll("io.easeci.extension.command.Directive", Directive.class);
     }
 
+    @Override
+    public Optional<Directive> find(String directiveName) {
+        final String directiveNameTreated = directiveNameTreatment(directiveName);
+        return collectAll().stream()
+                .filter(directive -> directive.getDirectiveName().equals(directiveNameTreated))
+                .findFirst();
+    }
+
+    private String directiveNameTreatment(String directiveName) {
+        if (directiveName.charAt(0) == '$') {
+            return directiveName.substring(1);
+        }
+        return directiveName;
+    }
+
     public static void destroyInstance() {
         extensionSystem = null;
     }
