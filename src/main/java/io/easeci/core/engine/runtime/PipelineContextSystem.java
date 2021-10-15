@@ -10,6 +10,8 @@ import io.easeci.core.engine.runtime.logs.LogBuffer;
 import io.easeci.core.engine.runtime.logs.LogEntry;
 import io.easeci.core.engine.runtime.logs.LogRail;
 import io.easeci.core.engine.scheduler.PipelineScheduler;
+import io.easeci.core.extension.ExtensionSystem;
+import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.workspace.LocationUtils;
 import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
@@ -63,7 +65,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private PipelineContextSystem() {
         this.contextList = new LinkedList<>();
         this.factory = new PipelineContextFactory();
-        this.performerTaskDistributor = new StandardPerformerTaskDistributor();
+        try {
+            this.performerTaskDistributor = new StandardPerformerTaskDistributor(ExtensionSystem.getInstance());
+        } catch (PluginSystemCriticalException e) {
+            e.printStackTrace();
+        }
         this.globalVariablesFinder = GlobalVariablesManager.getInstance();
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
@@ -76,7 +82,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private PipelineContextSystem(PipelineContextFactory factory) {
         this.contextList = new LinkedList<>();
         this.factory = factory;
-        this.performerTaskDistributor = new StandardPerformerTaskDistributor();
+        try {
+            this.performerTaskDistributor = new StandardPerformerTaskDistributor(ExtensionSystem.getInstance());
+        } catch (PluginSystemCriticalException e) {
+            e.printStackTrace();
+        }
         this.globalVariablesFinder = GlobalVariablesManager.getInstance();
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
