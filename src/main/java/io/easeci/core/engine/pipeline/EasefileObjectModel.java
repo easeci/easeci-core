@@ -60,6 +60,14 @@ public class EasefileObjectModel implements Serializable {
             metadata.setLastReparseDate(new Date());
             return metadata;
         }
+
+        // use when there is no metadata section in Easefile
+        public Metadata fromEmptyInput() {
+            Metadata metadata = new Metadata();
+            metadata.setPipelineId(UUID.randomUUID());
+            metadata.setLastReparseDate(new Date());
+            return metadata;
+        }
     }
 
     // This object is from Easefile, user can enter only this values
