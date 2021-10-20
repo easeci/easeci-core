@@ -10,6 +10,7 @@ import io.easeci.core.node.NodesManager;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -19,6 +20,7 @@ import static io.easeci.core.engine.easefile.parser.parts.Utils.propertyToList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+@Slf4j
 public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfiguration> {
 
     public static final String PARSING_LINE_ERROR_TITLE = "Error occurred while Easefile parsing process";
@@ -39,7 +41,16 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
         final List<SyntaxError> syntaxErrors = new ArrayList<>(0);
         final ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
 
+        if (lines.isEmpty()) {
+            log.info("Executor: section not included in file, executor: AUTO set as default");
+            executorConfiguration.setExecutingStrategy(ExecutingStrategy.AUTO);
+            return Tuple.of(Optional.of(executorConfiguration), syntaxErrors);
+        }
+
         final String joined = propertyToList(lines.subList(1, lines.size()));
+        if (joined.isBlank()) {
+            return Tuple.of(Optional.of(executorConfiguration), syntaxErrors);
+        }
         ExecutorSection executorSection;
         try {
             executorSection = objectMapper.readValue(joined, ExecutorSection.class);

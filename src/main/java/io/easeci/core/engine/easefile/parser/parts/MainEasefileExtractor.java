@@ -50,7 +50,7 @@ public class MainEasefileExtractor implements EasefileExtractor, MetadataExtract
 
         Map<String, List<Line>> linesIndexed = convert(linesByLabel);
         this.crudeMetadata = ofNullable(linesIndexed.get("meta:")).orElse(Collections.emptyList());
-        this.crudeExecutor = ofNullable(linesIndexed.get("executor:")).orElseThrow(() -> missingEasefilePartException("executor"));
+        this.crudeExecutor = ofNullable(linesIndexed.get("executor:")).orElse(Collections.emptyList());
         this.crudeVariable = ofNullable(linesIndexed.get("variables:")).orElse(Collections.emptyList());
         this.crudeStage = ofNullable(linesIndexed.get("flow:")).orElseThrow(() -> missingEasefilePartException("flow"));
     }

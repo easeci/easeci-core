@@ -1,0 +1,10 @@
+pipeline:
+    executor:
+        strategy: master
+    meta:
+        projectId: 0
+        tag: test
+    flow:
+        - stage_name: 'Print hello world as output'
+          steps:
+              - $bash echo 'Hello World!'

@@ -37,7 +37,7 @@ public class MetadataProcessor implements PipelinePartProcessor<EasefileObjectMo
         EasefileObjectModel.Metadata metadata = new EasefileObjectModel.Metadata();
 
         if (lines.isEmpty()) {
-            return Tuple.of(Optional.of(metadata), syntaxErrors);
+            return Tuple.of(Optional.of(metadata.fromEmptyInput()), syntaxErrors);
         }
 
         final String joined = propertyToList(lines.subList(1, lines.size()));
