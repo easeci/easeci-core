@@ -21,7 +21,7 @@ public class WelcomePage implements Standalone {
             " |  __| / _` / __|/ _ \\  | |      | |     / __/ _ \\| '__/ _ \\   \n" +
             " | |___| (_| \\__ \\  __/  | |____ _| |_   | (_| (_) | | |  __/    \n" +
             " |______\\__,_|___/\\___|   \\_____|_____|   \\___\\___/|_|  \\___|\n" +
-            " ~ developed by Karol Meksuła 2020                                 \n" +
+            " ~ developed by Karol Meksuła 2021                                 \n" +
             "\n";
 
     @Override
