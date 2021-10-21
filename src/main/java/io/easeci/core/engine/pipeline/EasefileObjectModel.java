@@ -8,6 +8,8 @@ import java.util.*;
 
 import io.easeci.core.workspace.vars.Variable;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Pipeline class is heart of EaseCI workflow.
  * This is a POJO class that holds information about Pipeline's runtime.
@@ -53,7 +55,7 @@ public class EasefileObjectModel implements Serializable {
         public Metadata fromInput(MetadataInput metadataInput) {
             Metadata metadata = new Metadata();
             metadata.setProjectId(metadataInput.getProjectId());
-            metadata.setName(metadataInput.getName());
+            metadata.setName(ofNullable(metadataInput.getName()).orElseGet(this::generatePipelineName));
             metadata.setTag(metadataInput.getTag());
             metadata.setDescription(metadataInput.getDescription());
             metadata.setPipelineId(UUID.randomUUID());
@@ -66,7 +68,12 @@ public class EasefileObjectModel implements Serializable {
             Metadata metadata = new Metadata();
             metadata.setPipelineId(UUID.randomUUID());
             metadata.setLastReparseDate(new Date());
+            metadata.setName(this.generatePipelineName());
             return metadata;
+        }
+
+        private String generatePipelineName() {
+            return "pipeline_" + System.currentTimeMillis();
         }
     }
 
