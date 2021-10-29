@@ -181,6 +181,8 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         if (PipelineState.WAITING_FOR_SCHEDULE.equals(event.getPipelineState())) {
             log.info("Pipeline with pipelineContextId: {}, is now marked as ready for scheduling", event.getPipelineContextId());
             // here we know that we can start run container with building process
+            contextList.stream().filter(pipelineContext -> pipelineContext.getPipelineContextId().equals(event.getPipelineContextId()))
+                    .peek(pipelineContext -> System.out.println(pipelineContext.getExecutableScript())).collect(Collectors.toList());
         }
         else if (PipelineState.ABORTED_PREPARATION_ERROR.equals(event.getPipelineState())) {
             log.info("Pipeline with pipelineContextId: {}, is aborted now by domain error", event.getPipelineContextId());
