@@ -63,6 +63,13 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         this.logBuffer = logBuffer;
     }
 
+    public String getExecutableScript() {
+        if (isNull(scriptAssembled)) {
+            throw new IllegalStateException("PipelineContext with pipelineContextId: " + pipelineContextId + " is not ready yet. Run buildScript() first.");
+        }
+        return scriptAssembled;
+    }
+
     // load file from file in constructor - cannot create object when pipeline file not exists
     public EasefileObjectModel loadFromFile(UUID pipelineId) throws PipelineNotExists {
         return pipelineIO.loadPipelineFile(pipelineId)
@@ -97,7 +104,6 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
             log.info("buildScript() method finished with no errors so, sending event to PipelineContextSystem. Now pipeline is ready and queued for scheduling process. " +
                      "Assembled result script has length: " + this.scriptAssembled.length());
             this.pipelineState = WAITING_FOR_SCHEDULE;
-            System.out.println(this.scriptAssembled);
             this.publish(prepareContextInfo());
         });
     }

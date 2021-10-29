@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "io.ratpack:ratpack-gradle:1.8.0"
+        classpath "io.ratpack:ratpack-gradle:1.9.0"
     }
 }
 
@@ -15,6 +15,7 @@ plugins {
     id 'application'
     id 'java'
 }
+apply plugin: "io.ratpack.ratpack-java"
 
 group = 'io.easeci.core'
 version = '0.0.1-SNAPSHOT'
@@ -34,8 +35,8 @@ dependencies {
     compile project(':domain')
     compile project(':io-lib')
 
-    implementation 'io.ratpack:ratpack-core:1.8.0'
-    compile group: 'io.ratpack', name: 'ratpack-rx', version: '1.8.0'
+    implementation 'io.ratpack:ratpack-core:1.9.0'
+    compile group: 'io.ratpack', name: 'ratpack-rx', version: '1.9.0'
     implementation 'org.asynchttpclient:async-http-client:2.12.1'
     implementation 'org.yaml:snakeyaml:1.25'
     implementation 'com.google.guava:guava:28.1-jre'
