@@ -29,23 +29,28 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
     @Getter
     private final UUID pipelineContextId;
+    @Getter
     private final LocalDateTime contextCreatedDate;
+    @Getter
     private final UUID pipelineId;
-    private final EventListener<PipelineContextInfo> eventListener;
+    private final EventListener<ContextInfo> eventListener;
     private final PerformerTaskDistributor performerTaskDistributor;
     private final GlobalVariablesFinder globalVariablesFinder;
     private final ScriptAssembler scriptAssembler;
     private final PipelineIO pipelineIO;
+    @Getter
     private final LogBuffer logBuffer;
 
     private EasefileObjectModel eom;
     private String scriptAssembled;
+    @Getter
     private PipelineState pipelineState;
+    @Getter
     private long startTimestamp;
 
     public PipelineContext(UUID pipelineId,
                            UUID pipelineContextId,
-                           EventListener<PipelineContextInfo> eventListener,
+                           EventListener<ContextInfo> eventListener,
                            PerformerTaskDistributor performerTaskDistributor,
                            GlobalVariablesFinder globalVariablesFinder,
                            ScriptAssembler scriptAssembler,
@@ -63,11 +68,15 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         this.logBuffer = logBuffer;
     }
 
-    public String getExecutableScript() {
+    public String getExecutableScript() throws IllegalStateException {
         if (isNull(scriptAssembled)) {
             throw new IllegalStateException("PipelineContext with pipelineContextId: " + pipelineContextId + " is not ready yet. Run buildScript() first.");
         }
         return scriptAssembled;
+    }
+
+    void markAsReadyForScheduling() {
+        this.pipelineState = READY_FOR_SCHEDULE;
     }
 
     // load file from file in constructor - cannot create object when pipeline file not exists
@@ -149,7 +158,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     }
 
     // log to output available for user
-    private void error(String message) {
+    void error(String message) {
         logBuffer.publish(LogEntry.builder()
                                   .author("easeci-core-master")
                                   .header("[ERROR]")
@@ -159,7 +168,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     }
 
     // log to output available for user
-    private void info(String message) {
+    void info(String message) {
         logBuffer.publish(LogEntry.builder()
                                   .author("easeci-core-master")
                                   .header("[INFO]")

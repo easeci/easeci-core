@@ -23,6 +23,12 @@ public enum PipelineState {
     WAITING_FOR_SCHEDULE,
 
     /**
+     * READY_FOR_SCHEDULE means that PipelineContext is ready for run on some worker node.
+     * PipelineContextReadinessValidator confirmed that PipelineContext is correct and valid.
+     * */
+    READY_FOR_SCHEDULE,
+
+    /**
      * ABORTED_PREPARATION_ERROR means that Pipeline run was end with failure because of some domain error.
      * For example: Variables cannot resolved, Performer returns nulls etc.
      * */
@@ -33,6 +39,12 @@ public enum PipelineState {
      * For example: some IO exception, NullPointerException etc.
      * */
     ABORTED_CRITICAL_ERROR,
+
+    /**
+     * VALIDATION_ERROR means that Pipeline was build correctly but PipelineContextReadinessValidator do not pass
+     * pipeline to further processing and scheduling on worker node.
+     * */
+    VALIDATION_ERROR,
 
     /**
      * SCHEDULED means that PipelineContext was assigned with success to some worker node.
