@@ -24,12 +24,12 @@ class ExecutorProcessorTest extends BaseWorkspaceContextTest {
     private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
     @Test
-    @DisplayName("Should throw when executor is not specified in Easefile")
-    void parseEmptyFailedTest() throws PipelinePartCriticalError {
+    @DisplayName("Should NOT throw when executor is not specified in Easefile")
+    void parseEmptyFailedTest() {
         EasefileExtractor easefileExtractor = new MainEasefileExtractor();
         String content = readEmptyExecutorTestEasefile();
 
-        assertThrows(PipelinePartCriticalError.class, () -> easefileExtractor.split(content));
+        assertDoesNotThrow(() -> easefileExtractor.split(content));
     }
 
     @Test

@@ -12,7 +12,7 @@ public class PipelineContextFactory {
 
     public PipelineContext factorize(UUID pipelineId,
                                      UUID pipelineContextId,
-                                     EventListener<PipelineContextInfo> eventListener,
+                                     EventListener<ContextInfo> eventListener,
                                      PerformerTaskDistributor performerTaskDistributor,
                                      GlobalVariablesFinder globalVariablesFinder,
                                      ScriptAssembler scriptAssembler,
