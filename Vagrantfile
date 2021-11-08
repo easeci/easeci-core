@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
      sudo apt-get install -y openjdk-11-jdk
 
      EASECI_VERSION="0.0.1-SNAPSHOT-all"
-     JAR_FILE=/home/vagrant/easeci/easeci-core-java/build/libs/easeci-core-${EASECI_VERSION}.jar
+     JAR_FILE=/home/vagrant/easeci/easeci-core/build/libs/easeci-core-${EASECI_VERSION}.jar
 
      echo 'Checking is file exist in path:' $JAR_FILE
 
@@ -19,8 +19,8 @@ Vagrant.configure("2") do |config|
         echo "Jar file exists, Ease CI is able to run"
      else
         echo "Cannot localise file ${JAR_FILE}"
-        git clone --depth=50 https://github.com/easeci/easeci-core-java.git easeci/easeci-core-java
-        cd easeci/easeci-core-java
+        git clone --depth=50 https://github.com/easeci/easeci-core.git easeci/easeci-core-java
+        cd easeci/easeci-core
         ./gradlew build --stacktrace
         sudo cp easeci.service /etc/systemd/system
         sudo systemctl daemon-reload

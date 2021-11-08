@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/easeci/easeci-core-java.svg?branch=master)](https://travis-ci.org/easeci/easeci-core-java)
+[![Build Status](https://travis-ci.org/easeci/easeci-core.svg?branch=master)](https://travis-ci.org/easeci/easeci-core-java)
 ![LINE](https://img.shields.io/badge/line--coverage-60%25-orange.svg)
 
 Ease CI core
@@ -55,7 +55,7 @@ EaseCI can be run with few ways.
 <code>docker run --rm -td -p 5050:5050 --name easeci -v $HOME/docker/workspace:/usr/lib/easeci/workspace <image></code>  
 #### Virtual Machine (by Vagrant and Virtualbox)
 - You must have installed Vagrant and Virtualbox
-- Next clone source code <code>git clone --depth=5 --branch=master https://github.com/easeci/easeci-core-java.git </code>
+- Next clone source code <code>git clone --depth=5 --branch=master https://github.com/easeci/easeci-core.git </code>
 - Go to directory with source code where <code>Vagrantfile</code> is placed and type <code>vagrant up</code> in your terminal
 #### systemd (directly on your host)
 - Clone git repository as it is show above

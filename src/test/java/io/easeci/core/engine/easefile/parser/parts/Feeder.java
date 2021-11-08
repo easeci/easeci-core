@@ -182,7 +182,7 @@ public class Feeder {
     public static Supplier<List<Line>> provideCorrectVariables() {
         return () ->
                 wrapLines("variables:\n" +
-                        "    _repo_address: 'https://github.com/easeci/easeci-core-java'\n" +
+                        "    _repo_address: 'https://github.com/easeci/easeci-core'\n" +
                         "    _repo_clone_target: '/var/sources/easeci'\n" +
                         "    _artifactory_url: 'https://easeci-artifactory.io'\n" +
                         "    _height: 1.77\n" +
