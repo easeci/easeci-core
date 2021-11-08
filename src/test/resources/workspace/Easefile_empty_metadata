@@ -9,7 +9,7 @@ pipeline:
             - "16fd1af0-7169-11eb-9439-0242ac130002"
             - "16fd2158-7169-11eb-9439-0242ac130002"
     variables:
-        _repo_address: https://github.com/easeci/easeci-core-java
+        _repo_address: https://github.com/easeci/easeci-core
         _repo_clone_target: /var/sources/easeci
         _artifactory_url: https://easeci-artifactory.io
         _dev_hosts:

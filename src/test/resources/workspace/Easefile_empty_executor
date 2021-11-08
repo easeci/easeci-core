@@ -4,7 +4,7 @@ pipeline:
         tag: 'java maven'
         description: 'Java project based on Maven, continuous deployment process'
     variables:
-        _repo_address: https://github.com/easeci/easeci-core-java
+        _repo_address: https://github.com/easeci/easeci-core
         _repo_clone_target: /var/sources/easeci
         _artifactory_url: https://easeci-artifactory.io
         _dev_hosts:

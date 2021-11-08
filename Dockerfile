@@ -15,7 +15,7 @@ RUN apt-get update \
 RUN mkdir -p ${JAR_DIR} \
  && mkdir -p ${COMPILATION_DIR}
 
-RUN git clone --depth=50 --branch=master https://github.com/easeci/easeci-core-java.git ${COMPILATION_DIR}
+RUN git clone --depth=50 --branch=master https://github.com/easeci/easeci-core.git ${COMPILATION_DIR}
 
 # Compile source code and move .jar file to destination
 WORKDIR ${COMPILATION_DIR}
