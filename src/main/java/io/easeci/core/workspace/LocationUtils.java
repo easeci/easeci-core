@@ -106,4 +106,8 @@ public class LocationUtils {
         return Paths.get(getWorkspaceLocation()
                     .concat("/log/history/pipeline-run-history"));
     }
+
+    public static Path getSecretClusterTokenLocation() {
+        return Paths.get(getWorkspaceLocation().concat("/cluster-token.txt"));
+    }
 }
