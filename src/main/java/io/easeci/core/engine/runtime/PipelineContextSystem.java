@@ -186,8 +186,9 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         log.info("Event from PipelineContext received: {}", event.toString());
 
         if (PipelineState.SCHEDULED.equals(event.getPipelineState())) {
-            log.info("Scheduler stated that pipeline with pipelineContextId: {}, has been assigned to worker node to execute the pipeline", event.getPipelineContextId());
+            log.info("Scheduler stated pipeline with pipelineContextId: {}, it has been assigned to worker node to execute the pipeline", event.getPipelineContextId());
             // here make some action - scheduler assigned worker node
+            // czyli tutaj ten pipeline został już przypisany na worker node i już powinien tam sobie działać
         }
         if (PipelineState.WAITING_FOR_SCHEDULE.equals(event.getPipelineState())) {
             log.info("Pipeline with pipelineContextId: {}, is now marked as ready for scheduling", event.getPipelineContextId());

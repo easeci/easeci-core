@@ -4,6 +4,7 @@ import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.log.ApplicationLevelLog;
 import io.easeci.core.log.LogManager;
+import io.easeci.core.node.connect.ClusterTokenGenerator;
 import io.easeci.core.output.Event;
 import io.easeci.core.output.EventType;
 import io.easeci.core.workspace.LinuxWorkspaceInitializer;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static io.easeci.core.log.Publishers.SYSTEM;
+import static io.easeci.core.workspace.LocationUtils.getSecretClusterTokenLocation;
 import static java.util.Objects.isNull;
 
 public class LinuxBootstrapper implements Bootstrapper {
@@ -53,6 +55,7 @@ public class LinuxBootstrapper implements Bootstrapper {
                         .build())
                 .content("EaseCI core server correctly started.")
                 .build());
+        ClusterTokenGenerator.generateClusterToken(getSecretClusterTokenLocation());
         this.extensionSystem = ExtensionSystem.getInstance();
         this.extensionSystem.start();
         this.extensionSystem.startStandalonePlugins();
