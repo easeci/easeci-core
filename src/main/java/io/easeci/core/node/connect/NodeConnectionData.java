@@ -16,4 +16,5 @@ public class NodeConnectionData {
     private String domainName;
     private String nodeName;
     private TransferProtocol transferProtocol;
+    private String connectionToken;
 }
