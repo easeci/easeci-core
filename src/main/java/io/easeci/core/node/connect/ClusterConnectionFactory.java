@@ -1,12 +1,13 @@
 package io.easeci.core.node.connect;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.*;
+
+import static io.easeci.core.node.NodeUtils.readConnectToken;
 import static java.util.Objects.isNull;
 
+@Slf4j
 public class ClusterConnectionFactory {
     private static ClusterConnectionFactory instance;
     private List<NodeConnection> nodeConnections;
@@ -22,15 +23,12 @@ public class ClusterConnectionFactory {
         return instance;
     }
 
-    private static synchronized void addNodeConnection(NodeConnection nodeConnection) {
-        getInstance().nodeConnections.add(nodeConnection);
-    }
-
     public static NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) {
+        boolean isTokenValid = connectTokenValid(nodeConnectionData.getConnectionToken());
         final Date dateNow = new Date();
         final NodeConnection nodeConnection = NodeConnection.builder()
                 .nodeConnectionUuid(UUID.randomUUID())
-                .nodeConnectionState(NodeConnectionState.REQUESTED)
+                .nodeConnectionState(isTokenValid ? NodeConnectionState.REQUESTED : NodeConnectionState.UNAUTHORIZED)
                 .lastConnectionStateChangeOccurred(dateNow)
                 .connectionRequestOccurred(dateNow)
                 .nodeIp(nodeConnectionData.getNodeIp())
@@ -39,11 +37,24 @@ public class ClusterConnectionFactory {
                 .domainName(nodeConnectionData.getDomainName())
                 .transferProtocol(nodeConnectionData.getTransferProtocol())
                 .build();
-        addNodeConnection(nodeConnection);
+        if (isTokenValid) {
+            addNodeConnection(nodeConnection);
+        } else {
+            log.info("Connection Token provided in request is not valid");
+        }
         return nodeConnection;
     }
 
-    private void connectTokenValid() {
+    private static boolean connectTokenValid(String requestedConnectionToken) {
+        if (isNull(requestedConnectionToken)) {
+            return false;
+        }
+        return readConnectToken()
+                .map(requestedConnectionToken::equals)
+                .orElseGet(() -> false);
+    }
 
+    private static synchronized void addNodeConnection(NodeConnection nodeConnection) {
+        getInstance().nodeConnections.add(nodeConnection);
     }
 }

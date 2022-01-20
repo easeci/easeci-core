@@ -5,5 +5,6 @@ public enum NodeConnectionState {
     ESTABLISHED,
     IDLE,
     BUSY,
-    CONNECTION_ERROR
+    CONNECTION_ERROR,
+    UNAUTHORIZED
 }
