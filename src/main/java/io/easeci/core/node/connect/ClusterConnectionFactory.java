@@ -9,18 +9,8 @@ import static java.util.Objects.isNull;
 
 @Slf4j
 public class ClusterConnectionFactory {
-    private static ClusterConnectionFactory instance;
-    private List<NodeConnection> nodeConnections;
 
     private ClusterConnectionFactory() {
-        this.nodeConnections = new ArrayList<>();
-    }
-
-    public static synchronized ClusterConnectionFactory getInstance() {
-        if (isNull(instance)) {
-            instance = new ClusterConnectionFactory();
-        }
-        return instance;
     }
 
     public static NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) {
@@ -38,7 +28,7 @@ public class ClusterConnectionFactory {
                 .transferProtocol(nodeConnectionData.getTransferProtocol())
                 .build();
         if (isTokenValid) {
-            addNodeConnection(nodeConnection);
+            ClusterConnectionHub.getInstance().addNodeConnection(nodeConnection);
         } else {
             log.info("Connection Token provided in request is not valid");
         }
@@ -54,7 +44,4 @@ public class ClusterConnectionFactory {
                 .orElseGet(() -> false);
     }
 
-    private static synchronized void addNodeConnection(NodeConnection nodeConnection) {
-        getInstance().nodeConnections.add(nodeConnection);
-    }
 }
