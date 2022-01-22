@@ -19,4 +19,18 @@ public class NodeConnection {
     String domainName;
     String nodeName;
     TransferProtocol transferProtocol;
+
+    public NodeConnection recreate(NodeConnectionState nodeConnectionState) {
+        return NodeConnection.builder()
+                .nodeConnectionUuid(this.nodeConnectionUuid)
+                .nodeConnectionState(nodeConnectionState)
+                .connectionRequestOccurred(this.connectionRequestOccurred)
+                .lastConnectionStateChangeOccurred(new Date())
+                .nodeIp(this.nodeIp)
+                .nodePort(this.nodePort)
+                .domainName(this.domainName)
+                .nodeName(this.nodeName)
+                .transferProtocol(this.transferProtocol)
+                .build();
+    }
 }
