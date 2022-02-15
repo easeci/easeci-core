@@ -5,6 +5,10 @@ public enum NodeConnectionState {
     ESTABLISHED,
     CONNECTION_ERROR,
     TIMEOUT,
+
+    /**
+     * Set when cannot authorize node. For instance when connection Token is wrong.
+     * */
     UNAUTHORIZED,
 
     /**

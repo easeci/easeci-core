@@ -70,6 +70,7 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
                 .nodeName(nodeConnectionRequest.getNodeName())
                 .domainName(nodeConnectionRequest.getDomainName())
                 .transferProtocol(nodeConnectionRequest.getTransferProtocol())
+                .connectionToken(nodeConnectionRequest.getConnectionToken())
                 .build();
     }
 }

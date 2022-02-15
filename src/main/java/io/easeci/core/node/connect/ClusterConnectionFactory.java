@@ -28,7 +28,8 @@ public class ClusterConnectionFactory {
                 .transferProtocol(nodeConnectionData.getTransferProtocol())
                 .build();
         if (isTokenValid) {
-            ClusterConnectionHub.getInstance().addNodeConnection(nodeConnection);
+            log.info("Connection Token is correct, trying to add new node connection");
+            ClusterConnectionHub.getInstance().tryAddNodeConnection(nodeConnection);
         } else {
             log.info("Connection Token provided in request is not valid");
         }
