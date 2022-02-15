@@ -20,10 +20,10 @@ public class NodeConnection {
     String nodeName;
     TransferProtocol transferProtocol;
 
-    public NodeConnection recreate(NodeConnectionState nodeConnectionState) {
+    public NodeConnection recreate(ClusterConnectionStateMonitor.ConnectionStateResponse nodeConnectionState) {
         return NodeConnection.builder()
                 .nodeConnectionUuid(this.nodeConnectionUuid)
-                .nodeConnectionState(nodeConnectionState)
+                .nodeConnectionState(nodeConnectionState.getNodeConnectionState())
                 .connectionRequestOccurred(this.connectionRequestOccurred)
                 .lastConnectionStateChangeOccurred(new Date())
                 .nodeIp(this.nodeIp)

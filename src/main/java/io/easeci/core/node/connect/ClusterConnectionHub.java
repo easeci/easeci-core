@@ -25,15 +25,19 @@ public class ClusterConnectionHub {
         return instance;
     }
 
-    protected synchronized void addNodeConnection(NodeConnection nodeConnection) {
+    protected synchronized void tryAddNodeConnection(NodeConnection nodeConnection) {
         ClusterConnectionHub.getInstance().nodeConnections.add(nodeConnection);
         CompletableFuture.supplyAsync(() -> clusterConnectionStateMonitor)
                 .thenAccept(monitor -> {
                     ClusterConnectionStateMonitor.ConnectionStateRequest connectionStateRequest = prepareNodeConnectionState(nodeConnection);
-                    NodeConnectionState nodeConnectionStateUpdated = monitor.checkWorkerState(connectionStateRequest);
-                    int index = nodeConnections.indexOf(nodeConnection);
-                    this.nodeConnections.set(index, nodeConnection.recreate(nodeConnectionStateUpdated));
+                    ClusterConnectionStateMonitor.ConnectionStateResponse nodeConnectionStateUpdated = monitor.checkWorkerState(connectionStateRequest);
+
                 });
+    }
+
+    protected void update(NodeConnection old, ClusterConnectionStateMonitor.ConnectionStateResponse updated) {
+        int index = nodeConnections.indexOf(old);
+        this.nodeConnections.set(index, old.recreate(updated));
     }
 
     private ClusterConnectionStateMonitor.ConnectionStateRequest prepareNodeConnectionState(NodeConnection nodeConnection) {

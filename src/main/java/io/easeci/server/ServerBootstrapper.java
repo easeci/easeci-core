@@ -43,9 +43,10 @@ public class ServerBootstrapper {
 
     public void run() {
         try {
-            RatpackServer.start(server -> server.handlers(chain -> {
-                registerInternalEndpoints(chain);
-                registerExternalEndpoints(chain);
+            RatpackServer.start(server -> server.serverConfig(config -> config.port(9000))
+                    .handlers(chain -> {
+                        registerInternalEndpoints(chain);
+                        registerExternalEndpoints(chain);
             }));
         } catch (Exception e) {
             e.printStackTrace();
