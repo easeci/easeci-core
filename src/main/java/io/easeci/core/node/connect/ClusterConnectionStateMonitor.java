@@ -1,9 +1,7 @@
 package io.easeci.core.node.connect;
 
 import io.easeci.server.TransferProtocol;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import lombok.*;
 
 @AllArgsConstructor
 public class ClusterConnectionStateMonitor {
@@ -13,7 +11,9 @@ public class ClusterConnectionStateMonitor {
         return nodeConnector.initialCallback(connectionStateRequest);
     }
 
-    @Value(staticConstructor = "of")
+    @ToString
+    @Getter
+    @AllArgsConstructor(staticName = "of")
     public static class ConnectionStateRequest {
         String nodeIp;
         String nodePort;
