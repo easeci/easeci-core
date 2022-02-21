@@ -15,12 +15,23 @@ public class NodeUtils {
         return "easeci-core-0001-master";
     }
 
+    // todo after metadata implementation
     public static String version() {
         return "v0.1-dev";
     }
 
     public static UUID nodeUuid() {
         return UUID.randomUUID();
+    }
+
+    // todo after metadata implementation
+    public static String apiVersion() {
+        return "API V1";
+    }
+
+    // todo after metadata implementation
+    public static String apiVersionPrefix() {
+        return "/api/v1";
     }
 
     public static Optional<String> readConnectToken() {
