@@ -1,5 +1,6 @@
 package io.easeci.core.node.connect;
 
+import io.easeci.core.node.connect.dto.ConnectionStateRequest;
 import io.easeci.server.TransferProtocol;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,7 +16,7 @@ class NodeConnectorTest {
         return Stream.of(
 
                 Arguments.arguments("http://worker-01.easeci.io/api/v1/connection/state",
-                        ClusterConnectionStateMonitor.ConnectionStateRequest.of(
+                        ConnectionStateRequest.of(
                                 null,
                                 null,
                                 "worker-01.easeci.io",
@@ -24,7 +25,7 @@ class NodeConnectorTest {
                         )),
 
                 Arguments.arguments("http://worker-01.easeci.io:8443/api/v1/connection/state",
-                        ClusterConnectionStateMonitor.ConnectionStateRequest.of(
+                        ConnectionStateRequest.of(
                                 null,
                                 "8443",
                                 "worker-01.easeci.io",
@@ -33,7 +34,7 @@ class NodeConnectorTest {
                         )),
 
                 Arguments.arguments("https://worker-01.easeci.io:8443/api/v1/connection/state",
-                        ClusterConnectionStateMonitor.ConnectionStateRequest.of(
+                        ConnectionStateRequest.of(
                                 null,
                                 "8443",
                                 "worker-01.easeci.io",
@@ -42,7 +43,7 @@ class NodeConnectorTest {
                         )),
 
                 Arguments.arguments("https://worker-01.easeci.io/api/v1/connection/state",
-                        ClusterConnectionStateMonitor.ConnectionStateRequest.of(
+                        ConnectionStateRequest.of(
                                 null,
                                 null,
                                 "worker-01.easeci.io",
@@ -51,7 +52,7 @@ class NodeConnectorTest {
                         )),
 
                 Arguments.arguments("http://173.45.3.102/api/v1/connection/state",
-                        ClusterConnectionStateMonitor.ConnectionStateRequest.of(
+                        ConnectionStateRequest.of(
                                 "173.45.3.102",
                                 null,
                                 null,
@@ -60,7 +61,7 @@ class NodeConnectorTest {
                         )),
 
                 Arguments.arguments("http://173.45.3.102:8080/api/v1/connection/state",
-                        ClusterConnectionStateMonitor.ConnectionStateRequest.of(
+                        ConnectionStateRequest.of(
                                 "173.45.3.102",
                                 "8080",
                                 null,
@@ -69,7 +70,7 @@ class NodeConnectorTest {
                         )),
 
                 Arguments.arguments("https://173.45.3.102:8443/api/v1/connection/state",
-                        ClusterConnectionStateMonitor.ConnectionStateRequest.of(
+                        ConnectionStateRequest.of(
                                 "173.45.3.102",
                                 "8443",
                                 null,
@@ -81,7 +82,7 @@ class NodeConnectorTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void shouldCorrectlyBuildUrl(String expectedUrl, ClusterConnectionStateMonitor.ConnectionStateRequest request) {
+    void shouldCorrectlyBuildUrl(String expectedUrl, ConnectionStateRequest request) {
         String URL = NodeConnector.NodeUrlBuilder.buildUrl(request);
         assertEquals(expectedUrl, URL);
     }

@@ -1,7 +1,9 @@
 package io.easeci.core.node.connect;
 
+import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import io.easeci.server.TransferProtocol;
 import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 
 import java.util.Date;
@@ -9,6 +11,7 @@ import java.util.UUID;
 
 @Value
 @Builder
+@ToString
 public class NodeConnection {
     UUID nodeConnectionUuid;
     NodeConnectionState nodeConnectionState;
@@ -20,7 +23,7 @@ public class NodeConnection {
     String nodeName;
     TransferProtocol transferProtocol;
 
-    public NodeConnection recreate(ClusterConnectionStateMonitor.ConnectionStateResponse nodeConnectionState) {
+    public NodeConnection recreate(ConnectionStateResponse nodeConnectionState) {
         return NodeConnection.builder()
                 .nodeConnectionUuid(this.nodeConnectionUuid)
                 .nodeConnectionState(nodeConnectionState.getNodeConnectionState())

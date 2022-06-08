@@ -1,5 +1,6 @@
 package io.easeci.api.node;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.easeci.core.node.connect.NodeConnectionState;
 import io.easeci.server.TransferProtocol;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class NodeConnectionResponse {
     UUID nodeConnectionUuid;
     NodeConnectionState nodeConnectionState;

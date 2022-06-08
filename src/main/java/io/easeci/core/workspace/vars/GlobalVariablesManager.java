@@ -39,6 +39,7 @@ public class GlobalVariablesManager implements GlobalVariables, GlobalVariablesF
         boolean isFileExists = Files.exists(varsFile);
         if (isFileExists) {
             logit(WORKSPACE_EVENT, "File for store variables found in here: " + varsFile.toString(), THREE);
+            return;
         }
         try {
             Files.createFile(varsFile);

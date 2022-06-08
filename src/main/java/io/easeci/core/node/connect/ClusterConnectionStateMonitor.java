@@ -1,6 +1,7 @@
 package io.easeci.core.node.connect;
 
-import io.easeci.server.TransferProtocol;
+import io.easeci.core.node.connect.dto.ConnectionStateRequest;
+import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import lombok.*;
 
 @AllArgsConstructor
@@ -11,26 +12,11 @@ public class ClusterConnectionStateMonitor {
         return nodeConnector.initialCallback(connectionStateRequest);
     }
 
-    @ToString
-    @Getter
-    @AllArgsConstructor(staticName = "of")
-    public static class ConnectionStateRequest {
-        String nodeIp;
-        String nodePort;
-        String domainName;
-        String nodeName;
-        TransferProtocol transferProtocol;
-    }
-
-    @Value
-    @EqualsAndHashCode(callSuper = true)
-    public class ConnectionStateResponse extends ConnectionStateRequest {
-        NodeConnectionState nodeConnectionState;
-
-        private ConnectionStateResponse(String nodeIp, String nodePort, String domainName, String nodeName,
-                                        TransferProtocol transferProtocol, NodeConnectionState nodeConnectionState) {
-            super(nodeIp, nodePort, domainName, nodeName, transferProtocol);
-            this.nodeConnectionState = nodeConnectionState;
-        }
+    /**
+     * Use this method to create ConnectionStateResponse when there was fail to connect worker node
+     * */
+    public static ConnectionStateResponse createResponseFailure(NodeConnectionState connectionState, ConnectionStateRequest connectionStateRequest) {
+        return ConnectionStateResponse.of(connectionState, connectionStateRequest.getNodeIp(), connectionStateRequest.getNodePort(), connectionStateRequest.getDomainName(),
+                                           connectionStateRequest.getNodeName(), connectionStateRequest.getTransferProtocol());
     }
 }
