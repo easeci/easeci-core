@@ -2,13 +2,15 @@ package io.easeci.api.node;
 
 import io.easeci.api.ApiUtils;
 import io.easeci.api.extension.ExtensionHandlers;
+import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.node.connect.ClusterConnectionFactory;
 import io.easeci.core.node.connect.NodeConnection;
 import io.easeci.core.node.connect.NodeConnectionData;
+import io.easeci.core.node.connect.NodeConnectionState;
+import io.easeci.core.workspace.SerializeUtils;
 import io.easeci.server.EndpointDeclaration;
 import lombok.extern.slf4j.Slf4j;
-import ratpack.handling.Context;
 import ratpack.http.HttpMethod;
 
 import java.util.List;
@@ -38,15 +40,21 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
                         .next(request -> log.info("Node from IP address: {} is trying to connect to cluster", request.getNodeIp()))
                         .map(this::mapRequest)
                         .map(ClusterConnectionFactory::factorizeNodeConnection)
-                        .mapError(throwable -> handleException(ctx, throwable))
                         .map(this::makeResponse)
                         .map(ApiUtils::write)
+                        .mapError(this::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
 
-    private NodeConnection handleException(Context ctx, Throwable throwable) {
-        return null;
+    private byte[] handleException(Throwable throwable) {
+        if (throwable instanceof ApiRequestValidator.ValidationErrorSignal) {
+            ApiRequestValidator.ValidationErrorSignal validationErrorSignal = (ApiRequestValidator.ValidationErrorSignal) throwable;
+            return validationErrorSignal.getResponse();
+        }
+        return SerializeUtils.write(NodeConnectionResponse.builder()
+                                                    .nodeConnectionState(NodeConnectionState.CONNECTION_ERROR)
+                                                    .build());
     }
 
     private NodeConnectionResponse makeResponse(NodeConnection nodeConnection) {

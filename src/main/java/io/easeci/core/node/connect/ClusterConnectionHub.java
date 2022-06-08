@@ -1,11 +1,16 @@
 package io.easeci.core.node.connect;
 
+import io.easeci.core.node.connect.dto.ConnectionStateRequest;
+import io.easeci.core.node.connect.dto.ConnectionStateResponse;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.isNull;
 
+@Slf4j
 public class ClusterConnectionHub {
     private static ClusterConnectionHub instance;
     private List<NodeConnection> nodeConnections;
@@ -28,20 +33,23 @@ public class ClusterConnectionHub {
     protected synchronized void tryAddNodeConnection(NodeConnection nodeConnection) {
         ClusterConnectionHub.getInstance().nodeConnections.add(nodeConnection);
         CompletableFuture.supplyAsync(() -> clusterConnectionStateMonitor)
-                .thenAccept(monitor -> {
-                    ClusterConnectionStateMonitor.ConnectionStateRequest connectionStateRequest = prepareNodeConnectionState(nodeConnection);
-                    ClusterConnectionStateMonitor.ConnectionStateResponse nodeConnectionStateUpdated = monitor.checkWorkerState(connectionStateRequest);
-
+                .thenAccept(connectionStateMonitor -> {
+                    ConnectionStateRequest connectionStateRequest = prepareNodeConnectionState(nodeConnection);
+                    ConnectionStateResponse nodeConnectionStateUpdated = connectionStateMonitor.checkWorkerState(connectionStateRequest);
+                    log.info("Status of worker node obtained, we can update state of this one connection");
+                    this.update(nodeConnection, nodeConnectionStateUpdated);
                 });
     }
 
-    protected void update(NodeConnection old, ClusterConnectionStateMonitor.ConnectionStateResponse updated) {
-        int index = nodeConnections.indexOf(old);
-        this.nodeConnections.set(index, old.recreate(updated));
+    protected void update(NodeConnection old, ConnectionStateResponse updatedStateResponse) {
+        final int index = nodeConnections.indexOf(old);
+        final NodeConnection nodeConnectionUpdated = old.recreate(updatedStateResponse);
+        this.nodeConnections.set(index, old.recreate(updatedStateResponse));
+        log.info("Connection updated, now: {}", nodeConnectionUpdated.toString());
     }
 
-    private ClusterConnectionStateMonitor.ConnectionStateRequest prepareNodeConnectionState(NodeConnection nodeConnection) {
-        return ClusterConnectionStateMonitor.ConnectionStateRequest.of(nodeConnection.getNodeIp(),
+    private ConnectionStateRequest prepareNodeConnectionState(NodeConnection nodeConnection) {
+        return ConnectionStateRequest.of(nodeConnection.getNodeIp(),
                 nodeConnection.getNodePort(),
                 nodeConnection.getDomainName(),
                 nodeConnection.getNodeName(),
