@@ -1,5 +1,7 @@
 package io.easeci.core.node.connect;
 
+import io.easeci.core.node.connect.dto.ClusterDetailsResponse;
+import io.easeci.core.node.connect.dto.ClusterNodeDetails;
 import io.easeci.core.node.connect.dto.ConnectionStateRequest;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
@@ -28,6 +31,22 @@ public class ClusterConnectionHub {
             instance = new ClusterConnectionHub();
         }
         return instance;
+    }
+
+    public ClusterDetailsResponse getClusterDetails() {
+        return ClusterDetailsResponse.of(instance.nodeConnections.stream()
+                                                                 .map(nodeConnection -> ClusterNodeDetails.builder()
+                                                                                                          .nodeConnectionUuid(nodeConnection.getNodeConnectionUuid())
+                                                                                                          .nodeConnectionState(nodeConnection.getNodeConnectionState())
+                                                                                                          .connectionRequestOccurred(nodeConnection.getConnectionRequestOccurred())
+                                                                                                          .lastConnectionStateChangeOccurred(nodeConnection.getLastConnectionStateChangeOccurred())
+                                                                                                          .nodeIp(nodeConnection.getNodeIp())
+                                                                                                          .nodePort(nodeConnection.getNodePort())
+                                                                                                          .domainName(nodeConnection.getDomainName())
+                                                                                                          .nodeName(nodeConnection.getNodeName())
+                                                                                                          .transferProtocol(nodeConnection.getTransferProtocol())
+                                                                                                          .build())
+                                                                 .collect(Collectors.toList()));
     }
 
     protected synchronized void tryAddNodeConnection(NodeConnection nodeConnection) {

@@ -1,17 +1,15 @@
 package io.easeci.api.node;
 
 import io.easeci.api.ApiUtils;
+import io.easeci.api.Errorable;
 import io.easeci.api.extension.ExtensionHandlers;
 import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.extension.PluginSystemCriticalException;
-import io.easeci.core.node.connect.ClusterConnectionFactory;
-import io.easeci.core.node.connect.NodeConnection;
-import io.easeci.core.node.connect.NodeConnectionData;
-import io.easeci.core.node.connect.NodeConnectionState;
+import io.easeci.core.node.connect.*;
 import io.easeci.core.workspace.SerializeUtils;
 import io.easeci.server.EndpointDeclaration;
 import lombok.extern.slf4j.Slf4j;
-import ratpack.http.HttpMethod;
+import ratpack.exec.Promise;
 
 import java.util.List;
 
@@ -21,6 +19,7 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 @Slf4j
 public class NodeConnectionHandlers extends ExtensionHandlers {
     private final static String MAPPING = "api/v1/connection";
+    private final ClusterConnectionHub clusterConnectionHub = ClusterConnectionHub.getInstance();
 
     public NodeConnectionHandlers() throws PluginSystemCriticalException {
     }
@@ -28,26 +27,32 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
     @Override
     public List<EndpointDeclaration> endpoints() {
         return List.of(
-                connect()
+                getConnectAndClusterDetails()
         );
     }
 
-    private EndpointDeclaration connect() {
+    private EndpointDeclaration getConnectAndClusterDetails() {
         return EndpointDeclaration.builder()
-                .httpMethod(HttpMethod.POST)
-                .endpointUri(MAPPING)
-                .handler(ctx -> extractBody(ctx, NodeConnectionRequest.class)
-                        .next(request -> log.info("Node from IP address: {} is trying to connect to cluster", request.getNodeIp()))
-                        .map(this::mapRequest)
-                        .map(ClusterConnectionFactory::factorizeNodeConnection)
-                        .map(this::makeResponse)
-                        .map(ApiUtils::write)
-                        .mapError(this::handleException)
-                        .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
-                .build();
+                                  .multiEndpointDeclaration(true)
+                                  .endpointUri(MAPPING)
+                                  .handler(ctx -> ctx.byMethod(byMethodSpec -> byMethodSpec.get(localContext -> Promise.value(clusterConnectionHub)
+                                                                                                                   .next(hub -> log.info("Fetching cluster details from server"))
+                                                                                                                   .map(ClusterConnectionHub::getClusterDetails)
+                                                                                                                   .map(ApiUtils::write)
+                                                                                                                   .mapError(this::handleGetClusterDetailsException)
+                                                                                                                   .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                                                                                       .post(localContext -> extractBody(ctx, NodeConnectionRequest.class)
+                                                                                                                   .next(request -> log.info("Node from IP address: {} is trying to connect to cluster", request.getNodeIp()))
+                                                                                                                   .map(this::mapRequest)
+                                                                                                                   .map(ClusterConnectionFactory::factorizeNodeConnection)
+                                                                                                                   .map(this::makeResponse)
+                                                                                                                   .map(ApiUtils::write)
+                                                                                                                   .mapError(this::handleConnectionException)
+                                                                                                                   .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))))
+                                  .build();
     }
 
-    private byte[] handleException(Throwable throwable) {
+    private byte[] handleConnectionException(Throwable throwable) {
         if (throwable instanceof ApiRequestValidator.ValidationErrorSignal) {
             ApiRequestValidator.ValidationErrorSignal validationErrorSignal = (ApiRequestValidator.ValidationErrorSignal) throwable;
             return validationErrorSignal.getResponse();
@@ -55,6 +60,11 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
         return SerializeUtils.write(NodeConnectionResponse.builder()
                                                     .nodeConnectionState(NodeConnectionState.CONNECTION_ERROR)
                                                     .build());
+    }
+
+    private byte[] handleGetClusterDetailsException(Throwable throwable) {
+        log.error("Exception handled while hit GET /{} endpoint: {}", MAPPING, throwable.getMessage());
+        return SerializeUtils.write(Errorable.withError(throwable.getMessage()));
     }
 
     private NodeConnectionResponse makeResponse(NodeConnection nodeConnection) {

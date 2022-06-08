@@ -15,6 +15,7 @@ public class EndpointDeclaration {
     private HttpMethod httpMethod;
     private String endpointUri;
     private Handler handler;
+    private boolean multiEndpointDeclaration;
 
     @Override
     public String toString() {

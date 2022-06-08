@@ -70,11 +70,15 @@ public class ServerBootstrapper {
         Handler handler = declaration.getHandler();
         HttpMethod method = declaration.getHttpMethod();
 
-        if (GET.equals(method))          chain.get(endpointUri, handler);
-        else if (POST.equals(method))    chain.post(endpointUri, handler);
-        else if (PATCH.equals(method))   chain.patch(endpointUri, handler);
-        else if (PUT.equals(method))     chain.put(endpointUri, handler);
-        else if (DELETE.equals(method))  chain.delete(endpointUri, handler);
-        else if (OPTIONS.equals(method)) chain.options(endpointUri, handler);
+        if (declaration.isMultiEndpointDeclaration()) {
+            chain.all(declaration.getHandler());
+        } else {
+            if (GET.equals(method))          chain.get(endpointUri, handler);
+            else if (POST.equals(method))    chain.post(endpointUri, handler);
+            else if (PATCH.equals(method))   chain.patch(endpointUri, handler);
+            else if (PUT.equals(method))     chain.put(endpointUri, handler);
+            else if (DELETE.equals(method))  chain.delete(endpointUri, handler);
+            else if (OPTIONS.equals(method)) chain.options(endpointUri, handler);
+        }
     }
 }
