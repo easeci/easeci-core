@@ -10,10 +10,4 @@ public enum NodeConnectionState {
      * Set when cannot authorize node. For instance when connection Token is wrong.
      * */
     UNAUTHORIZED,
-
-    /**
-     * IDLE and BUSY are available only if previous state was set as ESTABLISHED
-     * */
-    IDLE,
-    BUSY
 }

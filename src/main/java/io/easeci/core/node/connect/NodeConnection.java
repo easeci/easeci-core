@@ -15,6 +15,7 @@ import java.util.UUID;
 public class NodeConnection {
     UUID nodeConnectionUuid;
     NodeConnectionState nodeConnectionState;
+    NodeProcessingState nodeProcessingState;
     Date connectionRequestOccurred;
     Date lastConnectionStateChangeOccurred;
     String nodeIp;
@@ -23,17 +24,22 @@ public class NodeConnection {
     String nodeName;
     TransferProtocol transferProtocol;
 
-    public NodeConnection recreate(ConnectionStateResponse nodeConnectionState) {
+    public NodeConnection mapNodeConnection(ConnectionStateResponse nodeConnectionState) {
         return NodeConnection.builder()
-                .nodeConnectionUuid(this.nodeConnectionUuid)
-                .nodeConnectionState(nodeConnectionState.getNodeConnectionState())
-                .connectionRequestOccurred(this.connectionRequestOccurred)
-                .lastConnectionStateChangeOccurred(new Date())
-                .nodeIp(this.nodeIp)
-                .nodePort(this.nodePort)
-                .domainName(this.domainName)
-                .nodeName(this.nodeName)
-                .transferProtocol(this.transferProtocol)
-                .build();
+                             .nodeConnectionUuid(this.nodeConnectionUuid)
+                             .nodeConnectionState(nodeConnectionState.getNodeConnectionState())
+                             /*
+                              * Set UNKNOWN because we don't now what processing state is,
+                              * We know only connection state but we don't know anything about processing state
+                              * */
+                             .nodeProcessingState(NodeProcessingState.UNKNOWN)
+                             .connectionRequestOccurred(this.connectionRequestOccurred)
+                             .lastConnectionStateChangeOccurred(new Date())
+                             .nodeIp(this.nodeIp)
+                             .nodePort(this.nodePort)
+                             .domainName(this.domainName)
+                             .nodeName(this.nodeName)
+                             .transferProtocol(this.transferProtocol)
+                             .build();
     }
 }

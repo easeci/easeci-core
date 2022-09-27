@@ -55,15 +55,15 @@ public class ClusterConnectionHub {
                 .thenAccept(connectionStateMonitor -> {
                     ConnectionStateRequest connectionStateRequest = prepareNodeConnectionState(nodeConnection);
                     ConnectionStateResponse nodeConnectionStateUpdated = connectionStateMonitor.checkWorkerState(connectionStateRequest);
-                    log.info("Status of worker node obtained, we can update state of this one connection");
+                    log.info("Status of worker node obtained: {}, we can update state of this one connection", nodeConnectionStateUpdated.getNodeConnectionState().name());
                     this.update(nodeConnection, nodeConnectionStateUpdated);
                 });
     }
 
     protected void update(NodeConnection old, ConnectionStateResponse updatedStateResponse) {
         final int index = nodeConnections.indexOf(old);
-        final NodeConnection nodeConnectionUpdated = old.recreate(updatedStateResponse);
-        this.nodeConnections.set(index, old.recreate(updatedStateResponse));
+        final NodeConnection nodeConnectionUpdated = old.mapNodeConnection(updatedStateResponse);
+        this.nodeConnections.set(index, nodeConnectionUpdated);
         log.info("Connection updated, now: {}", nodeConnectionUpdated.toString());
     }
 
