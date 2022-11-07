@@ -1,5 +1,6 @@
 package io.easeci.core.node.connect;
 
+import io.easeci.core.workspace.WorkspaceInitializationException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -13,12 +14,17 @@ public class ClusterConnectionFactory {
     private ClusterConnectionFactory() {
     }
 
-    public static NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) {
+    public static NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) throws WorkspaceInitializationException {
         boolean isTokenValid = connectTokenValid(nodeConnectionData.getConnectionToken());
         final Date dateNow = new Date();
         final NodeConnection nodeConnection = NodeConnection.builder()
                 .nodeConnectionUuid(UUID.randomUUID())
                 .nodeConnectionState(isTokenValid ? NodeConnectionState.REQUESTED : NodeConnectionState.UNAUTHORIZED)
+                /*
+                 * Set UNKNOWN because we don't now what processing state is,
+                 * We know only connection state but we don't know anything about processing state
+                 * */
+                .nodeProcessingState(NodeProcessingState.UNKNOWN)
                 .lastConnectionStateChangeOccurred(dateNow)
                 .connectionRequestOccurred(dateNow)
                 .nodeIp(nodeConnectionData.getNodeIp())
@@ -29,7 +35,8 @@ public class ClusterConnectionFactory {
                 .build();
         if (isTokenValid) {
             log.info("Connection Token is correct, trying to add new node connection");
-            ClusterConnectionHub.getInstance().tryAddNodeConnection(nodeConnection);
+            ClusterConnectionHub.getInstance()
+                    .tryAddNodeConnection(nodeConnection);
         } else {
             log.info("Connection Token provided in request is not valid");
         }
