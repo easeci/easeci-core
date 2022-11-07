@@ -23,7 +23,7 @@ public class NodeConnector {
         this.asyncHttpClientNoSsl = buildDefaultHttpClient();
     }
 
-    public ConnectionStateResponse initialCallback(ConnectionStateRequest connectionStateRequest) {
+    public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) {
         final String URL = NodeUrlBuilder.buildUrl(connectionStateRequest);
         log.info("Checking connection from EaseCI Core node to: {}", URL);
         final byte[] payload = SerializeUtils.write(connectionStateRequest);
@@ -54,11 +54,6 @@ public class NodeConnector {
             e.printStackTrace();
         }
         return ClusterConnectionStateMonitor.createResponseFailure(CONNECTION_ERROR, connectionStateRequest);
-    }
-
-    // metoda ma zwracać po prostu status w jakim obecnie jest worker
-    public void fetchNodeState() {
-
     }
 
     private AsyncHttpClient chooseClient(TransferProtocol transferProtocol) {

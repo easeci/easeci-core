@@ -7,6 +7,7 @@ import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.node.connect.*;
 import io.easeci.core.workspace.SerializeUtils;
+import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.easeci.server.EndpointDeclaration;
 import lombok.extern.slf4j.Slf4j;
 import ratpack.exec.Promise;
@@ -21,7 +22,7 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
     private final static String MAPPING = "api/v1/connection";
     private final ClusterConnectionHub clusterConnectionHub = ClusterConnectionHub.getInstance();
 
-    public NodeConnectionHandlers() throws PluginSystemCriticalException {
+    public NodeConnectionHandlers() throws PluginSystemCriticalException, WorkspaceInitializationException {
     }
 
     @Override

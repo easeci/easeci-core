@@ -1,10 +1,9 @@
 package io.easeci.core.node.connect;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import io.easeci.server.TransferProtocol;
-import lombok.Builder;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 
 import java.util.Date;
 import java.util.UUID;
@@ -12,6 +11,7 @@ import java.util.UUID;
 @Value
 @Builder
 @ToString
+@AllArgsConstructor
 public class NodeConnection {
     UUID nodeConnectionUuid;
     NodeConnectionState nodeConnectionState;
@@ -24,15 +24,25 @@ public class NodeConnection {
     String nodeName;
     TransferProtocol transferProtocol;
 
+    @JsonCreator
+    public NodeConnection() {
+        this.nodeConnectionUuid = null;
+        this.nodeConnectionState = null;
+        this.nodeProcessingState = null;
+        this.connectionRequestOccurred = null;
+        this.lastConnectionStateChangeOccurred = null;
+        this.nodeIp = null;
+        this.nodePort = null;
+        this.domainName = null;
+        this.nodeName = null;
+        this.transferProtocol = null;
+    }
+
     public NodeConnection mapNodeConnection(ConnectionStateResponse nodeConnectionState) {
         return NodeConnection.builder()
                              .nodeConnectionUuid(this.nodeConnectionUuid)
                              .nodeConnectionState(nodeConnectionState.getNodeConnectionState())
-                             /*
-                              * Set UNKNOWN because we don't now what processing state is,
-                              * We know only connection state but we don't know anything about processing state
-                              * */
-                             .nodeProcessingState(NodeProcessingState.UNKNOWN)
+                             .nodeProcessingState(nodeConnectionState.getNodeProcessingState())
                              .connectionRequestOccurred(this.connectionRequestOccurred)
                              .lastConnectionStateChangeOccurred(new Date())
                              .nodeIp(this.nodeIp)

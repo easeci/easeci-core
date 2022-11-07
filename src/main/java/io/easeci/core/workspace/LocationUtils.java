@@ -110,4 +110,8 @@ public class LocationUtils {
     public static Path getSecretClusterTokenLocation() {
         return Paths.get(getWorkspaceLocation().concat("/cluster-token.txt"));
     }
+
+    public static Path getClusterSettingsFileLocation() {
+        return Paths.get(getWorkspaceLocation().concat("/cluster/settings.json"));
+    }
 }
