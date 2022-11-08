@@ -1,6 +1,7 @@
 package io.easeci.core.node.connect.dto;
 
 import io.easeci.core.node.connect.NodeConnectionState;
+import io.easeci.core.node.connect.NodeProcessingState;
 import io.easeci.server.TransferProtocol;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class ClusterNodeDetails {
     private UUID nodeConnectionUuid;
     private NodeConnectionState nodeConnectionState;
+    private NodeProcessingState nodeProcessingState;
     private Date connectionRequestOccurred;
     private Date lastConnectionStateChangeOccurred;
     private String nodeIp;

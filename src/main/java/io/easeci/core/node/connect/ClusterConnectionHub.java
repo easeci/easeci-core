@@ -31,7 +31,7 @@ public class ClusterConnectionHub {
         this.nodeConnectionInMemoryStorage = new NodeConnectionInMemoryStorage(clusterConnectionIO);
         this.nodeConnector = new NodeConnector();
         this.clusterConnectionStateMonitor = new ClusterConnectionStateMonitor(nodeConnector);
-        this.nodeConnectionScheduledFuture = nodeConnectionMonitor(this.nodeConnectionMonitorAction());
+        this.nodeConnectionScheduledFuture = nodeConnectionMonitor();
     }
 
     public static synchronized ClusterConnectionHub getInstance() throws WorkspaceInitializationException {
@@ -46,6 +46,7 @@ public class ClusterConnectionHub {
                 .map(nodeConnection -> ClusterNodeDetails.builder()
                         .nodeConnectionUuid(nodeConnection.getNodeConnectionUuid())
                         .nodeConnectionState(nodeConnection.getNodeConnectionState())
+                        .nodeProcessingState(nodeConnection.getNodeProcessingState())
                         .connectionRequestOccurred(nodeConnection.getConnectionRequestOccurred())
                         .lastConnectionStateChangeOccurred(nodeConnection.getLastConnectionStateChangeOccurred())
                         .nodeIp(nodeConnection.getNodeIp())
@@ -77,16 +78,12 @@ public class ClusterConnectionHub {
                 nodeConnection.getTransferProtocol());
     }
 
-    private Runnable nodeConnectionMonitorAction() {
-        return () -> this.nodeConnectionInMemoryStorage.getAll()
-                .forEach(this::requestNodeForConnectionState);
-    }
-
-    private ScheduledFuture<?> nodeConnectionMonitor(Runnable action) {
+    private ScheduledFuture<?> nodeConnectionMonitor() {
         int corePoolSize = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.thread-pool-execution", 1);
         int initialDelay = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.refresh-init-delay-seconds", 0);
         int period = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.refresh-interval-seconds", 5);
         final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(corePoolSize);
-        return scheduledThreadPoolExecutor.scheduleAtFixedRate(action, initialDelay, period, TimeUnit.SECONDS);
+        return scheduledThreadPoolExecutor.scheduleAtFixedRate(() -> this.nodeConnectionInMemoryStorage.getAll()
+                .forEach(this::requestNodeForConnectionState), initialDelay, period, TimeUnit.SECONDS);
     }
 }
