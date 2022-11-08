@@ -1,7 +1,7 @@
 package io.easeci.api.easefile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.workspace.easefiles.DefaultEasefileManager;
 import io.easeci.core.workspace.easefiles.EasefileManager;
 import io.easeci.core.workspace.easefiles.EasefileOut;
@@ -22,10 +22,8 @@ public class EasefileManagementHandlers implements InternalHandlers {
     private final static String MAPPING = "easefile/";
     private final static String API_V2_MAPPING = "api/v2/" + MAPPING;
     private EasefileManager easefileManager;
-    private ObjectMapper objectMapper;
 
     public EasefileManagementHandlers() {
-        this.objectMapper = new ObjectMapper();
         this.easefileManager = DefaultEasefileManager.getInstance();
     }
 
@@ -52,7 +50,7 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> easefileManager.getRootEasefilePath())
                         .map(EasefileWorkspaceResponse::new)
-                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -64,7 +62,7 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> easefileManager.scan())
                         .map(EasefileWorkspaceResponse::new)
-                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -75,12 +73,12 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "workspace/scan/path")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            EasefileScanPathRequest easefileScanPathRequest = objectMapper.readValue(typedData.getBytes(), EasefileScanPathRequest.class);
+                            EasefileScanPathRequest easefileScanPathRequest = SerializeUtils.read(typedData.getBytes(), EasefileScanPathRequest.class).orElseThrow();
                             return easefileManager.scan(Paths.get(easefileScanPathRequest.getPath()));
                         })
                         .map(EasefileWorkspaceResponse::new)
                         .mapError(this::errorMapping)
-                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -91,11 +89,11 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "workspace/directory/create")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            DirectoryRequest directoryRequest = objectMapper.readValue(typedData.getBytes(), DirectoryRequest.class);
+                            DirectoryRequest directoryRequest = SerializeUtils.read(typedData.getBytes(), DirectoryRequest.class).orElseThrow();
                             return easefileManager.createDirectory(Paths.get(directoryRequest.getPath()));
                         }).map(tuple -> DirectoryResponse.of(tuple._1, tuple._2, null, tuple._3))
                         .mapError(this::directoryErrorMapping)
-                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -106,11 +104,11 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "workspace/directory/delete")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            DirectoryRequest directoryRequest = objectMapper.readValue(typedData.getBytes(), DirectoryRequest.class);
+                            DirectoryRequest directoryRequest = SerializeUtils.read(typedData.getBytes(), DirectoryRequest.class).orElseThrow();
                             return easefileManager.deleteDirectory(Paths.get(directoryRequest.getPath()), directoryRequest.isForce());
                         }).map(tuple -> DirectoryResponse.of(tuple._1, tuple._2))
                         .mapError(this::directoryErrorMapping)
-                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -121,11 +119,11 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "load")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            GetEasefileRequest easefileRequest = objectMapper.readValue(typedData.getBytes(), GetEasefileRequest.class);
+                            GetEasefileRequest easefileRequest = SerializeUtils.read(typedData.getBytes(), GetEasefileRequest.class).orElseThrow();
                             return easefileManager.load(Paths.get(easefileRequest.getPath()));
                         }).map(this::mapGetResponse)
                         .mapError(this::easefileErrorMapping)
-                        .map(easefileResponse -> objectMapper.writeValueAsBytes(easefileResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -145,12 +143,12 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "save")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            AddEasefileRequest addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequest.class);
+                            AddEasefileRequest addEasefileRequest = SerializeUtils.read(typedData.getBytes(), AddEasefileRequest.class).orElseThrow();
                             String decodedEasefileContent = decode(addEasefileRequest.getEncodedEasefileContent());
                             return easefileManager.save(Paths.get(addEasefileRequest.getPath()), decodedEasefileContent);
                         }).map(this::mapSaveResponse)
                         .mapError(this::addEasefileErrorMapping)
-                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -161,12 +159,12 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(API_V2_MAPPING + "save")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            AddEasefileRequestV2 addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequestV2.class);
+                            AddEasefileRequestV2 addEasefileRequest = SerializeUtils.read(typedData.getBytes(), AddEasefileRequestV2.class).orElseThrow();
                             String decodedEasefileContent = decode(addEasefileRequest.getEncodedEasefileContent());
                             return easefileManager.save(addEasefileRequest.getFilename(), decodedEasefileContent);
                         }).map(this::mapSaveResponse)
                         .mapError(this::addEasefileErrorMapping)
-                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -189,12 +187,12 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "edit")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            AddEasefileRequest addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequest.class);
+                            AddEasefileRequest addEasefileRequest = SerializeUtils.read(typedData.getBytes(), AddEasefileRequest.class).orElseThrow();
                             String decodedEasefileContent = decode(addEasefileRequest.getEncodedEasefileContent());
                             return easefileManager.update(Paths.get(addEasefileRequest.getPath()), decodedEasefileContent);
                         }).map(this::mapSaveResponse)
                         .mapError(this::addEasefileErrorMapping)
-                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -205,11 +203,11 @@ public class EasefileManagementHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "delete")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> {
-                            AddEasefileRequest addEasefileRequest = objectMapper.readValue(typedData.getBytes(), AddEasefileRequest.class);
+                            AddEasefileRequest addEasefileRequest = SerializeUtils.read(typedData.getBytes(), AddEasefileRequest.class).orElseThrow();
                             return easefileManager.delete(Paths.get(addEasefileRequest.getPath()));
                         }).map(this::mapDeleteResponse)
                         .mapError(this::addEasefileErrorMapping)
-                        .map(saveResponse -> objectMapper.writeValueAsBytes(saveResponse))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }

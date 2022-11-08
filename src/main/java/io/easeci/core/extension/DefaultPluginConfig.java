@@ -1,13 +1,11 @@
 package io.easeci.core.extension;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.FileUtils;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.log.ApplicationLevelLogFacade;
 import io.easeci.extension.ExtensionType;
 import lombok.*;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +20,6 @@ import static java.util.Objects.isNull;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 
 class DefaultPluginConfig implements PluginConfig, PluginStrategy {
-    private final static ObjectMapper JSON_MAPPER = new ObjectMapper();
     private final Path pluginConfigYmlPath;
     private PluginsConfigFile pluginsConfigFile;
 
@@ -36,13 +33,8 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public PluginsConfigFile load() throws PluginSystemCriticalException {
-        try {
-            this.pluginsConfigFile = JSON_MAPPER.readValue(this.pluginConfigYmlPath.toFile(), PluginsConfigFile.class);
-            return uniquePluginConfigCheck(this.pluginsConfigFile);
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-        return null;
+        this.pluginsConfigFile = SerializeUtils.read(this.pluginConfigYmlPath.toFile(), PluginsConfigFile.class).orElseThrow();
+        return uniquePluginConfigCheck(this.pluginsConfigFile);
     }
 
     /**
@@ -71,14 +63,9 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public synchronized PluginsConfigFile save() throws PluginSystemCriticalException {
-        try {
-            String content = JSON_MAPPER.writeValueAsString(this.pluginsConfigFile);
-            Path path = FileUtils.fileChange(this.pluginConfigYmlPath.toString(), content);
-            logit(ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT, "===> PluginsConfigFile saved in: {}" + path.toString(), THREE);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return this.pluginsConfigFile;
-        }
+        byte[] content = SerializeUtils.write(this.pluginsConfigFile);
+        Path path = FileUtils.fileChange(this.pluginConfigYmlPath.toString(), new String(content));
+        logit(ApplicationLevelLogFacade.LogLevelName.WORKSPACE_EVENT, "===> PluginsConfigFile saved in: {}" + path.toString(), THREE);
         return load();
     }
 

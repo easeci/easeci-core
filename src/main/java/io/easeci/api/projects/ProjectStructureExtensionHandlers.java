@@ -1,6 +1,6 @@
 package io.easeci.api.projects;
 
-import io.easeci.api.ApiUtils;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
@@ -10,8 +10,8 @@ import ratpack.http.HttpMethod;
 import java.util.Collections;
 import java.util.List;
 
-import static io.easeci.api.ApiUtils.write;
 import static io.easeci.api.validation.ValidationErrorResponse.unrecognizedError;
+import static io.easeci.commons.SerializeUtils.write;
 import static ratpack.http.MediaType.APPLICATION_JSON;
 
 public class ProjectStructureExtensionHandlers implements InternalHandlers {
@@ -29,7 +29,7 @@ public class ProjectStructureExtensionHandlers implements InternalHandlers {
                 .endpointUri(MAPPING)
                 .handler(ctx -> Promise.value(projectManager)
                         .map(ProjectManager::getProjectGroupList)
-                        .map(ApiUtils::write)
+                        .map(SerializeUtils::write)
                         .mapError(throwable -> write(unrecognizedError()))
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();

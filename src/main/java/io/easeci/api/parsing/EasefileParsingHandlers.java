@@ -1,8 +1,8 @@
 package io.easeci.api.parsing;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.api.validation.ValidationException;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.engine.easefile.loader.EasefileContentMalformed;
 import io.easeci.core.engine.easefile.loader.EasefileLoader;
 import io.easeci.core.engine.easefile.loader.EasefileLoaderFactory;
@@ -22,11 +22,9 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 public class EasefileParsingHandlers implements InternalHandlers {
     private final static String MAPPING = "parse";
     private final static String API_V2_MAPPING = "api/v2/" + MAPPING;
-    private ObjectMapper objectMapper;
     private EasefileParser easefileParser;
 
     public EasefileParsingHandlers() {
-        this.objectMapper = new ObjectMapper();
         this.easefileParser = ParserFactory.factorize(ParserFactory.ParserType.STANDARD);
     }
 
@@ -47,7 +45,7 @@ public class EasefileParsingHandlers implements InternalHandlers {
                             return easefileParser.parse(easefilePlainContent, easefileLoader.easefileSource());
                         }).map(ParseProcessResponse::of)
                         .mapError(this::errorMapping)
-                        .map(parseProcessResponse -> objectMapper.writeValueAsBytes(parseProcessResponse))
+                        .map(SerializeUtils::write)
                         .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -65,7 +63,7 @@ public class EasefileParsingHandlers implements InternalHandlers {
                             return easefileParser.parse(easefilePlainContent, easefileLoader.easefileSource());
                         }).map(ParseProcessResponse::of)
                         .mapError(this::errorMapping)
-                        .map(parseProcessResponse -> objectMapper.writeValueAsBytes(parseProcessResponse))
+                        .map(SerializeUtils::write)
                         .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();

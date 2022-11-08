@@ -1,7 +1,7 @@
 package io.easeci.api.extension;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.api.validation.ApiRequestValidator;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.extension.DirectivesCollector;
 import io.easeci.core.extension.ExtensionControllable;
 import io.easeci.core.extension.ExtensionSystem;
@@ -26,7 +26,6 @@ public class ExtensionHandlers implements InternalHandlers {
     private DirectivesCollector directivesCollector;
     private PluginUpdate pluginUpdate;
     private PluginDetails pluginDetails;
-    private ObjectMapper objectMapper;
 
     public ExtensionHandlers() throws PluginSystemCriticalException {
         ExtensionSystem extensionSystem = ExtensionSystem.getInstance();
@@ -35,7 +34,6 @@ public class ExtensionHandlers implements InternalHandlers {
         final RegistryProxy registryProxy = new RegistryProxy();
         this.pluginUpdate = registryProxy;
         this.pluginDetails = registryProxy;
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -57,7 +55,7 @@ public class ExtensionHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "state")
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> this.controllable.state())
-                        .map(pluginContainerState -> objectMapper.writeValueAsBytes(pluginContainerState))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -69,7 +67,7 @@ public class ExtensionHandlers implements InternalHandlers {
                 .handler(ctx -> extractBody(ctx.getRequest(), ActionRequest.class)
                         .map(actionRequest -> this.controllable.shutdownExtension(actionRequest))
                         .mapError(throwable -> ActionResponse.of(false, List.of(throwable.getMessage())))
-                        .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .map(SerializeUtils::write)
                         .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -81,7 +79,7 @@ public class ExtensionHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "startup")
                 .handler(ctx -> extractBody(ctx.getRequest(), ActionRequest.class)
                         .map(actionRequest -> this.controllable.startupExtension(actionRequest))
-                        .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .map(SerializeUtils::write)
                         .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -93,7 +91,7 @@ public class ExtensionHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "restart")
                 .handler(ctx -> extractBody(ctx.getRequest(), ActionRequest.class)
                         .map(actionRequest -> this.controllable.restart(actionRequest))
-                        .map(actionResponse -> objectMapper.writeValueAsBytes(actionResponse))
+                        .map(SerializeUtils::write)
                         .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
@@ -110,7 +108,7 @@ public class ExtensionHandlers implements InternalHandlers {
                     String requestedPluginName = pathTokens.get(PLUGIN_NAME);
                     String requestedPluginVersion = pathTokens.get(PLUGIN_VERSION);
                     this.pluginUpdate.checkForUpdate(requestedPluginName, requestedPluginVersion)
-                                     .map(pluginUpdateCheckResponse -> this.objectMapper.writeValueAsBytes(pluginUpdateCheckResponse))
+                                     .map(SerializeUtils::write)
                                      .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes));
                 }).build();
     }
@@ -126,7 +124,7 @@ public class ExtensionHandlers implements InternalHandlers {
                     String requestedPluginName = pathTokens.get(PLUGIN_NAME);
                     String requestedPluginVersion = pathTokens.get(PLUGIN_VERSION);
                     this.pluginDetails.fetchDetails(requestedPluginName, requestedPluginVersion)
-                            .map(pluginDetailsResponse -> this.objectMapper.writeValueAsBytes(pluginDetailsResponse))
+                            .map(SerializeUtils::write)
                             .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes));
                 }).build();
     }
@@ -137,7 +135,7 @@ public class ExtensionHandlers implements InternalHandlers {
                 .httpMethod(GET)
                 .endpointUri(MAPPING + "directives")
                 .handler(ctx -> Promise.value(directivesCollector.collectAll())
-                        .map(directives -> this.objectMapper.writeValueAsBytes(directives))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }

@@ -1,6 +1,6 @@
 package io.easeci.core.registry;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.commons.YamlUtils;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import org.asynchttpclient.*;
 import ratpack.exec.Promise;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,13 +21,11 @@ import static java.util.Objects.isNull;
 public class RegistryProxy implements PluginUpdate, PluginDetails {
     private ExtensionSystem extensionSystem;
     private AsyncHttpClient asyncHttpClient;
-    private ObjectMapper objectMapper;
     private String registryUrl;
     private Boolean fetchDocumentation;
 
     public RegistryProxy() {
         this.asyncHttpClient = this.buildDefaultHttpClient();
-        this.objectMapper = new ObjectMapper();
 
         Map<?, ?> yamlValues = YamlUtils.ymlLoad(getPluginsYmlLocation());
         this.registryUrl = (String) YamlUtils.ymlGet(yamlValues, "plugins.registry.url").getValue();
@@ -57,7 +54,7 @@ public class RegistryProxy implements PluginUpdate, PluginDetails {
                         .build())
                 .toCompletableFuture())
                 .map(Response::getResponseBodyAsBytes)
-                .map(bytes -> objectMapper.readValue(bytes, PluginUpdateCheckResponse.class));
+                .map(bytes -> SerializeUtils.read(bytes, PluginUpdateCheckResponse.class).orElseThrow());
     }
 
     @Override
@@ -80,11 +77,7 @@ public class RegistryProxy implements PluginUpdate, PluginDetails {
     }
 
     private PluginDetailsResponse read(byte[] bytes) {
-        try {
-            return objectMapper.readValue(bytes, PluginDetailsResponse.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Some error occurred while receiving bytes from registry's response body");
-        }
+        return SerializeUtils.read(bytes, PluginDetailsResponse.class).orElseThrow();
     }
 
     private AsyncHttpClient buildDefaultHttpClient() {
