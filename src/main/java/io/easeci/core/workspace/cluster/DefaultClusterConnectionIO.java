@@ -2,7 +2,7 @@ package io.easeci.core.workspace.cluster;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.easeci.core.node.connect.NodeConnection;
-import io.easeci.core.workspace.SerializeUtils;
+import io.easeci.commons.SerializeUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

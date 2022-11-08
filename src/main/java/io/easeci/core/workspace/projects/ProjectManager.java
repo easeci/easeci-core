@@ -1,13 +1,11 @@
 package io.easeci.core.workspace.projects;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.commons.DirUtils;
 import io.easeci.api.projects.dto.AddProjectGroupRequest;
 import io.easeci.api.projects.dto.AddProjectRequest;
 import io.easeci.core.engine.pipeline.EasefileObjectModel;
 import io.easeci.core.workspace.ProjectsValidator;
-import io.easeci.core.workspace.SerializeUtils;
+import io.easeci.commons.SerializeUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -38,7 +36,6 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     public final static String PIPELINES_DIRECTORY = "/projects/pipelines/";
     public final static String PROJECTS_FILE = PROJECTS_DIRECTORY + "projects-structure.json";
     private static ProjectManager projectManager;
-    private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     // todo issue: multithreading can destroy this easily, two another thread could have got another content of file
     private static ProjectsFile projectsFile; // TODO this object must be synchronised in future in case [core #0018]
 
@@ -87,7 +84,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
         try {
             Files.createFile(projectsStructureFile);
             ProjectsFile projectsFile = ProjectsFile.initialState();
-            String projectsFileAsString = OBJECT_MAPPER.writeValueAsString(projectsFile);
+            String projectsFileAsString = new String(SerializeUtils.write(projectsFile));
             Files.writeString(projectsStructureFile, projectsFileAsString);
         } catch (IOException e) {
             e.printStackTrace();
@@ -111,7 +108,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
 
     public ProjectsFile load() throws IOException {
         Path projectsStructureFileLocation = getProjectsStructureFileLocation();
-        return OBJECT_MAPPER.readValue(projectsStructureFileLocation.toFile(), ProjectsFile.class);
+        return SerializeUtils.read(projectsStructureFileLocation.toFile(), ProjectsFile.class).orElseThrow();
     }
 
     public List<ProjectGroup> getProjectGroupList() {
@@ -229,16 +226,12 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
     }
 
     private ProjectsFile save() {
+        String fileContent = new String(SerializeUtils.write(ProjectManager.projectsFile));
         try {
-            String fileContent = OBJECT_MAPPER.writeValueAsString(ProjectManager.projectsFile);
-            try {
-                Files.writeString(getProjectsStructureFileLocation(), fileContent);
-            } catch (IOException e) {
-                e.printStackTrace();
-                logit(WORKSPACE_EVENT, "IOException occurred while trying to save " + PROJECTS_FILE, THREE);
-            }
-        } catch (JsonProcessingException e) {
+            Files.writeString(getProjectsStructureFileLocation(), fileContent);
+        } catch (IOException e) {
             e.printStackTrace();
+            logit(WORKSPACE_EVENT, "IOException occurred while trying to save " + PROJECTS_FILE, THREE);
         }
         return ProjectManager.projectsFile;
     }
@@ -515,7 +508,7 @@ public class ProjectManager implements PipelinePointerIO, ProjectIO, ProjectGrou
                                    log.info("Pipeline with pipelineId: {}, found here: {}", pipelineId, path);
                                    final byte[] decodedBytes = Files.readAllBytes(path);
                                    final byte[] deserialized = this.deserialize(decodedBytes);
-                                   return OBJECT_MAPPER.readValue(deserialized, EasefileObjectModel.class);
+                                   return SerializeUtils.read(deserialized, EasefileObjectModel.class).orElseThrow();
                                } catch (IOException e) {
                                    e.printStackTrace();
                                    return null;

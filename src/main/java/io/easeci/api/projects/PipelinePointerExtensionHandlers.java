@@ -12,10 +12,10 @@ import ratpack.http.Status;
 
 import java.util.List;
 
-import static io.easeci.api.ApiUtils.write;
 import static io.easeci.api.communication.ApiResponse.unknownFailure;
 import static io.easeci.api.communication.ApiResponse.unknownSuccess;
 import static io.easeci.api.validation.ApiRequestValidator.extractBody;
+import static io.easeci.commons.SerializeUtils.write;
 import static ratpack.http.MediaType.APPLICATION_JSON;
 
 public class PipelinePointerExtensionHandlers implements InternalHandlers {

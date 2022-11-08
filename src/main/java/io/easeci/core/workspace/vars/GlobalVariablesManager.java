@@ -1,7 +1,7 @@
 package io.easeci.core.workspace.vars;
 
 import com.google.common.collect.ImmutableMap;
-import io.easeci.core.workspace.SerializeUtils;
+import io.easeci.commons.SerializeUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;

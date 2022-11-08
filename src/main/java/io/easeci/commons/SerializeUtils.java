@@ -1,9 +1,10 @@
-package io.easeci.core.workspace;
+package io.easeci.commons;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -31,6 +32,15 @@ public class SerializeUtils {
     public static <T> Optional<T> read(byte[] responseAsBytes, TypeReference<T> typeReference) {
         try {
             return Optional.ofNullable(MAPPER.readValue(responseAsBytes, typeReference));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+
+    public static <T> Optional<T> read(File file, Class<T> classType) {
+        try {
+            return Optional.ofNullable(MAPPER.readValue(file, classType));
         } catch (IOException e) {
             e.printStackTrace();
             return Optional.empty();

@@ -1,7 +1,6 @@
 package io.easeci.api.runtime;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.engine.runtime.PipelineContextSystem;
 import io.easeci.core.engine.runtime.PipelineRunEntryPoint;
 import io.easeci.core.engine.runtime.commons.PipelineContextState;
@@ -26,11 +25,9 @@ public class RuntimeHandlers implements InternalHandlers {
     private final static String API_PREFIX = "api/v1/";
     private final static String MAPPING = "pipeline/runtime";
     private final PipelineRunEntryPoint entryPoint;
-    private final ObjectMapper objectMapper;
 
     public RuntimeHandlers() {
         this.entryPoint = PipelineContextSystem.getInstance();
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -69,24 +66,24 @@ public class RuntimeHandlers implements InternalHandlers {
                 .build();
     }
 
-    private byte[] handleException(Context ctx, Throwable throwable) throws JsonProcessingException {
+    private byte[] handleException(Context ctx, Throwable throwable) {
         throwable.printStackTrace();
         ctx.getResponse().status(Status.BAD_REQUEST);
         RunPipelineResponse response = RunPipelineResponse.of(PipelineRunStatus.PipelineRunStatusWrapper.of(PIPELINE_EXEC_FAILED, null),
                                                               PIPELINE_EXEC_FAILED.getMessage(), throwable);
-        return objectMapper.writeValueAsBytes(response);
+        return SerializeUtils.write(response);
     }
 
-    private byte[] handleSuccess(Context ctx, PipelineRunStatus.PipelineRunStatusWrapper pipelineRunStatusWrapper) throws JsonProcessingException {
+    private byte[] handleSuccess(Context ctx, PipelineRunStatus.PipelineRunStatusWrapper pipelineRunStatusWrapper) {
         log.info("Successfully processed run pipeline request");
         ctx.getResponse().status(Status.OK);
         RunPipelineResponse response = RunPipelineResponse.of(pipelineRunStatusWrapper, pipelineRunStatusWrapper.getPipelineRunStatus().getMessage(), null);
-        return objectMapper.writeValueAsBytes(response);
+        return SerializeUtils.write(response);
     }
 
-    private byte[] handleSuccess(Context ctx, List<PipelineContextState> pipelineContextStates) throws JsonProcessingException {
+    private byte[] handleSuccess(Context ctx, List<PipelineContextState> pipelineContextStates) {
         log.info("Fetched state of pipeline context runtimes");
         ctx.getResponse().status(Status.OK);
-        return objectMapper.writeValueAsBytes(pipelineContextStates);
+        return SerializeUtils.write(pipelineContextStates);
     }
 }

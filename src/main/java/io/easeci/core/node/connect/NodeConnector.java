@@ -2,7 +2,7 @@ package io.easeci.core.node.connect;
 
 import io.easeci.core.node.connect.dto.ConnectionStateRequest;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
-import io.easeci.core.workspace.SerializeUtils;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.server.TransferProtocol;
 import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.*;

@@ -1,7 +1,7 @@
 package io.easeci.api.socket.log;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.api.socket.log.dto.EventRequest;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.engine.runtime.PipelineContextSystem;
 import io.easeci.core.engine.runtime.logs.LogEntry;
 import io.easeci.core.engine.runtime.logs.LogRail;
@@ -30,7 +30,7 @@ public class LogHandler implements InternalHandlers {
                 .httpMethod(POST)
                 .endpointUri("api/v1/ws/logs")
                 .handler(ctx -> ctx.getRequest().getBody()
-                        .map(typedData -> new ObjectMapper().readValue(typedData.getBytes(), EventRequest.class))
+                        .map(typedData -> SerializeUtils.read(typedData.getBytes(), EventRequest.class).orElseThrow())
                         .next(eventRequest -> {
                             log.info("Logs handled from worker node: {}", eventRequest.getWorkerNodeId());
                             final LogRail logRail = PipelineContextSystem.getInstance()

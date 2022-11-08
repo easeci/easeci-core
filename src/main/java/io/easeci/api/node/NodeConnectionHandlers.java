@@ -1,12 +1,11 @@
 package io.easeci.api.node;
 
-import io.easeci.api.ApiUtils;
 import io.easeci.api.Errorable;
 import io.easeci.api.extension.ExtensionHandlers;
 import io.easeci.api.validation.ApiRequestValidator;
 import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.node.connect.*;
-import io.easeci.core.workspace.SerializeUtils;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.easeci.server.EndpointDeclaration;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +38,7 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
                                   .handler(ctx -> ctx.byMethod(byMethodSpec -> byMethodSpec.get(localContext -> Promise.value(clusterConnectionHub)
                                                                                                                    .next(hub -> log.info("Fetching cluster details from server"))
                                                                                                                    .map(ClusterConnectionHub::getClusterDetails)
-                                                                                                                   .map(ApiUtils::write)
+                                                                                                                   .map(SerializeUtils::write)
                                                                                                                    .mapError(this::handleGetClusterDetailsException)
                                                                                                                    .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                                                                                        .post(localContext -> extractBody(ctx, NodeConnectionRequest.class)
@@ -47,7 +46,7 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
                                                                                                                    .map(this::mapRequest)
                                                                                                                    .map(ClusterConnectionFactory::factorizeNodeConnection)
                                                                                                                    .map(this::makeResponse)
-                                                                                                                   .map(ApiUtils::write)
+                                                                                                                   .map(SerializeUtils::write)
                                                                                                                    .mapError(this::handleConnectionException)
                                                                                                                    .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))))
                                   .build();

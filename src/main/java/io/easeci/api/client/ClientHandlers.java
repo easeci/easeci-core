@@ -1,7 +1,7 @@
 package io.easeci.api.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.easeci.api.validation.ApiRequestValidator;
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.cli.ClientConnectionManager;
 import io.easeci.core.cli.ConnectionCloseRequest;
 import io.easeci.core.cli.ConnectionDto;
@@ -18,11 +18,9 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 public class ClientHandlers implements InternalHandlers {
     private final static String MAPPING = "client/";
     private ClientConnectionManager clientConnectionManager;
-    private ObjectMapper objectMapper;
 
     public ClientHandlers() {
         this.clientConnectionManager = ClientConnectionManager.getInstance();
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -36,7 +34,7 @@ public class ClientHandlers implements InternalHandlers {
                 .endpointUri(MAPPING + "connection/open")
                 .handler(ctx -> Promise.value(ctx.getRequest())
                         .map(request -> clientConnectionManager.initConnection(request, ApiRequestValidator.extractBody(request, ConnectionRequest.class))
-                                .map(connectionStateResponse -> objectMapper.writeValueAsBytes(connectionStateResponse))
+                                .map(SerializeUtils::write)
                                 .mapError(ApiRequestValidator::handleException))
                         .mapError(ApiRequestValidator::handleExceptionPromise)
                         .then(promise -> promise.then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes))))
@@ -48,7 +46,7 @@ public class ClientHandlers implements InternalHandlers {
                 .httpMethod(GET)
                 .endpointUri(MAPPING + "connections")
                 .handler(ctx -> Promise.value(clientConnectionManager.getConnections())
-                        .map(connections -> objectMapper.writeValueAsBytes(connections))
+                        .map(SerializeUtils::write)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
     }
@@ -60,7 +58,7 @@ public class ClientHandlers implements InternalHandlers {
                 .handler(ctx -> ApiRequestValidator.extractBody(ctx.getRequest(), ConnectionCloseRequest.class)
                         .map(connectionCloseRequest -> clientConnectionManager.closeConnection(connectionCloseRequest))
                         .mapError(throwable -> ConnectionDto.notExists())
-                        .map(connectionDto -> objectMapper.writeValueAsBytes(connectionDto))
+                        .map(SerializeUtils::write)
                         .mapError(ApiRequestValidator::handleException)
                         .then(bytes -> ctx.getResponse().contentType(APPLICATION_JSON).send(bytes)))
                 .build();
