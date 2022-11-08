@@ -4,12 +4,16 @@ import io.easeci.core.node.connect.dto.ClusterDetailsResponse;
 import io.easeci.core.node.connect.dto.ClusterNodeDetails;
 import io.easeci.core.node.connect.dto.ConnectionStateRequest;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
+import io.easeci.core.workspace.LocationUtils;
 import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.easeci.core.workspace.cluster.ClusterConnectionIO;
 import io.easeci.core.workspace.cluster.DefaultClusterConnectionIO;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -20,12 +24,14 @@ public class ClusterConnectionHub {
     private NodeConnectionInMemoryStorage nodeConnectionInMemoryStorage;
     private NodeConnector nodeConnector;
     private ClusterConnectionStateMonitor clusterConnectionStateMonitor;
+    private ScheduledFuture<?> nodeConnectionScheduledFuture;
 
     private ClusterConnectionHub() throws WorkspaceInitializationException {
         ClusterConnectionIO clusterConnectionIO = new DefaultClusterConnectionIO();
         this.nodeConnectionInMemoryStorage = new NodeConnectionInMemoryStorage(clusterConnectionIO);
         this.nodeConnector = new NodeConnector();
         this.clusterConnectionStateMonitor = new ClusterConnectionStateMonitor(nodeConnector);
+        this.nodeConnectionScheduledFuture = nodeConnectionMonitor(this.nodeConnectionMonitorAction());
     }
 
     public static synchronized ClusterConnectionHub getInstance() throws WorkspaceInitializationException {
@@ -53,13 +59,14 @@ public class ClusterConnectionHub {
 
     protected synchronized void tryAddNodeConnection(NodeConnection nodeConnection) {
         nodeConnectionInMemoryStorage.add(nodeConnection);
-        CompletableFuture.supplyAsync(() -> clusterConnectionStateMonitor)
-                .thenAccept(connectionStateMonitor -> {
-                    ConnectionStateRequest connectionStateRequest = prepareNodeConnectionState(nodeConnection);
-                    ConnectionStateResponse nodeConnectionStateUpdated = connectionStateMonitor.checkWorkerState(connectionStateRequest);
-                    log.info("Status of worker node obtained: {}, we can update state of this one connection", nodeConnectionStateUpdated.getNodeConnectionState().name());
-                    this.nodeConnectionInMemoryStorage.update(nodeConnection, nodeConnectionStateUpdated);
-                });
+        CompletableFuture.runAsync(() -> requestNodeForConnectionState(nodeConnection));
+    }
+
+    private void requestNodeForConnectionState(NodeConnection nodeConnection) {
+        ConnectionStateRequest connectionStateRequest = prepareNodeConnectionState(nodeConnection);
+        ConnectionStateResponse nodeConnectionStateUpdated = clusterConnectionStateMonitor.checkWorkerState(connectionStateRequest);
+        log.info("Status of worker node obtained: {}, we can update state of this one connection", nodeConnectionStateUpdated.getNodeConnectionState());
+        this.nodeConnectionInMemoryStorage.update(nodeConnection, nodeConnectionStateUpdated);
     }
 
     private ConnectionStateRequest prepareNodeConnectionState(NodeConnection nodeConnection) {
@@ -70,4 +77,16 @@ public class ClusterConnectionHub {
                 nodeConnection.getTransferProtocol());
     }
 
+    private Runnable nodeConnectionMonitorAction() {
+        return () -> this.nodeConnectionInMemoryStorage.getAll()
+                .forEach(this::requestNodeForConnectionState);
+    }
+
+    private ScheduledFuture<?> nodeConnectionMonitor(Runnable action) {
+        int corePoolSize = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.thread-pool-execution", 1);
+        int initialDelay = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.refresh-init-delay-seconds", 0);
+        int period = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.refresh-interval-seconds", 5);
+        final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(corePoolSize);
+        return scheduledThreadPoolExecutor.scheduleAtFixedRate(action, initialDelay, period, TimeUnit.SECONDS);
+    }
 }
