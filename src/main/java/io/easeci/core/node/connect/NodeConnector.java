@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.*;
 import com.google.common.net.InetAddresses;
 
+import java.net.ConnectException;
 import java.util.concurrent.ExecutionException;
 
 import static io.easeci.core.node.NodeUtils.apiVersionPrefix;
@@ -48,10 +49,8 @@ public class NodeConnector {
             }
         } catch (InterruptedException e) {
             log.info("InterruptedException was thrown while sending request to worker node: {}", URL);
-            e.printStackTrace();
         } catch (ExecutionException e) {
             log.info("ExecutionException was thrown while sending request to worker node: {}", URL);
-            e.printStackTrace();
         }
         return ClusterConnectionStateMonitor.createResponseFailure(CONNECTION_ERROR, connectionStateRequest);
     }

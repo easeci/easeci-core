@@ -21,8 +21,23 @@ log:
   logfilePath:
   logSavingStrategy: EACH
 
+# Section of client connections
 connection:
+  # This value bellow defines how many clients can be connected to this one Master node.
   max-by-host: 10
 
 execution:
   thread-pool-execution: 1
+
+# In this properties section we can define values of actions in communication with whole easeci cluster
+cluster:
+  worker-node:
+    # Defines how many threads should be taken for refreshing state
+    # of each connected Worker Node
+    thread-pool-execution: 1
+    # Defines when Scheduler should start refreshing logic after application startup
+    # For default it is 0 because we want to check our worker nodes immediately after EaseCI Master startup.
+    refresh-init-delay-seconds: 0
+    # Defines interval for request to each created connections.
+    # Notice that mechanism will refresh state of all existing node connections
+    refresh-interval-seconds: 60

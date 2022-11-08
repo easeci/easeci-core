@@ -57,6 +57,14 @@ public class LocationUtils {
         return result;
     }
 
+    public static Integer retrieveFromGeneralInt(String refs, Integer defaultValue) {
+        Integer result = (Integer) ymlGet(getGeneralYmlLocation(), refs).getValue();
+        if (result == null) {
+            return defaultValue;
+        }
+        return result;
+    }
+
     public static Path getPluginsYmlLocation() {
         return Paths.get(getWorkspaceLocation()
                 .concat("/plugins.yml"));
