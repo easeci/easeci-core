@@ -1,5 +1,6 @@
 package io.easeci.core.workspace;
 
+import io.easeci.commons.YamlUtils;
 import io.easeci.core.workspace.easefiles.EasefileManager;
 
 import java.io.File;
@@ -58,11 +59,15 @@ public class LocationUtils {
     }
 
     public static Integer retrieveFromGeneralInt(String refs, Integer defaultValue) {
-        Integer result = (Integer) ymlGet(getGeneralYmlLocation(), refs).getValue();
-        if (result == null) {
+        try {
+            Integer result = (Integer) ymlGet(getGeneralYmlLocation(), refs).getValue();
+            if (result == null) {
+                return defaultValue;
+            }
+            return result;
+        } catch (YamlUtils.YamlException e) {
             return defaultValue;
         }
-        return result;
     }
 
     public static Path getPluginsYmlLocation() {

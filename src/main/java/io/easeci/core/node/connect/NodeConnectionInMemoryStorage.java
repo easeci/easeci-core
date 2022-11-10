@@ -1,6 +1,7 @@
 package io.easeci.core.node.connect;
 
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
+import io.easeci.core.workspace.LocationUtils;
 import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.easeci.core.workspace.cluster.ClusterConnectionIO;
 import lombok.extern.slf4j.Slf4j;
@@ -9,17 +10,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static io.easeci.core.workspace.LocationUtils.getClusterSettingsFileLocation;
+import static io.easeci.core.node.connect.NodeConnectionState.DEAD;
 import static java.util.Objects.isNull;
 
 @Slf4j
 class NodeConnectionInMemoryStorage {
-    private static final Path clusterSettingsFileLocation = getClusterSettingsFileLocation();
+    private Path clusterSettingsFileLocation;
     private List<NodeConnection> nodeConnections;
     private ClusterConnectionIO clusterConnectionIO;
 
-    public NodeConnectionInMemoryStorage(ClusterConnectionIO clusterConnectionIO) throws WorkspaceInitializationException {
+    public NodeConnectionInMemoryStorage(ClusterConnectionIO clusterConnectionIO, Path clusterSettingsFileLocation) throws WorkspaceInitializationException {
+        this.clusterSettingsFileLocation = clusterSettingsFileLocation;
         if (isNull(clusterConnectionIO)) {
             throw new WorkspaceInitializationException("NodeConnectionInMemoryStorage initialization exception");
         }
@@ -30,12 +33,18 @@ class NodeConnectionInMemoryStorage {
             nodeConnections = clusterConnectionIO.load(clusterSettingsFileLocation);
         } else {
             log.info("File for store cluster settings not exists here: {}, try to initialize", clusterSettingsFileLocation);
-            clusterConnectionIO.initialize(clusterSettingsFileLocation);
+            this.nodeConnections = clusterConnectionIO.initialize(clusterSettingsFileLocation);
         }
     }
 
     public List<NodeConnection> getAll() {
         return nodeConnections;
+    }
+
+    public List<NodeConnection> getAllRetryable() {
+        return nodeConnections.stream()
+                .filter(nodeConnection -> !DEAD.equals(nodeConnection.getNodeConnectionState()))
+                .collect(Collectors.toList());
     }
 
     public NodeConnection add(NodeConnection nodeConnection) {
@@ -51,7 +60,7 @@ class NodeConnectionInMemoryStorage {
 
     public NodeConnection update(NodeConnection old, ConnectionStateResponse updatedStateResponse) {
         final int index = nodeConnections.indexOf(old);
-        final NodeConnection nodeConnectionUpdated = old.mapNodeConnection(updatedStateResponse);
+        final NodeConnection nodeConnectionUpdated = old.mapNodeConnection(updatedStateResponse, determineRetryAttempts(old, updatedStateResponse));
         this.nodeConnections.set(index, nodeConnectionUpdated);
         try {
             clusterConnectionIO.save(clusterSettingsFileLocation, nodeConnections);
@@ -61,5 +70,24 @@ class NodeConnectionInMemoryStorage {
             log.error("Error occurred while save cluster file to: {}", clusterSettingsFileLocation, e);
             return old;
         }
+    }
+
+    private int determineRetryAttempts(NodeConnection old, ConnectionStateResponse updatedStateResponse) {
+        final int retryMaxAmount = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.refresh-max-retry-attempts", 10);
+        int retryCounter = old.getConnectionAttemptsCounter();
+        boolean wasConnectionAttemptEndsWithError = wasConnectionAttemptEndsWithError(updatedStateResponse);
+        if (wasConnectionAttemptEndsWithError) {
+            if (++retryCounter >= retryMaxAmount) {
+                log.info("Connection attempts {}/{} to worker node exceeded. Now worker node with uuid: {} is set as DEAD", retryCounter, retryMaxAmount, old.getNodeConnectionUuid());
+                updatedStateResponse.setNodeConnectionState(DEAD);
+            } else {
+                log.info("Connection attempt {}/{} for worker node with uuid: {}", retryCounter, retryMaxAmount, old.getNodeConnectionUuid());
+            }
+        }
+        return retryCounter;
+    }
+
+    private boolean wasConnectionAttemptEndsWithError(ConnectionStateResponse updatedStateResponse) {
+        return NodeConnectionState.errorStatuses().contains(updatedStateResponse.getNodeConnectionState());
     }
 }
