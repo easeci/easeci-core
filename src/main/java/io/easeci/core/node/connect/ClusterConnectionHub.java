@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.workspace.LocationUtils.getClusterSettingsFileLocation;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -28,7 +29,7 @@ public class ClusterConnectionHub {
 
     private ClusterConnectionHub() throws WorkspaceInitializationException {
         ClusterConnectionIO clusterConnectionIO = new DefaultClusterConnectionIO();
-        this.nodeConnectionInMemoryStorage = new NodeConnectionInMemoryStorage(clusterConnectionIO);
+        this.nodeConnectionInMemoryStorage = new NodeConnectionInMemoryStorage(clusterConnectionIO, getClusterSettingsFileLocation());
         this.nodeConnector = new NodeConnector();
         this.clusterConnectionStateMonitor = new ClusterConnectionStateMonitor(nodeConnector);
         this.nodeConnectionScheduledFuture = nodeConnectionMonitor();
@@ -83,7 +84,11 @@ public class ClusterConnectionHub {
         int initialDelay = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.refresh-init-delay-seconds", 0);
         int period = LocationUtils.retrieveFromGeneralInt("cluster.worker-node.refresh-interval-seconds", 5);
         final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(corePoolSize);
-        return scheduledThreadPoolExecutor.scheduleAtFixedRate(() -> this.nodeConnectionInMemoryStorage.getAll()
-                .forEach(this::requestNodeForConnectionState), initialDelay, period, TimeUnit.SECONDS);
+        return scheduledThreadPoolExecutor.scheduleAtFixedRate(this::invokeRequestNodeForConnectionState, initialDelay, period, TimeUnit.SECONDS);
+    }
+
+    protected void invokeRequestNodeForConnectionState() {
+        this.nodeConnectionInMemoryStorage.getAllRetryable()
+                .forEach(this::requestNodeForConnectionState);
     }
 }

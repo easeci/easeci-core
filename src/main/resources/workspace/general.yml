@@ -41,3 +41,5 @@ cluster:
     # Defines interval for request to each created connections.
     # Notice that mechanism will refresh state of all existing node connections
     refresh-interval-seconds: 60
+    # This parameter determines the maximum number of attempts to connect to the worker node.
+    refresh-max-retry-attempts: 10

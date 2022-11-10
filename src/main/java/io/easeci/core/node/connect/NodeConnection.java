@@ -23,6 +23,7 @@ public class NodeConnection {
     String domainName;
     String nodeName;
     TransferProtocol transferProtocol;
+    int connectionAttemptsCounter;
 
     @JsonCreator
     public NodeConnection() {
@@ -36,9 +37,10 @@ public class NodeConnection {
         this.domainName = null;
         this.nodeName = null;
         this.transferProtocol = null;
+        this.connectionAttemptsCounter = 0;
     }
 
-    public NodeConnection mapNodeConnection(ConnectionStateResponse nodeConnectionState) {
+    public NodeConnection mapNodeConnection(ConnectionStateResponse nodeConnectionState, int connectionAttemptsCounter) {
         return NodeConnection.builder()
                              .nodeConnectionUuid(this.nodeConnectionUuid)
                              .nodeConnectionState(nodeConnectionState.getNodeConnectionState())
@@ -50,6 +52,7 @@ public class NodeConnection {
                              .domainName(this.domainName)
                              .nodeName(this.nodeName)
                              .transferProtocol(this.transferProtocol)
+                             .connectionAttemptsCounter(connectionAttemptsCounter)
                              .build();
     }
 }

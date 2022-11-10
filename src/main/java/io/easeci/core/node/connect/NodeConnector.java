@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.*;
 import com.google.common.net.InetAddresses;
 
-import java.net.ConnectException;
 import java.util.concurrent.ExecutionException;
 
 import static io.easeci.core.node.NodeUtils.apiVersionPrefix;
