@@ -59,7 +59,7 @@ public class ClusterConnectionHub {
                 .collect(Collectors.toList()));
     }
 
-    protected synchronized void tryAddNodeConnection(NodeConnection nodeConnection) {
+    protected synchronized void tryAddNodeConnection(NodeConnection nodeConnection) throws NodeConnectionException {
         nodeConnectionInMemoryStorage.add(nodeConnection);
         CompletableFuture.runAsync(() -> requestNodeForConnectionState(nodeConnection));
     }

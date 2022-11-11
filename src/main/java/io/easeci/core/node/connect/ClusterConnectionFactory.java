@@ -14,7 +14,7 @@ public class ClusterConnectionFactory {
     private ClusterConnectionFactory() {
     }
 
-    public static NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) throws WorkspaceInitializationException {
+    public static NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) throws WorkspaceInitializationException, NodeConnectionException {
         boolean isTokenValid = connectTokenValid(nodeConnectionData.getConnectionToken());
         final Date dateNow = new Date();
         final NodeConnection nodeConnection = NodeConnection.builder()

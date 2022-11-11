@@ -1,12 +1,10 @@
 package io.easeci.api.node;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.easeci.api.Errorable;
 import io.easeci.core.node.connect.NodeConnectionState;
 import io.easeci.server.TransferProtocol;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Date;
 import java.util.UUID;
@@ -15,8 +13,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NodeConnectionResponse {
+public class NodeConnectionResponse extends Errorable {
     UUID nodeConnectionUuid;
     NodeConnectionState nodeConnectionState;
     Date connectionRequestOccurred;

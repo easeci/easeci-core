@@ -33,23 +33,23 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
 
     private EndpointDeclaration getConnectAndClusterDetails() {
         return EndpointDeclaration.builder()
-                                  .multiEndpointDeclaration(true)
-                                  .endpointUri(MAPPING)
-                                  .handler(ctx -> ctx.byMethod(byMethodSpec -> byMethodSpec.get(localContext -> Promise.value(clusterConnectionHub)
-                                                                                                                   .next(hub -> log.info("Fetching cluster details from server"))
-                                                                                                                   .map(ClusterConnectionHub::getClusterDetails)
-                                                                                                                   .map(SerializeUtils::write)
-                                                                                                                   .mapError(this::handleGetClusterDetailsException)
-                                                                                                                   .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))
-                                                                                       .post(localContext -> extractBody(ctx, NodeConnectionRequest.class)
-                                                                                                                   .next(request -> log.info("Node from IP address: {} is trying to connect to cluster", request.getNodeIp()))
-                                                                                                                   .map(this::mapRequest)
-                                                                                                                   .map(ClusterConnectionFactory::factorizeNodeConnection)
-                                                                                                                   .map(this::makeResponse)
-                                                                                                                   .map(SerializeUtils::write)
-                                                                                                                   .mapError(this::handleConnectionException)
-                                                                                                                   .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))))
-                                  .build();
+                .multiEndpointDeclaration(true)
+                .endpointUri(MAPPING)
+                .handler(ctx -> ctx.byMethod(byMethodSpec -> byMethodSpec.get(localContext -> Promise.value(clusterConnectionHub)
+                                .next(hub -> log.info("Fetching cluster details from server"))
+                                .map(ClusterConnectionHub::getClusterDetails)
+                                .map(SerializeUtils::write)
+                                .mapError(this::handleGetClusterDetailsException)
+                                .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))
+                        .post(localContext -> extractBody(ctx, NodeConnectionRequest.class)
+                                .next(request -> log.info("Node from IP address: {} is trying to connect to cluster", request.getNodeIp()))
+                                .map(this::mapRequest)
+                                .map(ClusterConnectionFactory::factorizeNodeConnection)
+                                .map(this::makeResponse)
+                                .map(SerializeUtils::write)
+                                .mapError(this::handleConnectionException)
+                                .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))))
+                .build();
     }
 
     private byte[] handleConnectionException(Throwable throwable) {
@@ -57,9 +57,12 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
             ApiRequestValidator.ValidationErrorSignal validationErrorSignal = (ApiRequestValidator.ValidationErrorSignal) throwable;
             return validationErrorSignal.getResponse();
         }
+        if (throwable instanceof NodeConnectionException) {
+            SerializeUtils.write(Errorable.withError(throwable));
+        }
         return SerializeUtils.write(NodeConnectionResponse.builder()
-                                                    .nodeConnectionState(NodeConnectionState.CONNECTION_ERROR)
-                                                    .build());
+                .nodeConnectionState(NodeConnectionState.CONNECTION_ERROR)
+                .build());
     }
 
     private byte[] handleGetClusterDetailsException(Throwable throwable) {
