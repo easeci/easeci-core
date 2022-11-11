@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.node.connect.NodeConnectionState.DEAD;
@@ -115,5 +117,22 @@ class NodeConnectionInMemoryStorage {
 
     private boolean wasConnectionAttemptEndsWithError(ConnectionStateResponse updatedStateResponse) {
         return NodeConnectionState.errorStatuses().contains(updatedStateResponse.getNodeConnectionState());
+    }
+
+    public boolean delete(UUID uuid) {
+        boolean isRemoved = this.nodeConnections.stream()
+                .filter(nodeConnection -> nodeConnection.getNodeConnectionUuid().equals(uuid))
+                .findFirst()
+                .map(nodeConnection -> this.nodeConnections.remove(nodeConnection))
+                .orElse(false);
+        if (isRemoved) {
+            try {
+                clusterConnectionIO.save(clusterSettingsFileLocation, nodeConnections);
+            } catch (IOException e) {
+                log.error("Error occurred while save cluster file", e);
+                return false;
+            }
+        }
+        return isRemoved;
     }
 }
