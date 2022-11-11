@@ -49,8 +49,11 @@ dependencies {
 
     compile group: 'org.zeroturnaround', name: 'zt-exec', version: '1.12'
 
-    implementation 'org.slf4j:slf4j-api:1.7.30'
-    implementation 'org.slf4j:slf4j-simple:1.7.30'
+    implementation 'org.slf4j:slf4j-api:2.0.3'
+    implementation 'org.slf4j:slf4j-log4j12:2.0.3'
+    implementation 'org.slf4j:slf4j-reload4j:2.0.3'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+
 
     implementation 'javax.validation:validation-api:2.0.1.Final'
     implementation 'org.hibernate.validator:hibernate-validator:6.1.4.Final'
