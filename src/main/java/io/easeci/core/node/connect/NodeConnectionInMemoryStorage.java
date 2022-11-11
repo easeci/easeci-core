@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import static io.easeci.core.node.connect.NodeConnectionState.DEAD;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 class NodeConnectionInMemoryStorage {
@@ -47,7 +48,8 @@ class NodeConnectionInMemoryStorage {
                 .collect(Collectors.toList());
     }
 
-    public NodeConnection add(NodeConnection nodeConnection) {
+    public NodeConnection add(NodeConnection nodeConnection) throws NodeConnectionException {
+        validateNodeConnection(nodeConnection);
         nodeConnections.add(nodeConnection);
         log.info("Connection added: {}", nodeConnection.toString());
         try {
@@ -56,6 +58,30 @@ class NodeConnectionInMemoryStorage {
             log.error("Error occurred while save cluster file to: {}", clusterSettingsFileLocation, e);
         }
         return nodeConnection;
+    }
+
+    private void validateNodeConnection(NodeConnection nodeConnection) throws NodeConnectionException {
+        if (nodeConnections.stream()
+                .anyMatch(conn -> conn.getNodeConnectionUuid().equals(nodeConnection.getNodeConnectionUuid()))) {
+            throw new NodeConnectionException("Connection with this nodeConnectionUuid just exists, uuid: " + nodeConnection.getNodeConnectionUuid());
+        }
+        if (nodeConnections.stream()
+                .anyMatch(conn -> nonNull(conn.getNodeIp())
+                        && nonNull(conn.getNodePort())
+                        && conn.getNodeIp().equals(nodeConnection.getNodeIp())
+                        && conn.getNodePort().equals(nodeConnection.getNodePort()))) {
+            throw new NodeConnectionException("Connection with node with this nodeIp or nodePort just exists, uuid: " + nodeConnection.getNodeConnectionUuid());
+        }
+        if (nodeConnections.stream()
+                .anyMatch(conn -> nonNull(conn.getNodeName()) && conn.getNodeName().equals(nodeConnection.getNodeName()))) {
+            throw new NodeConnectionException("Connection with nodeName just exists, uuid: " + nodeConnection.getNodeConnectionUuid());
+        }
+        if (nodeConnections.stream()
+                .anyMatch(conn -> nonNull(conn.getDomainName()) && nonNull(conn.getNodePort())
+                        && conn.getDomainName().equals(nodeConnection.getDomainName()) &&
+                        conn.getNodePort().equals(nodeConnection.getNodePort()))) {
+            throw new NodeConnectionException("Connection with domainName and nodePort just exists, uuid: " + nodeConnection.getNodeConnectionUuid());
+        }
     }
 
     public NodeConnection update(NodeConnection old, ConnectionStateResponse updatedStateResponse) {

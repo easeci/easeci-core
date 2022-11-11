@@ -17,7 +17,7 @@ class ClusterConnectionHubTest extends BaseWorkspaceContextTest {
 
     @Test
     @DisplayName("Should mark node connection as DEAD when retries attempts exceeded")
-    void shouldMarkNodeConnectionAsDEADWhenRetriesAttemptsExceeded() throws WorkspaceInitializationException {
+    void shouldMarkNodeConnectionAsDEADWhenRetriesAttemptsExceeded() throws WorkspaceInitializationException, NodeConnectionException {
         var clusterConnectionHub = ClusterConnectionHub.getInstance();
 
         var nodeConnection = NodeConnection.builder()
