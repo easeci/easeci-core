@@ -10,6 +10,8 @@ import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.easeci.server.EndpointDeclaration;
 import lombok.extern.slf4j.Slf4j;
 import ratpack.exec.Promise;
+import ratpack.http.HttpMethod;
+import ratpack.http.Status;
 
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
     @Override
     public List<EndpointDeclaration> endpoints() {
         return List.of(
+                deleteNodeFromCuster(),
                 getConnectAndClusterDetails()
         );
     }
@@ -49,6 +52,25 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
                                 .map(SerializeUtils::write)
                                 .mapError(this::handleConnectionException)
                                 .then(bytes -> localContext.getResponse().contentType(APPLICATION_JSON).send(bytes)))))
+                .build();
+    }
+
+    private EndpointDeclaration deleteNodeFromCuster() {
+        final String tokenName = "nodeConnectionUuid";
+        return EndpointDeclaration.builder()
+                .httpMethod(HttpMethod.DELETE)
+                .endpointUri(MAPPING + "/:" + tokenName)
+                .handler(ctx -> Promise.value(ctx.getPathTokens().get(tokenName))
+                        .next(nodeConnectionUuid -> log.info("Trying to delete cluster's node with uuid: {}", nodeConnectionUuid))
+                        .map(clusterConnectionHub::delete)
+                        .map(result -> result ? Status.OK.getCode() : Status.NOT_FOUND.getCode())
+                        .mapError(throwable -> {
+                            log.error("Error was thrown:", throwable);
+                            return Status.BAD_REQUEST.getCode();
+                        })
+                        .then(status -> ctx.getResponse().contentType(APPLICATION_JSON)
+                                .status(status)
+                                .send()))
                 .build();
     }
 

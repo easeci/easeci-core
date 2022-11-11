@@ -10,6 +10,7 @@ import io.easeci.core.workspace.cluster.ClusterConnectionIO;
 import io.easeci.core.workspace.cluster.DefaultClusterConnectionIO;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -90,5 +91,10 @@ public class ClusterConnectionHub {
     protected void invokeRequestNodeForConnectionState() {
         this.nodeConnectionInMemoryStorage.getAllRetryable()
                 .forEach(this::requestNodeForConnectionState);
+    }
+
+    public boolean delete(String nodeConnectionUuid) throws IllegalArgumentException {
+        UUID uuid = UUID.fromString(nodeConnectionUuid);
+        return this.nodeConnectionInMemoryStorage.delete(uuid);
     }
 }
