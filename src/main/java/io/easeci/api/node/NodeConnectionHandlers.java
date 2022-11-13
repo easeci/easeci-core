@@ -75,6 +75,7 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
     }
 
     private byte[] handleConnectionException(Throwable throwable) {
+        log.error("Error occurred while trying to attach worker node to cluster", throwable);
         if (throwable instanceof ApiRequestValidator.ValidationErrorSignal) {
             ApiRequestValidator.ValidationErrorSignal validationErrorSignal = (ApiRequestValidator.ValidationErrorSignal) throwable;
             return validationErrorSignal.getResponse();

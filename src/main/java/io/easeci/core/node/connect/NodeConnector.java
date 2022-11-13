@@ -23,7 +23,7 @@ public class NodeConnector {
         this.asyncHttpClientNoSsl = buildDefaultHttpClient();
     }
 
-    public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) {
+    public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
         final String URL = NodeUrlBuilder.buildUrl(connectionStateRequest);
         log.info("Checking connection from EaseCI Core node to: {}", URL);
         final byte[] payload = SerializeUtils.write(connectionStateRequest);
@@ -73,12 +73,12 @@ public class NodeConnector {
 
     public static class NodeUrlBuilder {
 
-        public static String buildUrl(ConnectionStateRequest connectionStateRequest) {
+        public static String buildUrl(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
             return getHostAddress(connectionStateRequest)
                     .concat(apiVersionPrefix().concat("/connection/state"));
         }
 
-        private static String getHostAddress(ConnectionStateRequest connectionStateRequest) {
+        private static String getHostAddress(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
             String host = "";
             if (nonNull(connectionStateRequest.getNodeIp()) && !connectionStateRequest.getNodeIp()
                                                                                       .isEmpty()) {
@@ -92,7 +92,7 @@ public class NodeConnector {
                 host = connectionStateRequest.getDomainName();
             }
             else {
-                throw new IllegalArgumentException("Cannot detect host address from object: " + connectionStateRequest);
+                throw new NodeConnectionException("Cannot detect host address from object: " + connectionStateRequest);
             }
 
             host = joinPort(connectionStateRequest, host);
