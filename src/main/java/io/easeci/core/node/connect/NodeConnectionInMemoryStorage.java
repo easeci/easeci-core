@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,7 +43,7 @@ class NodeConnectionInMemoryStorage {
         return nodeConnections;
     }
 
-    public List<NodeConnection> getAllRetryable() {
+    public List<NodeConnection> getAllRefreshable() {
         return nodeConnections.stream()
                 .filter(nodeConnection -> !DEAD.equals(nodeConnection.getNodeConnectionState()))
                 .collect(Collectors.toList());

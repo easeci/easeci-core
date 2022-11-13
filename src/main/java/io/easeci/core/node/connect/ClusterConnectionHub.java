@@ -66,10 +66,17 @@ public class ClusterConnectionHub {
     }
 
     private void requestNodeForConnectionState(NodeConnection nodeConnection) {
+        log.info("Sending request to node for check status, nodeName: {}", nodeConnection.getNodeName());
         ConnectionStateRequest connectionStateRequest = prepareNodeConnectionState(nodeConnection);
-        ConnectionStateResponse nodeConnectionStateUpdated = clusterConnectionStateMonitor.checkWorkerState(connectionStateRequest);
-        log.info("Status of worker node obtained: {}, we can update state of this one connection", nodeConnectionStateUpdated.getNodeConnectionState());
-        this.nodeConnectionInMemoryStorage.update(nodeConnection, nodeConnectionStateUpdated);
+        try {
+            ConnectionStateResponse nodeConnectionStateUpdated = clusterConnectionStateMonitor.checkWorkerState(connectionStateRequest);
+            log.info("Status of worker node obtained: {}, we can update state of this one connection", nodeConnectionStateUpdated.getNodeConnectionState());
+            this.nodeConnectionInMemoryStorage.update(nodeConnection, nodeConnectionStateUpdated);
+        } catch (NodeConnectionException e) {
+            log.error("Exception was thrown while try to send request to node",  e);
+            ConnectionStateResponse connectionStateResponse = ConnectionStateResponse.error(connectionStateRequest, NodeConnectionState.DEAD);
+            this.nodeConnectionInMemoryStorage.update(nodeConnection, connectionStateResponse);
+        }
     }
 
     private ConnectionStateRequest prepareNodeConnectionState(NodeConnection nodeConnection) {
@@ -89,7 +96,7 @@ public class ClusterConnectionHub {
     }
 
     protected void invokeRequestNodeForConnectionState() {
-        this.nodeConnectionInMemoryStorage.getAllRetryable()
+        this.nodeConnectionInMemoryStorage.getAllRefreshable()
                 .forEach(this::requestNodeForConnectionState);
     }
 

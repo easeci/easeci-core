@@ -18,4 +18,16 @@ public class ConnectionStateResponse {
     private String domainName;
     private String nodeName;
     private TransferProtocol transferProtocol;
+
+    public static ConnectionStateResponse error(ConnectionStateRequest connectionStateRequest, NodeConnectionState nodeConnectionState) {
+        return ConnectionStateResponse.of(
+                nodeConnectionState,
+                NodeProcessingState.UNKNOWN,
+                connectionStateRequest.getNodeIp(),
+                connectionStateRequest.getNodePort(),
+                connectionStateRequest.getDomainName(),
+                connectionStateRequest.getNodeName(),
+                connectionStateRequest.getTransferProtocol()
+        );
+    }
 }
