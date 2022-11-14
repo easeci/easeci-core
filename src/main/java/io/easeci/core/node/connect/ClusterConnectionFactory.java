@@ -5,17 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
-import static io.easeci.core.node.NodeUtils.readConnectToken;
 import static java.util.Objects.isNull;
 
 @Slf4j
 public class ClusterConnectionFactory {
 
-    private ClusterConnectionFactory() {
+    private ClusterInformation clusterInformation;
+
+    public ClusterConnectionFactory() {
+        this.clusterInformation = new ClusterInformationDefault();
     }
 
-    public static NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) throws WorkspaceInitializationException, NodeConnectionException {
-        boolean isTokenValid = connectTokenValid(nodeConnectionData.getConnectionToken());
+    public ClusterConnectionFactory(ClusterInformation clusterInformation) {
+        this.clusterInformation = clusterInformation;
+    }
+
+    public NodeConnection factorizeNodeConnection(NodeConnectionData nodeConnectionData) throws WorkspaceInitializationException, NodeConnectionException {
+        boolean isTokenValid = validateConnectionToken(nodeConnectionData.getConnectionToken());
         final Date dateNow = new Date();
         final NodeConnection nodeConnection = NodeConnection.builder()
                 .nodeConnectionUuid(UUID.randomUUID())
@@ -43,13 +49,12 @@ public class ClusterConnectionFactory {
         return nodeConnection;
     }
 
-    private static boolean connectTokenValid(String requestedConnectionToken) {
+    private boolean validateConnectionToken(String requestedConnectionToken) {
         if (isNull(requestedConnectionToken)) {
             return false;
         }
-        return readConnectToken()
+        return clusterInformation.readConnectToken()
                 .map(requestedConnectionToken::equals)
                 .orElseGet(() -> false);
     }
-
 }

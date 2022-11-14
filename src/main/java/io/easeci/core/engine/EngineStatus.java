@@ -1,6 +1,7 @@
 package io.easeci.core.engine;
 
-import io.easeci.core.node.NodeUtils;
+import io.easeci.core.node.connect.ClusterInformation;
+import io.easeci.core.node.connect.ClusterInformationDefault;
 import lombok.Getter;
 
 /**
@@ -37,8 +38,10 @@ public enum EngineStatus {
     private String errorCode;
     private String message;
 
+    private final ClusterInformation clusterInformation = new ClusterInformationDefault();
+
     EngineStatus(String message) {
-        this.applicationVersion = NodeUtils.version();
+        this.applicationVersion = clusterInformation.version();
         this.errorCode = this.name();
         this.message = message;
     }

@@ -50,6 +50,18 @@ public class LocationUtils {
         return result;
     }
 
+    public static String retrievePropertyFromGeneral(String refs, String defaultValue) {
+        try {
+            String result = (String) ymlGet(getGeneralYmlLocation(), refs).getValue();
+            if (result == null) {
+                return defaultValue;
+            }
+            return result;
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
     public static Integer retrieveFromGeneralInt(String refs) throws Throwable {
         Integer result = (Integer) ymlGet(getGeneralYmlLocation(), refs).getValue();
         if (result == null) {
