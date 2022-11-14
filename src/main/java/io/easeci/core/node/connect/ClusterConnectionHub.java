@@ -1,5 +1,6 @@
 package io.easeci.core.node.connect;
 
+import io.easeci.core.engine.pipeline.Executor;
 import io.easeci.core.node.connect.dto.ClusterDetailsResponse;
 import io.easeci.core.node.connect.dto.ClusterNodeDetails;
 import io.easeci.core.node.connect.dto.ConnectionStateRequest;
@@ -10,6 +11,7 @@ import io.easeci.core.workspace.cluster.ClusterConnectionIO;
 import io.easeci.core.workspace.cluster.DefaultClusterConnectionIO;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
@@ -21,7 +23,7 @@ import static io.easeci.core.workspace.LocationUtils.getClusterSettingsFileLocat
 import static java.util.Objects.isNull;
 
 @Slf4j
-public class ClusterConnectionHub {
+public class ClusterConnectionHub implements ClusterNodesProvider {
     private static ClusterConnectionHub instance;
     private NodeConnectionInMemoryStorage nodeConnectionInMemoryStorage;
     private NodeConnector nodeConnector;
@@ -96,12 +98,30 @@ public class ClusterConnectionHub {
     }
 
     protected void invokeRequestNodeForConnectionState() {
-        this.nodeConnectionInMemoryStorage.getAllRefreshable()
+        this.nodeConnectionInMemoryStorage.getAllAlive()
                 .forEach(this::requestNodeForConnectionState);
     }
 
     public boolean delete(String nodeConnectionUuid) throws IllegalArgumentException {
         UUID uuid = UUID.fromString(nodeConnectionUuid);
         return this.nodeConnectionInMemoryStorage.delete(uuid);
+    }
+
+    @Override
+    public Optional<Executor> findByNodeName(String nodeName) {
+        return nodeConnectionInMemoryStorage.getAllAlive()
+                .stream()
+                .filter(nodeConnection -> nodeConnection.getNodeName().equals(nodeName))
+                .findFirst()
+                .map(nodeConnection -> (Executor) nodeConnection);
+    }
+
+    @Override
+    public Optional<Executor> findByNodeConnectionUuid(UUID nodeConnectionUuid) {
+        return nodeConnectionInMemoryStorage.getAllAlive()
+                .stream()
+                .filter(nodeConnection -> nodeConnection.getNodeUuid().equals(nodeConnectionUuid))
+                .findFirst()
+                .map(nodeConnection -> (Executor) nodeConnection);
     }
 }

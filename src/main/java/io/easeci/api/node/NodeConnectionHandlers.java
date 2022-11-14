@@ -22,8 +22,10 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 public class NodeConnectionHandlers extends ExtensionHandlers {
     private final static String MAPPING = "api/v1/connection";
     private final ClusterConnectionHub clusterConnectionHub = ClusterConnectionHub.getInstance();
+    private final ClusterConnectionFactory clusterConnectionFactory;
 
     public NodeConnectionHandlers() throws PluginSystemCriticalException, WorkspaceInitializationException {
+        this.clusterConnectionFactory = new ClusterConnectionFactory();
     }
 
     @Override
@@ -47,7 +49,7 @@ public class NodeConnectionHandlers extends ExtensionHandlers {
                         .post(localContext -> extractBody(ctx, NodeConnectionRequest.class)
                                 .next(request -> log.info("Node from IP address: {} is trying to connect to cluster", request.getNodeIp()))
                                 .map(this::mapRequest)
-                                .map(ClusterConnectionFactory::factorizeNodeConnection)
+                                .map(clusterConnectionFactory::factorizeNodeConnection)
                                 .map(this::makeResponse)
                                 .map(SerializeUtils::write)
                                 .mapError(this::handleConnectionException)

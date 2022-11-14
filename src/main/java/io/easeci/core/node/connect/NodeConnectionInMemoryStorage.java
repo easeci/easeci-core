@@ -43,7 +43,7 @@ class NodeConnectionInMemoryStorage {
         return nodeConnections;
     }
 
-    public List<NodeConnection> getAllRefreshable() {
+    public List<NodeConnection> getAllAlive() {
         return nodeConnections.stream()
                 .filter(nodeConnection -> !DEAD.equals(nodeConnection.getNodeConnectionState()))
                 .collect(Collectors.toList());

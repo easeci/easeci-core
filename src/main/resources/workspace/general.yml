@@ -31,6 +31,25 @@ execution:
 
 # In this properties section we can define values of actions in communication with whole easeci cluster
 cluster:
+  # Here bellow we can find information about our Master Node.
+  # We can change this information but some of them has a crucial
+  # impact for application flow
+  master-node:
+    # Node name describe name, some sort of label
+    # We can change it for anything we want
+    node-name: "easeci-core-master"
+    # This is important in debug, issues etc.
+    # Developers should know which version user uses
+    application-version: "v0.0.1-dev"
+    # Some random nodeUuid, we use it in application,
+    # but we change it for anything we want
+    node-uuid: "ccd90032-6456-11ed-81ce-0242ac120002"
+    # This is crucial property and should not be changed in most cases.
+    # It determines which version of API will use Master with worker nodes.
+    api-version: "v1"
+    # Similar as above, we need to describe which version of API we are using now.
+    api-version-prefix: "/api/v1"
+
   worker-node:
     # Defines how many threads should be taken for refreshing state
     # of each connected Worker Node

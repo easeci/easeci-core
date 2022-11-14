@@ -1,6 +1,7 @@
 package io.easeci.core.node.connect;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import io.easeci.core.engine.pipeline.Executor;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import io.easeci.server.TransferProtocol;
 import lombok.*;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @Builder
 @ToString
 @AllArgsConstructor
-public class NodeConnection {
+public class NodeConnection implements Executor {
     UUID nodeConnectionUuid;
     NodeConnectionState nodeConnectionState;
     NodeProcessingState nodeProcessingState;
@@ -54,5 +55,10 @@ public class NodeConnection {
                              .transferProtocol(this.transferProtocol)
                              .connectionAttemptsCounter(connectionAttemptsCounter)
                              .build();
+    }
+
+    @Override
+    public UUID getNodeUuid() {
+        return nodeConnectionUuid;
     }
 }

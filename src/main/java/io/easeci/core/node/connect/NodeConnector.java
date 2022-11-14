@@ -10,14 +10,14 @@ import com.google.common.net.InetAddresses;
 
 import java.util.concurrent.ExecutionException;
 
-import static io.easeci.core.node.NodeUtils.apiVersionPrefix;
 import static io.easeci.core.node.connect.NodeConnectionState.CONNECTION_ERROR;
 import static java.util.Objects.nonNull;
 
 @Slf4j
 public class NodeConnector {
 
-    private AsyncHttpClient asyncHttpClientNoSsl;
+    private final AsyncHttpClient asyncHttpClientNoSsl;
+    private static final ClusterInformation clusterInformation = new ClusterInformationDefault();
 
     public NodeConnector() {
         this.asyncHttpClientNoSsl = buildDefaultHttpClient();
@@ -75,7 +75,7 @@ public class NodeConnector {
 
         public static String buildUrl(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
             return getHostAddress(connectionStateRequest)
-                    .concat(apiVersionPrefix().concat("/connection/state"));
+                    .concat(clusterInformation.apiVersionPrefix().concat("/connection/state"));
         }
 
         private static String getHostAddress(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {

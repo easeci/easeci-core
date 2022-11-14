@@ -1,7 +1,8 @@
 package io.easeci.core.cli;
 
 import io.easeci.commons.YamlUtils;
-import io.easeci.core.node.NodeUtils;
+import io.easeci.core.node.connect.ClusterInformation;
+import io.easeci.core.node.connect.ClusterInformationDefault;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import ratpack.exec.Promise;
@@ -22,11 +23,13 @@ public class ClientConnectionManager {
     private static ClientConnectionManager instance;
     private List<Connection> connections;
     private static int MAX_CONNECTION_BY_HOST;
+    private ClusterInformation clusterInformation;
 
     private ClientConnectionManager() {
         this.connections = new ArrayList<>(0);
         Map<?, ?> yamlValues = YamlUtils.ymlLoad(getGeneralYmlLocation());
         MAX_CONNECTION_BY_HOST = (Integer) YamlUtils.ymlGet(yamlValues, "connection.max-by-host").getValue();
+        this.clusterInformation = new ClusterInformationDefault();
     }
 
     public static ClientConnectionManager getInstance() {
@@ -65,7 +68,7 @@ public class ClientConnectionManager {
         }).next(connection -> log.info("=====> Remote connection established: {}", connection.toString()))
                 .map(connection -> {
                     ConnectionStateResponse response = ConnectionStateResponse.of(
-                            NodeUtils.nodeName(),
+                            clusterInformation.nodeName(),
                             connection.getConnectionUuid(),
                             connection.getUsername(),
                             connection.getConnectionState()

@@ -6,7 +6,9 @@ import io.easeci.core.engine.easefile.parser.analyse.SyntaxError;
 import io.easeci.core.engine.pipeline.ExecutingStrategy;
 import io.easeci.core.engine.pipeline.Executor;
 import io.easeci.core.engine.pipeline.ExecutorConfiguration;
-import io.easeci.core.node.NodesManager;
+import io.easeci.core.node.connect.ClusterConnectionHub;
+import io.easeci.core.node.connect.ClusterNodesProvider;
+import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.Data;
@@ -28,11 +30,15 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
     public static final String EXECUTOR_NOT_PRESENT_ERROR_TITLE = "At least one executor is required";
 
     private final ObjectMapper objectMapper;
-    private final NodesManager nodesManager;
+    private ClusterNodesProvider clusterNodesProvider;
 
     public ExecutorProcessor(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-        this.nodesManager = new NodesManager();
+        try {
+            this.clusterNodesProvider = ClusterConnectionHub.getInstance();
+        } catch (WorkspaceInitializationException e) {
+            log.error("Critical error occurred while ClusterConnectionHub usage", e);
+        }
     }
 
     @Override
@@ -82,25 +88,21 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
         // nodeUuids have the highest priority
         if (nonNull(executorSection.getNodeUuids()) && !executorSection.getNodeUuids().isEmpty()) {
             return executorSection.nodeUuids.stream()
-                    .map(Executor::of)
+                    .map(nodeUuid -> clusterNodesProvider.findByNodeConnectionUuid(nodeUuid).orElse(null))
                     .collect(Collectors.toList());
         }
         // names have lower priority - select only when there is no nodeUuids typed
         if (nonNull(executorSection.getNames()) && !executorSection.getNames().isEmpty()) {
             return executorSection.names.stream()
-                    .map(nodesManager::resolveNodeByName)
-                    .map(Executor::of)
+                    .map(nodeName -> clusterNodesProvider.findByNodeName(nodeName).orElse(null))
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
     private List<SyntaxError> assembleConfiguration(ExecutorConfiguration executorConfiguration, ExecutingStrategy executingStrategy,
-                                              ExecutorSection executorSection, Line line) {
-        if (ExecutingStrategy.MASTER.equals(executingStrategy)) {
-            executorConfiguration.setExecutingStrategy(ExecutingStrategy.MASTER);
-            executorConfiguration.setPredefinedExecutors(null);
-        }
+                                                    ExecutorSection executorSection, Line line) {
         if (ExecutingStrategy.AUTO.equals(executingStrategy)) {
             executorConfiguration.setExecutingStrategy(ExecutingStrategy.AUTO);
             executorConfiguration.setPredefinedExecutors(null);
