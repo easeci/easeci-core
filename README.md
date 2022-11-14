@@ -44,11 +44,11 @@ in any language that compiles into the jar archive and meets the requirements de
 
 ## Run EaseCI core
 EaseCI can be run with few ways.
-#### Docker
+#### Docker (recommended)
 - Firstly build your docker image or download one from Docker Hub (available in future)<br>
 <code>docker build --tag easeci:1.0 .</code>
 - Run a new container from created image before<br>
-<code>docker run -td -p 9000:9000 <image></code>
+<code>docker run -d --name easeci-core -p 9000:9000 -v /home/${whoami}/easeci:/opt/app/workspace easeci-core:latest <image></code>
 - Test application working, check plugin state for example<br>
 <code>curl -X GET localhost:9000/plugin/state</code>
 - In working with EaseCI, it's convenient to use data volume<br>
