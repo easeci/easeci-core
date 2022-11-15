@@ -1,6 +1,7 @@
 package io.easeci.core.node.connect;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.easeci.core.engine.pipeline.Executor;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import io.easeci.server.TransferProtocol;
@@ -58,6 +59,7 @@ public class NodeConnection implements Executor {
     }
 
     @Override
+    @JsonIgnore
     public UUID getNodeUuid() {
         return nodeConnectionUuid;
     }

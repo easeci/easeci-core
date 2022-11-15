@@ -51,8 +51,6 @@ EaseCI can be run with few ways.
 <code>docker run -d --name easeci-core -p 9000:9000 -v /home/${whoami}/easeci:/opt/app/workspace easeci-core:latest <image></code>
 - Test application working, check plugin state for example<br>
 <code>curl -X GET localhost:9000/plugin/state</code>
-- In working with EaseCI, it's convenient to use data volume<br>
-<code>docker run --rm -td -p 9000:9000 --name easeci -v $HOME/docker/workspace:/usr/lib/easeci/workspace <image></code>  
 #### Virtual Machine (by Vagrant and Virtualbox)
 - You must have installed Vagrant and Virtualbox
 - Next clone source code <code>git clone --depth=5 --branch=master https://github.com/easeci/easeci-core.git </code>
