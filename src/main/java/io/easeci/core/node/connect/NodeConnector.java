@@ -16,15 +16,18 @@ import static java.util.Objects.nonNull;
 @Slf4j
 public class NodeConnector {
 
-    private final AsyncHttpClient asyncHttpClientNoSsl;
-    private static final ClusterInformation clusterInformation = new ClusterInformationDefault();
+    private AsyncHttpClient asyncHttpClientNoSsl;
+    private ClusterInformation clusterInformation;
+    private NodeUrlBuilder nodeUrlBuilder;
 
     public NodeConnector() {
         this.asyncHttpClientNoSsl = buildDefaultHttpClient();
+        this.clusterInformation = new ClusterInformationDefault();
+        this.nodeUrlBuilder = new NodeUrlBuilder(clusterInformation);
     }
 
     public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
-        final String URL = NodeUrlBuilder.buildUrl(connectionStateRequest);
+        final String URL = nodeUrlBuilder.buildUrl(connectionStateRequest);
         log.info("Checking connection from EaseCI Core node to: {}", URL);
         final byte[] payload = SerializeUtils.write(connectionStateRequest);
         final AsyncHttpClient asyncHttpClient = chooseClient(connectionStateRequest.getTransferProtocol());
@@ -72,13 +75,18 @@ public class NodeConnector {
     }
 
     public static class NodeUrlBuilder {
+        private ClusterInformation clusterInformation;
 
-        public static String buildUrl(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
+        public NodeUrlBuilder(ClusterInformation clusterInformation) {
+            this.clusterInformation = clusterInformation;
+        }
+
+        public String buildUrl(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
             return getHostAddress(connectionStateRequest)
                     .concat(clusterInformation.apiVersionPrefix().concat("/connection/state"));
         }
 
-        private static String getHostAddress(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
+        private String getHostAddress(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
             String host = "";
             if (nonNull(connectionStateRequest.getNodeIp()) && !connectionStateRequest.getNodeIp()
                                                                                       .isEmpty()) {
@@ -100,7 +108,7 @@ public class NodeConnector {
             return host;
         }
 
-        private static String joinProtocol(ConnectionStateRequest connectionStateRequest, String host) {
+        private String joinProtocol(ConnectionStateRequest connectionStateRequest, String host) {
             if (nonNull(connectionStateRequest.getTransferProtocol())) {
                 return connectionStateRequest.getTransferProtocol()
                                              .prefix()
@@ -112,7 +120,7 @@ public class NodeConnector {
             }
         }
 
-        private static String joinPort(ConnectionStateRequest connectionStateRequest, String host) {
+        private String joinPort(ConnectionStateRequest connectionStateRequest, String host) {
             if (nonNull(connectionStateRequest.getNodePort()) && !connectionStateRequest.getNodePort()
                                                                                         .isEmpty()) {
                 return host.concat(":")

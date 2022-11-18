@@ -45,7 +45,7 @@ class NodeConnectionInMemoryStorageTest {
         // update node connection
         storage.update(node3, response);
 
-        var allRetryableNodeConnections = storage.getAllRetryable();
+        var allRetryableNodeConnections = storage.getAllAlive();
 
         assertEquals(2, allRetryableNodeConnections.size());
     }
@@ -205,4 +205,11 @@ class NodeConnectionInMemoryStorageTest {
         assertAll(() -> assertDoesNotThrow(() -> storage.add(invalidNodeConnection)),
                 () -> assertEquals(2, storage.getAll().size()));
     }
+
+    @Test
+    @DisplayName("Should allow to add node connection when domainName is blank and nodePort is same as exists with another blank domainName")
+    void shouldAllowToAddNodeConnectionWhenDomainNameIsBlankAndNodePortIsSameAsExistsWithAnotherBlankDomainName() {
+
+    }
+
 }

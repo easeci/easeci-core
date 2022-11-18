@@ -1,5 +1,6 @@
 package io.easeci.core.engine.easefile.parser;
 
+import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.engine.easefile.parser.parts.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,7 @@ import java.lang.reflect.Field;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class ParserFactoryTest {
+class ParserFactoryTest extends BaseWorkspaceContextTest {
 
     @Test
     @DisplayName("Should create correctly initialized object")

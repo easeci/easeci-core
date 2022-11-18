@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WorkspaceLoaderTest extends BaseWorkspaceContextTest {
 
-    static final int EASEFILE_LENGTH = 1974;
+    static final int EASEFILE_LENGTH = 1969;
 
     @Test
     @DisplayName("Should correctly load Easefile to string without any exception")

@@ -41,6 +41,11 @@ public class ExecutorProcessor implements PipelinePartProcessor<ExecutorConfigur
         }
     }
 
+    public ExecutorProcessor(ObjectMapper objectMapper, ClusterNodesProvider clusterNodesProvider) {
+        this.objectMapper = objectMapper;
+        this.clusterNodesProvider = clusterNodesProvider;
+    }
+
     @Override
     public Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> process(Supplier<List<Line>> easefilePartSupplier) {
         final List<Line> lines = easefilePartSupplier.get();

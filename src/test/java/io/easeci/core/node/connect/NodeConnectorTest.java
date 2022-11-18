@@ -5,6 +5,7 @@ import io.easeci.server.TransferProtocol;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 
 import java.util.stream.Stream;
 
@@ -14,7 +15,6 @@ class NodeConnectorTest {
 
     static Stream<Arguments> arguments() {
         return Stream.of(
-
                 Arguments.arguments("http://worker-01.easeci.io/api/v1/connection/state",
                         ConnectionStateRequest.of(
                                 null,
@@ -82,8 +82,11 @@ class NodeConnectorTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void shouldCorrectlyBuildUrl(String expectedUrl, ConnectionStateRequest request) {
-        String URL = NodeConnector.NodeUrlBuilder.buildUrl(request);
+    void shouldCorrectlyBuildUrl(String expectedUrl, ConnectionStateRequest request) throws NodeConnectionException {
+        ClusterInformation clusterInformation = Mockito.mock(ClusterInformation.class);
+        Mockito.when(clusterInformation.apiVersionPrefix()).thenReturn("/api/v1");
+        NodeConnector.NodeUrlBuilder nodeUrlBuilder = new NodeConnector.NodeUrlBuilder(clusterInformation);
+        String URL = nodeUrlBuilder.buildUrl(request);
         assertEquals(expectedUrl, URL);
     }
 
