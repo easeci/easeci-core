@@ -33,7 +33,10 @@ class DefaultPluginConfig implements PluginConfig, PluginStrategy {
 
     @Override
     public PluginsConfigFile load() throws PluginSystemCriticalException {
-        this.pluginsConfigFile = SerializeUtils.read(this.pluginConfigYmlPath.toFile(), PluginsConfigFile.class).orElseThrow();
+        this.pluginsConfigFile = SerializeUtils.read(this.pluginConfigYmlPath.toFile(), PluginsConfigFile.class).orElseGet(() -> null);
+        if (isNull(this.pluginsConfigFile)) {
+            return null;
+        }
         return uniquePluginConfigCheck(this.pluginsConfigFile);
     }
 

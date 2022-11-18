@@ -5,19 +5,24 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.engine.easefile.parser.analyse.SyntaxError;
 import io.easeci.core.engine.pipeline.ExecutingStrategy;
+import io.easeci.core.engine.pipeline.Executor;
 import io.easeci.core.engine.pipeline.ExecutorConfiguration;
+import io.easeci.core.node.connect.ClusterNodesProvider;
 import io.vavr.Tuple2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static io.easeci.core.engine.easefile.parser.Utils.*;
 import static io.easeci.core.engine.easefile.parser.parts.ExecutorProcessor.PARSING_LINE_ERROR_TITLE;
 import static io.easeci.core.engine.easefile.parser.parts.Feeder.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 class ExecutorProcessorTest extends BaseWorkspaceContextTest {
 
@@ -82,12 +87,15 @@ class ExecutorProcessorTest extends BaseWorkspaceContextTest {
     @DisplayName("Should correct parse simple content of executor part with EACH strategy and 'names' typed")
     void parseEachSuccessTest() {
         Supplier<List<Line>> linesSupplier = provideCorrectExecutor3();
+        ClusterNodesProvider clusterNodesProvider = Mockito.mock(ClusterNodesProvider.class);
+        Mockito.when(clusterNodesProvider.findByNodeName(any())).thenReturn(Optional.of(UUID::randomUUID));
 
-        ExecutorProcessor executorProcessor = new ExecutorProcessor(objectMapper);
+        ExecutorProcessor executorProcessor = new ExecutorProcessor(objectMapper, clusterNodesProvider);
         Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> processingResult = executorProcessor.process(linesSupplier);
 
         ExecutorConfiguration executorConfiguration = processingResult._1().get();
         assertAll(
+                () -> assertNotNull(executorConfiguration.getPredefinedExecutors()),
                 () -> assertEquals(2, executorConfiguration.getPredefinedExecutors().size()),
                 () -> assertEquals(ExecutingStrategy.EACH, executorConfiguration.getExecutingStrategy()));
     }
@@ -118,20 +126,6 @@ class ExecutorProcessorTest extends BaseWorkspaceContextTest {
         assertAll(
                 () -> assertEquals(3, executorConfiguration.getPredefinedExecutors().size()),
                 () -> assertEquals(ExecutingStrategy.ONE_OF, executorConfiguration.getExecutingStrategy()));
-    }
-
-    @Test
-    @DisplayName("Should correct parse simple content of executor part with MASTER strategy")
-    void parseMasterSuccessTest() {
-        Supplier<List<Line>> linesSupplier = provideCorrectExecutor6();
-
-        ExecutorProcessor executorProcessor = new ExecutorProcessor(objectMapper);
-        Tuple2<Optional<ExecutorConfiguration>, List<SyntaxError>> processingResult = executorProcessor.process(linesSupplier);
-
-        ExecutorConfiguration executorConfiguration = processingResult._1().get();
-        assertAll(
-                () -> assertNull(executorConfiguration.getPredefinedExecutors()),
-                () -> assertEquals(ExecutingStrategy.MASTER, executorConfiguration.getExecutingStrategy()));
     }
 
     @Test

@@ -32,10 +32,10 @@ class FileTreeWalkerTest {
                 () -> assertEquals(2, rootNode.getChildNodes().size()),
                 () -> assertEquals(NodeType.DIRECTORY, rootNode.getNodeType()),
                 () -> assertEquals(1, rootNode.getChildNodes().get(0).getChildNodes().size()),
-                () -> assertEquals(NodeType.DIRECTORY, rootNode.getChildNodes().get(0).getChildNodes().get(0).getNodeType()),
-                () -> assertTrue(rootNode.getChildNodes().get(0).getChildNodes().get(0).hasNext()),
+                () -> assertEquals(NodeType.FILE, rootNode.getChildNodes().get(0).getChildNodes().get(0).getNodeType()),
+                () -> assertTrue(rootNode.getChildNodes().get(0).hasNext()),
                 () -> assertEquals(Path.of(System.getProperty("user.dir") + "/src/test/java/commons/WorkspaceTestUtils.java"),
-                                    rootNode.getChildNodes().get(1).getChildNodes().get(0).getNodePath()));
+                                    rootNode.getChildNodes().get(0).getChildNodes().get(0).getNodePath()));
     }
 
     @Test
