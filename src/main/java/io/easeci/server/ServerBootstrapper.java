@@ -57,7 +57,10 @@ public class ServerBootstrapper {
         if (isNull(this.internalHandlers)) return;
         this.internalHandlers.stream()
                 .flatMap(internal -> internal.endpoints().stream())
-                .forEach(declaration -> attach(chain, declaration));
+                .forEach(declaration -> {
+                    log.info("Registering endpoint, HTTP method: {}, URI: {}", declaration.getHttpMethod(), declaration.getEndpointUri());
+                    attach(chain, declaration);
+                });
     }
 
     private void registerExternalEndpoints(Chain chain) {
