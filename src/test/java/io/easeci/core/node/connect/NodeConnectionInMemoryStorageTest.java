@@ -208,8 +208,74 @@ class NodeConnectionInMemoryStorageTest {
 
     @Test
     @DisplayName("Should allow to add node connection when domainName is blank and nodePort is same as exists with another blank domainName")
-    void shouldAllowToAddNodeConnectionWhenDomainNameIsBlankAndNodePortIsSameAsExistsWithAnotherBlankDomainName() {
+    void shouldAllowToAddNodeConnectionWhenDomainNameIsBlankAndNodePortIsSameAsExistsWithAnotherBlankDomainName() throws WorkspaceInitializationException, NodeConnectionException {
+        var clusterConnectionIO = Mockito.mock(ClusterConnectionIO.class);
+        var path = Paths.get("/tmp/settings.json");
+        var storage = new NodeConnectionInMemoryStorage(clusterConnectionIO, path);
+        var domainName = "";
+        var firstIp = "43.34.23.192";
+        var secondIp = "143.34.25.196";
+        var nodePort = "8080";
+
+        var nodeConnection = NodeConnection.builder()
+                .nodeConnectionUuid(UUID.randomUUID())
+                .domainName(domainName)
+                .nodeIp(firstIp)
+                .nodePort(nodePort)
+                .build();
+
+        var secondNodeConnection = NodeConnection.builder()
+                .nodeConnectionUuid(UUID.randomUUID())
+                .domainName(domainName)
+                .nodeIp(secondIp)
+                .nodePort(nodePort)
+                .build();
+
+        storage.add(nodeConnection);
+
+        assertAll(() -> assertDoesNotThrow(() -> storage.add(secondNodeConnection)),
+                () -> assertEquals(2, storage.getAll().size()));
+    }
+
+    @Test
+    @DisplayName("Should not throw exception when one of status is null")
+    void shouldNotThrowExceptionWhenOneOfStatusIsNull() {
+        var nodeConnection = NodeConnection.builder()
+                .nodeConnectionUuid(UUID.randomUUID())
+                .domainName("easeci.pl")
+                .nodePort("9000")
+                .build();
+
+        assertAll(() -> assertDoesNotThrow(nodeConnection::isReadyToWork),
+                () -> assertFalse(nodeConnection::isReadyToWork));
 
     }
 
+    @Test
+    @DisplayName("Should return true when NodeConnectionState is ESTABLISHED and NodeProcessingState is IDLE")
+    void shouldReturnTrueWhenIsIdleAndEstablished() {
+        var nodeConnection = NodeConnection.builder()
+                .nodeConnectionUuid(UUID.randomUUID())
+                .nodeProcessingState(NodeProcessingState.IDLE)
+                .nodeConnectionState(NodeConnectionState.ESTABLISHED)
+                .domainName("easeci.pl")
+                .nodePort("9000")
+                .build();
+
+        assertAll(() -> assertTrue(nodeConnection::isReadyToWork));
+    }
+
+    @Test
+    @DisplayName("Should return false when NodeConnectionState is ESTABLISHED and NodeProcessingState is BUSY")
+    void shouldReturnFalseWhenIsBusyAndEstablished() {
+        var nodeConnection = NodeConnection.builder()
+                .nodeConnectionUuid(UUID.randomUUID())
+                .nodeProcessingState(NodeProcessingState.BUSY)
+                .nodeConnectionState(NodeConnectionState.ESTABLISHED)
+                .domainName("easeci.pl")
+                .nodePort("9000")
+                .build();
+
+        assertAll(() -> assertFalse(nodeConnection::isReadyToWork));
+    }
 }

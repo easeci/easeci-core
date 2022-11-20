@@ -10,6 +10,9 @@ import lombok.*;
 import java.util.Date;
 import java.util.UUID;
 
+import static io.easeci.core.node.connect.NodeConnectionState.ESTABLISHED;
+import static io.easeci.core.node.connect.NodeProcessingState.IDLE;
+
 @Value
 @Builder
 @ToString
@@ -62,5 +65,10 @@ public class NodeConnection implements Executor {
     @JsonIgnore
     public UUID getNodeUuid() {
         return nodeConnectionUuid;
+    }
+
+    public boolean isReadyToWork() {
+       return ESTABLISHED.equals(this.getNodeConnectionState()) &&
+               IDLE.equals(this.getNodeProcessingState());
     }
 }

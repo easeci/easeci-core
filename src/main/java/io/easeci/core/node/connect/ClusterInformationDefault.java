@@ -1,6 +1,7 @@
 package io.easeci.core.node.connect;
 
 import io.easeci.core.workspace.LocationUtils;
+import io.easeci.server.TransferProtocol;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -11,6 +12,11 @@ import java.util.UUID;
 
 @Slf4j
 public class ClusterInformationDefault implements ClusterInformation {
+
+    @Override
+    public String domainName() {
+        return LocationUtils.retrievePropertyFromGeneral("cluster.master-node.node-name", "");
+    }
 
     @Override
     public String nodeName() {
@@ -50,5 +56,11 @@ public class ClusterInformationDefault implements ClusterInformation {
             log.error("Exception occurred while reading connection token", e);
             return Optional.empty();
         }
+    }
+
+    @Override
+    public TransferProtocol transferProtocol() {
+        String protocol = LocationUtils.retrievePropertyFromGeneral("cluster.master-node.transfer-protocol", "HTTP");
+        return TransferProtocol.valueOf(protocol);
     }
 }
