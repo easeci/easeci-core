@@ -12,6 +12,7 @@ import io.easeci.core.workspace.cluster.DefaultClusterConnectionIO;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
@@ -19,6 +20,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static io.easeci.core.node.connect.NodeConnectionState.ESTABLISHED;
+import static io.easeci.core.node.connect.NodeProcessingState.IDLE;
 import static io.easeci.core.workspace.LocationUtils.getClusterSettingsFileLocation;
 import static java.util.Objects.isNull;
 
@@ -123,5 +126,13 @@ public class ClusterConnectionHub implements ClusterNodesProvider {
                 .filter(nodeConnection -> nodeConnection.getNodeUuid().equals(nodeConnectionUuid))
                 .findFirst()
                 .map(nodeConnection -> (Executor) nodeConnection);
+    }
+
+    @Override
+    public Set<NodeConnection> getReadyToWorkNodes() {
+        return nodeConnectionInMemoryStorage.getAllAlive()
+                .stream()
+                .filter(NodeConnection::isReadyToWork)
+                .collect(Collectors.toSet());
     }
 }

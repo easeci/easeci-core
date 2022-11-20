@@ -13,7 +13,9 @@ import io.easeci.core.engine.scheduler.DefaultPipelineScheduler;
 import io.easeci.core.engine.scheduler.PipelineScheduler;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
+import io.easeci.core.node.connect.ClusterConnectionHub;
 import io.easeci.core.workspace.LocationUtils;
+import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.easeci.core.workspace.projects.ProjectManager;
 import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.core.workspace.vars.GlobalVariablesManager;
@@ -76,7 +78,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.globalVariablesFinder = GlobalVariablesManager.getInstance();
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
-        this.pipelineScheduler = new DefaultPipelineScheduler();
+        try {
+            this.pipelineScheduler = new DefaultPipelineScheduler(ClusterConnectionHub.getInstance());
+        } catch (WorkspaceInitializationException e) {
+            log.error("Error occurred while initialization of PipelineScheduler", e);
+        }
         this.pipelineContextReadinessValidator = new PipelineContextReadinessValidator();
         this.maxPipelineContextLivenessTime = this.retrieveClt();
         this.pipelineContextLivenessCheckInterval = this.retrieveLivenessCheckInterval();
@@ -95,7 +101,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.globalVariablesFinder = GlobalVariablesManager.getInstance();
         this.scriptAssembler = new PythonScriptAssembler();
         this.pipelineContextHistory = new PipelineContextHistoryDefault();
-        this.pipelineScheduler = new DefaultPipelineScheduler();
+        try {
+            this.pipelineScheduler = new DefaultPipelineScheduler(ClusterConnectionHub.getInstance());
+        } catch (WorkspaceInitializationException e) {
+            log.error("Error occurred while initialization of PipelineScheduler", e);
+        }
         this.pipelineContextReadinessValidator = new PipelineContextReadinessValidator();
         this.maxPipelineContextLivenessTime = this.retrieveClt();
         this.pipelineContextLivenessCheckInterval = this.retrieveLivenessCheckInterval();
@@ -220,7 +230,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
             log.info("Pipeline with pipelineContextId: {}, is aborted now by critical system error", event.getPipelineContextId());
             this.closeContext(event.getPipelineContextId());
         }
-        // only when job was CLOSED by easeci-worker - pipeline was executed
+        // only when job was CLOSED by easeci-worker/scheduler - pipeline was executed
         else if (PipelineState.CLOSED.equals(event.getPipelineState())) {
             PipelineContextInfo pipelineContextInfo = (PipelineContextInfo) event;
             this.contextList.stream()

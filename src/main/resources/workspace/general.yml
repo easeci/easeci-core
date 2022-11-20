@@ -49,6 +49,11 @@ cluster:
     api-version: "v1"
     # Similar as above, we need to describe which version of API we are using now.
     api-version-prefix: "/api/v1"
+    # Defines what protocol Master nodes accepts, HTTP in default
+    transfer-protocol: "HTTP"
+    # Here we need to configure domain name or IP with port of our master node.
+    # This is required for communication (callbacks or web socket for logging) from worker nodes to master
+    domain-name: "localhost"
 
   worker-node:
     # Defines how many threads should be taken for refreshing state

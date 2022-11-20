@@ -24,7 +24,7 @@ class NodeConnectionInMemoryStorage {
     private List<NodeConnection> nodeConnections;
     private ClusterConnectionIO clusterConnectionIO;
 
-    public NodeConnectionInMemoryStorage(ClusterConnectionIO clusterConnectionIO, Path clusterSettingsFileLocation) throws WorkspaceInitializationException {
+    NodeConnectionInMemoryStorage(ClusterConnectionIO clusterConnectionIO, Path clusterSettingsFileLocation) throws WorkspaceInitializationException {
         this.clusterSettingsFileLocation = clusterSettingsFileLocation;
         if (isNull(clusterConnectionIO)) {
             throw new WorkspaceInitializationException("NodeConnectionInMemoryStorage initialization exception");
@@ -79,7 +79,7 @@ class NodeConnectionInMemoryStorage {
             throw new NodeConnectionException("Connection with nodeName just exists, uuid: " + nodeConnection.getNodeConnectionUuid());
         }
         if (nodeConnections.stream()
-                .anyMatch(conn -> nonNull(conn.getDomainName()) && nonNull(conn.getNodePort())
+                .anyMatch(conn -> nonNull(conn.getDomainName()) && !conn.getDomainName().isEmpty() && nonNull(conn.getNodePort())
                         && conn.getDomainName().equals(nodeConnection.getDomainName()) &&
                         conn.getNodePort().equals(nodeConnection.getNodePort()))) {
             throw new NodeConnectionException("Connection with domainName and nodePort just exists, uuid: " + nodeConnection.getNodeConnectionUuid());
