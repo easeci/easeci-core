@@ -130,6 +130,7 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
 
     public void closeLogging() {
         this.logBufferFileManager.executorService.shutdown();
+        this.logBufferFileManager.closeFile();
     }
 
     public enum Options {

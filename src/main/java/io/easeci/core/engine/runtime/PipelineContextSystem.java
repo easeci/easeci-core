@@ -223,10 +223,20 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         // only when job was CLOSED by easeci-worker - pipeline was executed
         else if (PipelineState.CLOSED.equals(event.getPipelineState())) {
             PipelineContextInfo pipelineContextInfo = (PipelineContextInfo) event;
-            this.contextList.removeIf(pipelineContext -> pipelineContext.getPipelineContextId().equals(pipelineContextInfo.getPipelineContextId()));
-            log.info("PipelineContext with id: {} ends his life right now. Started at: {}, ends at: {}", pipelineContextInfo.getPipelineContextId(),
-                                                                                                         pipelineContextInfo.getCreationDate(),
-                                                                                                         pipelineContextInfo.getFinishDate());
+            this.contextList.stream()
+                            .filter(pipelineContext -> pipelineContext.getPipelineContextId().equals(pipelineContextInfo.getPipelineContextId()))
+                            .findAny()
+                            .ifPresent(pipelineContext -> {
+                                pipelineContext.info("PipelineContext with id: "
+                                        + pipelineContextInfo.getPipelineContextId()
+                                        + " ends his life right now. Started at: "
+                                        + pipelineContextInfo.getCreationDate()
+                                        + ", ends at: " + pipelineContextInfo.getFinishDate());
+                                this.contextList.remove(pipelineContext);
+                                log.info("PipelineContext with id: {} ends his life right now. Started at: {}, ends at: {}", pipelineContextInfo.getPipelineContextId(),
+                                                                                                                             pipelineContextInfo.getCreationDate(),
+                                                                                                                             pipelineContextInfo.getFinishDate());
+                            });
         } else {
             log.error("PipelineState: {} is not handled! Omitting.", event.getPipelineState());
         }
