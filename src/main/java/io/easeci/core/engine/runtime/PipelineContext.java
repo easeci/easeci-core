@@ -148,6 +148,7 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     public void closeContext() {
         this.pipelineState = CLOSED;
         log.info("Gently closing context with id: {}", this.pipelineContextId);
+        this.info("Gently closing context with id: " + this.pipelineContextId);
         PipelineContextInfo pci = new PipelineContextInfo();
         pci.setPipelineContextId(this.pipelineContextId);
         pci.setPipelineState(this.pipelineState);
