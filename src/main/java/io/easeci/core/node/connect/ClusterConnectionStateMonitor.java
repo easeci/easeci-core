@@ -8,7 +8,7 @@ import lombok.*;
 public class ClusterConnectionStateMonitor {
     private NodeConnector nodeConnector;
 
-    public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
+    public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) throws UrlBuildException {
         return nodeConnector.checkWorkerState(connectionStateRequest);
     }
 

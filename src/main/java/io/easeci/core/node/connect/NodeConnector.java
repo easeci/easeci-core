@@ -1,5 +1,7 @@
 package io.easeci.core.node.connect;
 
+import io.easeci.core.engine.scheduler.ScheduleRequest;
+import io.easeci.core.engine.scheduler.ScheduleResult;
 import io.easeci.core.node.connect.dto.ConnectionStateRequest;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import io.easeci.commons.SerializeUtils;
@@ -10,7 +12,9 @@ import com.google.common.net.InetAddresses;
 
 import java.util.concurrent.ExecutionException;
 
+import static io.easeci.core.engine.scheduler.ScheduleErrorCode.*;
 import static io.easeci.core.node.connect.NodeConnectionState.CONNECTION_ERROR;
+import static io.easeci.core.node.connect.NodeProcessingState.UNKNOWN;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -26,7 +30,7 @@ public class NodeConnector {
         this.nodeUrlBuilder = new NodeUrlBuilder(clusterInformation);
     }
 
-    public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
+    public ConnectionStateResponse checkWorkerState(ConnectionStateRequest connectionStateRequest) throws UrlBuildException {
         final String URL = nodeUrlBuilder.buildUrl(connectionStateRequest);
         log.info("Checking connection from EaseCI Core node to: {}", URL);
         final byte[] payload = SerializeUtils.write(connectionStateRequest);
@@ -57,6 +61,38 @@ public class NodeConnector {
         return ClusterConnectionStateMonitor.createResponseFailure(CONNECTION_ERROR, connectionStateRequest);
     }
 
+    public ScheduleResult sendPipeline(NodeConnection nodeConnectionChosen, ScheduleRequest scheduleRequest) throws UrlBuildException {
+        log.info("Sending pipeline job request to worker node: {}", nodeConnectionChosen);
+        final String URL = nodeUrlBuilder.buildUrl(nodeConnectionChosen);
+        final byte[] payload = SerializeUtils.write(scheduleRequest);
+        final AsyncHttpClient asyncHttpClient = chooseClient(nodeConnectionChosen.getTransferProtocol());
+        try {
+            Response response = asyncHttpClient.executeRequest(new RequestBuilder()
+                            .setMethod("POST")
+                            .setUrl(URL)
+                            .setBody(payload)
+                            .setHeader("Content-Type", "application/json")
+                            .build())
+                    .get();
+            if (response.getStatusCode() == 200) {
+                return SerializeUtils.read(response.getResponseBodyAsBytes(), ScheduleResult.class)
+                        .orElseGet(() -> {
+                            log.error("Could not serialize response from worker node, we need to mark connection as {}", CONNECTION_ERROR);
+                            return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_RESPONSE_NOT_SERIALIZABLE);
+                        });
+            } else {
+                log.info("Connection error occurred, worker node returned http code: {}, and responses: {}", response.getStatusText(),
+                        new String(response.getResponseBodyAsBytes()));
+                return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_HTTP_ERROR_RESPONSE);
+            }
+        } catch (InterruptedException e) {
+            log.error("InterruptedException was thrown while sending request to worker node: " + URL, e);
+        } catch (ExecutionException e) {
+            log.error("ExecutionException was thrown while sending request to worker node: " + URL, e);
+        }
+        return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_REQUEST_TERMINATED_WITH_ERROR);
+    }
+
     private AsyncHttpClient chooseClient(TransferProtocol transferProtocol) {
         if (TransferProtocol.HTTP.equals(transferProtocol)) {
             return this.asyncHttpClientNoSsl;
@@ -81,12 +117,20 @@ public class NodeConnector {
             this.clusterInformation = clusterInformation;
         }
 
-        public String buildUrl(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
+        public String buildUrl(NodeConnection nodeConnection) throws UrlBuildException {
+            return this.buildUrl(ConnectionStateRequest.of(nodeConnection.getNodeIp(),
+                    nodeConnection.getNodePort(),
+                    nodeConnection.getDomainName(),
+                    nodeConnection.getNodeName(),
+                    nodeConnection.getTransferProtocol()));
+        }
+
+        public String buildUrl(ConnectionStateRequest connectionStateRequest) throws UrlBuildException {
             return getHostAddress(connectionStateRequest)
                     .concat(clusterInformation.apiVersionPrefix().concat("/connection/state"));
         }
 
-        private String getHostAddress(ConnectionStateRequest connectionStateRequest) throws NodeConnectionException {
+        private String getHostAddress(ConnectionStateRequest connectionStateRequest) throws UrlBuildException {
             String host = "";
             if (nonNull(connectionStateRequest.getNodeIp()) && !connectionStateRequest.getNodeIp()
                                                                                       .isEmpty()) {
@@ -100,7 +144,7 @@ public class NodeConnector {
                 host = connectionStateRequest.getDomainName();
             }
             else {
-                throw new NodeConnectionException("Cannot detect host address from object: " + connectionStateRequest);
+                throw new UrlBuildException("Cannot detect host address from object: " + connectionStateRequest);
             }
 
             host = joinPort(connectionStateRequest, host);
