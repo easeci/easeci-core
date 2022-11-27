@@ -20,8 +20,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static io.easeci.core.node.connect.NodeConnectionState.ESTABLISHED;
-import static io.easeci.core.node.connect.NodeProcessingState.IDLE;
 import static io.easeci.core.workspace.LocationUtils.getClusterSettingsFileLocation;
 import static java.util.Objects.isNull;
 
@@ -77,7 +75,7 @@ public class ClusterConnectionHub implements ClusterNodesProvider {
             ConnectionStateResponse nodeConnectionStateUpdated = clusterConnectionStateMonitor.checkWorkerState(connectionStateRequest);
             log.info("Status of worker node obtained: {}, we can update state of this one connection", nodeConnectionStateUpdated.getNodeConnectionState());
             this.nodeConnectionInMemoryStorage.update(nodeConnection, nodeConnectionStateUpdated);
-        } catch (NodeConnectionException e) {
+        } catch (UrlBuildException e) {
             log.error("Exception was thrown while try to send request to node",  e);
             ConnectionStateResponse connectionStateResponse = ConnectionStateResponse.error(connectionStateRequest, NodeConnectionState.DEAD);
             this.nodeConnectionInMemoryStorage.update(nodeConnection, connectionStateResponse);

@@ -82,7 +82,7 @@ class NodeConnectorTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void shouldCorrectlyBuildUrl(String expectedUrl, ConnectionStateRequest request) throws NodeConnectionException {
+    void shouldCorrectlyBuildUrl(String expectedUrl, ConnectionStateRequest request) throws UrlBuildException {
         ClusterInformation clusterInformation = Mockito.mock(ClusterInformation.class);
         Mockito.when(clusterInformation.apiVersionPrefix()).thenReturn("/api/v1");
         NodeConnector.NodeUrlBuilder nodeUrlBuilder = new NodeConnector.NodeUrlBuilder(clusterInformation);
