@@ -6,8 +6,6 @@ import io.easeci.core.workspace.WorkspaceInitializationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class DefaultPipelineSchedulerTest extends BaseWorkspaceContextTest {
 
     @Test

@@ -23,6 +23,12 @@ public enum PipelineState {
     WAITING_FOR_SCHEDULE,
 
     /**
+     * QUEUED means that PipelineContext is ready but no Worker Node is available for Pipeline processing
+     * so Pipeline must wait on queue
+     * */
+    QUEUED,
+
+    /**
      * READY_FOR_SCHEDULE means that PipelineContext is ready for run on some worker node.
      * PipelineContextReadinessValidator confirmed that PipelineContext is correct and valid.
      * */

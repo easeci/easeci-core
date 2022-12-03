@@ -8,6 +8,10 @@ public enum NodeConnectionState {
     CONNECTION_ERROR,
     TIMEOUT,
     /**
+     * When node was not even requested for status
+     * */
+    NOT_CHANGED,
+    /**
      * When node connection state is dead - we could not connect to node after determined attempts
      * */
     DEAD,

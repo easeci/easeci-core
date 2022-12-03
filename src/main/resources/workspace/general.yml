@@ -29,6 +29,18 @@ connection:
 execution:
   thread-pool-execution: 1
 
+# Here we can define some values of scheduling mechanism.
+# Scheduling means to delegate some pipeline to some Worker Node
+schedule:
+  # All ran pipelines when there is no idling Worker Node, are catching and storing on special queue before run on Worker Node
+  queue:
+    # Defines how many threads should be taken for searching for idling Worker Node
+    thread-pool-execution: 1
+    # Defines how many seconds it will take to run thread after application startup
+    refresh-init-delay-seconds: 5
+    # Defines intervals between next execution of searching for Worker Node ready to work
+    refresh-interval-seconds: 10
+
 # In this properties section we can define values of actions in communication with whole easeci cluster
 cluster:
   # Here bellow we can find information about our Master Node.
