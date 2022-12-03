@@ -178,6 +178,11 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
                                   .build());
     }
 
+    public PipelineContext queued() {
+        this.pipelineState = QUEUED;
+        return this;
+    }
+
     private class ScriptBuildHelper {
 
         // resolve variables declared in Easefile
