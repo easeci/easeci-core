@@ -89,6 +89,8 @@ public class NodeConnector {
             log.error("InterruptedException was thrown while sending request to worker node: " + URL, e);
         } catch (ExecutionException e) {
             log.error("ExecutionException was thrown while sending request to worker node: " + URL, e);
+        } catch (Exception e) {
+            log.error("Unexpected error occurred: ", e);
         }
         return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_REQUEST_TERMINATED_WITH_ERROR);
     }
@@ -118,11 +120,12 @@ public class NodeConnector {
         }
 
         public String buildUrl(NodeConnection nodeConnection) throws UrlBuildException {
-            return this.buildUrl(ConnectionStateRequest.of(nodeConnection.getNodeIp(),
+            return getHostAddress(ConnectionStateRequest.of(nodeConnection.getNodeIp(),
                     nodeConnection.getNodePort(),
                     nodeConnection.getDomainName(),
                     nodeConnection.getNodeName(),
-                    nodeConnection.getTransferProtocol()));
+                    nodeConnection.getTransferProtocol()))
+                    .concat(clusterInformation.apiVersionPrefix().concat("/pipeline/receive"));
         }
 
         public String buildUrl(ConnectionStateRequest connectionStateRequest) throws UrlBuildException {

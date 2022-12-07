@@ -2,6 +2,7 @@ package io.easeci.core.node.connect;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.easeci.core.engine.pipeline.Executor;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import io.easeci.server.TransferProtocol;
@@ -17,6 +18,7 @@ import static io.easeci.core.node.connect.NodeProcessingState.IDLE;
 @Builder
 @ToString
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NodeConnection implements Executor {
     UUID nodeConnectionUuid;
     NodeConnectionState nodeConnectionState;
