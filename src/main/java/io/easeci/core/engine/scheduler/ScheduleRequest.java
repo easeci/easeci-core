@@ -16,6 +16,7 @@ public class ScheduleRequest {
     String scriptEncoded;
     Metadata metadata;
 
+    @Getter
     @AllArgsConstructor(staticName = "of")
     public static class Metadata {
         String masterNodeName;

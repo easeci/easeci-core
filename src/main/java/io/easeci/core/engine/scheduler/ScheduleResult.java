@@ -2,9 +2,17 @@ package io.easeci.core.engine.scheduler;
 
 import io.easeci.core.node.connect.NodeConnectionState;
 import io.easeci.core.node.connect.NodeProcessingState;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ScheduleResult {
     private NodeConnectionState nodeConnectionState;
     private NodeProcessingState nodeProcessingState;
