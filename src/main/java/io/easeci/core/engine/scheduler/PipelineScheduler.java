@@ -14,7 +14,7 @@ public interface PipelineScheduler {
 
     /**
      * @param pipelineContext is the PipelineContext ready for scheduling
-     * @return ScheduleResult holds details and information about scheduling process
+     * @return ScheduleResponse holds details and information about scheduling process
      * */
-    ScheduleResult schedule(PipelineContext pipelineContext);
+    ScheduleResponse schedule(PipelineContext pipelineContext);
 }

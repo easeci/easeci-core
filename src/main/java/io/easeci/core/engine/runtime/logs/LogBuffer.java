@@ -16,6 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import static java.util.Objects.isNull;
+
 @Slf4j
 public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
     private static int maxBufferSize;
@@ -25,11 +27,15 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
     private Consumer<String> logPublisher;
     private boolean isPublishingMode = false;
     private long currentIndex = 0;
+    private UUID pipelineId;
+    private UUID pipelineContextId;
 
     // use it for read-only from file mode
     public LogBuffer() {}
 
     public LogBuffer(UUID pipelineId, UUID pipelineContextId) {
+        this.pipelineId = pipelineId;
+        this.pipelineContextId = pipelineContextId;
         this.logEntriesQueue = new LinkedList<>();
         try {
             maxBufferSize = LocationUtils.retrieveFromGeneralInt("output.pipeline-context.buffer-max-size");
@@ -37,8 +43,6 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
-        this.logBufferFileManager = new LogBufferFileManager(this.logEntriesQueue, pipelineId, pipelineContextId);
-        this.logBufferFileManager.initScheduler(maxBufferSize);
     }
 
     private void push(LogEntry logEntry) {
@@ -51,11 +55,23 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
         return currentIndex++;
     }
 
+    public LogBuffer initLogBufferManager() {
+        log.info("Started to handling logs, buffering it and publishing");
+        this.logBufferFileManager = new LogBufferFileManager(this.logEntriesQueue, pipelineId, pipelineContextId);
+        this.logBufferFileManager.initScheduler(maxBufferSize);
+        return this;
+    }
+
     @Override
     public void initPublishing(Consumer<String> logPublisher, Options... options) {
         if (logPublisher == null) {
             throw new IllegalStateException("Cannot start publish Logs when logPublisher is not set");
         }
+        if (isNull(logBufferFileManager)) {
+            throw new IllegalStateException("Cannot start publish Logs when LogBufferFileManager is not initialized. " +
+                    "Invoke initLogBufferManager() first of all to initialize");
+        }
+
         List<Options> optionsList = Arrays.asList(options);
         this.logPublisher = logPublisher;
         this.isPublishingMode = true;

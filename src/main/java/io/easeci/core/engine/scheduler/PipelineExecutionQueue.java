@@ -18,4 +18,6 @@ public interface PipelineExecutionQueue {
      * that should be processing next
      * */
     Optional<PipelineContext> next();
+
+    boolean isEmpty();
 }

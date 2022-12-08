@@ -66,6 +66,15 @@ cluster:
     # Here we need to configure domain name or IP with port of our master node.
     # This is required for communication (callbacks or web socket for logging) from worker nodes to master
     domain-name: "localhost"
+    # Worker Nodes will communicate to master node via ip, ip with port or domain name.
+    # Possible values: DOMAIN, IP, IP_WITH_PORT
+    communication-type: DOMAIN
+    # Optional parameter it is required when communication-type is IP, IP_WITH_PORT
+    # Defines IP address of easeci-core master node
+    ip: localhost
+    # Optional parameter it is required when communication-type is IP, IP_WITH_PORT, DOMAIN_WITH_PORT
+    # Defines IP_WITH_PORT address of easeci-core master node
+    port: 9000
 
   worker-node:
     # Defines how many threads should be taken for refreshing state

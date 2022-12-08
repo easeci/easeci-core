@@ -1,7 +1,7 @@
 package io.easeci.core.node.connect;
 
 import io.easeci.core.engine.scheduler.ScheduleRequest;
-import io.easeci.core.engine.scheduler.ScheduleResult;
+import io.easeci.core.engine.scheduler.ScheduleResponse;
 import io.easeci.core.node.connect.dto.ConnectionStateRequest;
 import io.easeci.core.node.connect.dto.ConnectionStateResponse;
 import io.easeci.commons.SerializeUtils;
@@ -61,7 +61,7 @@ public class NodeConnector {
         return ClusterConnectionStateMonitor.createResponseFailure(CONNECTION_ERROR, connectionStateRequest);
     }
 
-    public ScheduleResult sendPipeline(NodeConnection nodeConnectionChosen, ScheduleRequest scheduleRequest) throws UrlBuildException {
+    public ScheduleResponse sendPipeline(NodeConnection nodeConnectionChosen, ScheduleRequest scheduleRequest) throws UrlBuildException {
         log.info("Sending pipeline job request to worker node: {}", nodeConnectionChosen);
         final String URL = nodeUrlBuilder.buildUrl(nodeConnectionChosen);
         final byte[] payload = SerializeUtils.write(scheduleRequest);
@@ -75,15 +75,15 @@ public class NodeConnector {
                             .build())
                     .get();
             if (response.getStatusCode() == 200) {
-                return SerializeUtils.read(response.getResponseBodyAsBytes(), ScheduleResult.class)
+                return SerializeUtils.read(response.getResponseBodyAsBytes(), ScheduleResponse.class)
                         .orElseGet(() -> {
                             log.error("Could not serialize response from worker node, we need to mark connection as {}", CONNECTION_ERROR);
-                            return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_RESPONSE_NOT_SERIALIZABLE);
+                            return ScheduleResponse.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_RESPONSE_NOT_SERIALIZABLE);
                         });
             } else {
                 log.info("Connection error occurred, worker node returned http code: {}, and responses: {}", response.getStatusText(),
                         new String(response.getResponseBodyAsBytes()));
-                return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_HTTP_ERROR_RESPONSE);
+                return ScheduleResponse.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_HTTP_ERROR_RESPONSE);
             }
         } catch (InterruptedException e) {
             log.error("InterruptedException was thrown while sending request to worker node: " + URL, e);
@@ -92,7 +92,7 @@ public class NodeConnector {
         } catch (Exception e) {
             log.error("Unexpected error occurred: ", e);
         }
-        return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_REQUEST_TERMINATED_WITH_ERROR);
+        return ScheduleResponse.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_REQUEST_TERMINATED_WITH_ERROR);
     }
 
     private AsyncHttpClient chooseClient(TransferProtocol transferProtocol) {

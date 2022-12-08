@@ -2,6 +2,7 @@ package io.easeci.core.engine.scheduler;
 
 import io.easeci.core.engine.runtime.PipelineContext;
 import io.easeci.core.node.connect.ClusterInformation;
+import io.easeci.server.CommunicationType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.MalformedURLException;
@@ -41,9 +42,10 @@ class ScheduleRequestPreparer {
     }
 
     URL buildMasterUrl() {
-        String urlAsString = this.clusterInformation.transferProtocol().name().toLowerCase()
+        final CommunicationType communicationType = clusterInformation.communicationType();
+        final String urlAsString = clusterInformation.transferProtocol().name().toLowerCase()
                 .concat("://")
-                .concat(trimSlashes(clusterInformation.domainName()))
+                .concat(trimSlashes(communicationType.urlBase()))
                 .concat("/")
                 .concat(trimSlashes(clusterInformation.apiVersionPrefix()))
                 .concat("/pipeline/execution");

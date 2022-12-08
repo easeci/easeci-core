@@ -1,6 +1,7 @@
 package io.easeci.core.node.connect;
 
 import io.easeci.core.workspace.LocationUtils;
+import io.easeci.server.CommunicationType;
 import io.easeci.server.TransferProtocol;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +16,7 @@ public class ClusterInformationDefault implements ClusterInformation {
 
     @Override
     public String domainName() {
-        return LocationUtils.retrievePropertyFromGeneral("cluster.master-node.node-name", "");
+        return LocationUtils.retrievePropertyFromGeneral("cluster.master-node.domain-name", "");
     }
 
     @Override
@@ -60,7 +61,23 @@ public class ClusterInformationDefault implements ClusterInformation {
 
     @Override
     public TransferProtocol transferProtocol() {
-        String protocol = LocationUtils.retrievePropertyFromGeneral("cluster.master-node.transfer-protocol", "HTTP");
+        String protocol = LocationUtils.retrievePropertyFromGeneral("cluster.master-node.transfer-protocol", TransferProtocol.HTTP.name());
         return TransferProtocol.valueOf(protocol);
+    }
+
+    @Override
+    public CommunicationType communicationType() {
+        String value = LocationUtils.retrievePropertyFromGeneral("cluster.master-node.communication-type", CommunicationType.DOMAIN.name());
+        return CommunicationType.valueOf(value.toUpperCase());
+    }
+
+    @Override
+    public String ip() {
+        return LocationUtils.retrievePropertyFromGeneral("cluster.master-node.ip", "");
+    }
+
+    @Override
+    public String port() {
+        return LocationUtils.retrievePropertyFromGeneral("cluster.master-node.port", "");
     }
 }
