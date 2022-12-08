@@ -11,6 +11,7 @@ import io.easeci.core.engine.runtime.logs.LogEntry;
 import io.easeci.core.engine.runtime.logs.LogRail;
 import io.easeci.core.engine.scheduler.DefaultPipelineScheduler;
 import io.easeci.core.engine.scheduler.PipelineScheduler;
+import io.easeci.core.engine.scheduler.ScheduleResponse;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.node.connect.ClusterConnectionHub;
@@ -138,16 +139,16 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     @Override
     public PipelineRunStatus.PipelineRunStatusWrapper runPipeline(UUID pipelineId) {
         final UUID pipelineContextId = UUID.randomUUID();
-        log.info("Started to run pipeline with pipelineId: {}, and pipelineContextId: {}", pipelineId, pipelineContextId);
+        log.info("Try to run pipeline with pipelineId: {}, and pipelineContextId: {}", pipelineId, pipelineContextId);
 
         this.pipelineContextHistory.saveHistoricalLogEntity(pipelineContextId, pipelineId);
-        LogBuffer logBuffer = new LogBuffer(pipelineId, pipelineContextId);
-        logBuffer.publish(LogEntry.builder()
-                .author("easeci-core-master")
-                .header("[INFO]")
-                .timestamp(Instant.now().getEpochSecond())
-                .text("Started to run pipeline with pipelineId: " + pipelineId)
-                .build());
+        LogBuffer logBuffer = new LogBuffer(pipelineId, pipelineContextId); // log buffer created but not started to buffering logs
+//        logBuffer.publish(LogEntry.builder()
+//                .author("easeci-core-master")
+//                .header("[INFO]")
+//                .timestamp(Instant.now().getEpochSecond())
+//                .text("Started to run pipeline with pipelineId: " + pipelineId)
+//                .build());
 
         PipelineContext pipelineContext;
         try {
@@ -211,7 +212,11 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
             PipelineContextReadinessValidator.PipelineContextValidationResult validationResult = this.pipelineContextReadinessValidator.validate(contextForSchedule);
             if (nonNull(validationResult) && PipelineState.READY_FOR_SCHEDULE.equals(validationResult.getPipelineState())) {
                 contextForSchedule.markAsReadyForScheduling();
-                this.pipelineScheduler.schedule(contextForSchedule);
+                log.info("Pushing to Scheduler instance pipelineContext with pipelineContextId: {} for scheduling process", contextForSchedule.getPipelineContextId());
+                ScheduleResponse scheduleResponse = this.pipelineScheduler.schedule(contextForSchedule);
+                if (scheduleResponse.isSuccessfullyScheduled()) {
+                    contextForSchedule.getLogBuffer().initLogBufferManager();
+                }
             } else {
                 log.info("Validation errors was returned so pipeline with pipelineContextId: {} is assigned to unexpected closed", event.getPipelineContextId());
                 validationResult.getErrorMessages()

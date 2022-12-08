@@ -40,8 +40,7 @@ public class DefaultPipelineScheduler implements PipelineScheduler {
     }
 
     @Override
-    public ScheduleResult schedule(PipelineContext pipelineContext) {
-        log.info("Scheduler instance received pipelineContext with pipelineContextId: {} for scheduling process", pipelineContext.getPipelineContextId());
+    public ScheduleResponse schedule(PipelineContext pipelineContext) {
         Set<NodeConnection> nodes = clusterNodesProvider.getReadyToWorkNodes();
         return findNode(nodes).map(nodeConnection -> {
             log.info("Idling worker node was detected so making a request to worker node instance: {}", nodeConnection);
@@ -49,20 +48,22 @@ public class DefaultPipelineScheduler implements PipelineScheduler {
         }).orElseGet(() -> {
             log.info("Any idling worker node was not find so PipelineContext was put in a queue");
             pipelineExecutionQueue.put(pipelineContext.queued());
-            return ScheduleResult.createResponseFailure(NOT_CHANGED, UNKNOWN, WORKER_NODE_NO_ANY_AVAILABLE_FOR_PROCESSING);
+            return ScheduleResponse.createResponseFailure(NOT_CHANGED, UNKNOWN, WORKER_NODE_NO_ANY_AVAILABLE_FOR_PROCESSING);
         });
     }
 
-    private ScheduleResult sendPipelineExecutionRequest(PipelineContext pipelineContext, NodeConnection nodeConnection) {
-        ScheduleRequest scheduleRequest = scheduleRequestPreparer.prepareRequest(pipelineContext);
+    private ScheduleResponse sendPipelineExecutionRequest(PipelineContext pipelineContext, NodeConnection nodeConnection) {
+        final ScheduleRequest scheduleRequest = scheduleRequestPreparer.prepareRequest(pipelineContext);
         try {
-            return nodeConnector.sendPipeline(nodeConnection, scheduleRequest);
+            final ScheduleResponse scheduleResponse = nodeConnector.sendPipeline(nodeConnection, scheduleRequest);
+            log.info("Worker node response for scheduling request: {}", scheduleResponse.toString());
+            return scheduleResponse;
         } catch (UrlBuildException e) {
             log.error("Error occurred while trying to prepare request URL to node", e);
-            return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_RESPONSE_NOT_SERIALIZABLE);
+            return ScheduleResponse.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_RESPONSE_NOT_SERIALIZABLE);
         } catch (NoSuchElementException e) {
             log.error("Error occurred while finding node for pipeline processing", e);
-            return ScheduleResult.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_NO_ANY_AVAILABLE_FOR_PROCESSING);
+            return ScheduleResponse.createResponseFailure(CONNECTION_ERROR, UNKNOWN, WORKER_NODE_NO_ANY_AVAILABLE_FOR_PROCESSING);
         }
     }
 
@@ -89,9 +90,9 @@ public class DefaultPipelineScheduler implements PipelineScheduler {
 
     private ScheduledFuture<?> run(ScheduledThreadPoolExecutor executor, int initialDelay, int period) {
         return executor.scheduleAtFixedRate(() -> this.pipelineExecutionQueue.next()
-                .ifPresentOrElse(this::schedule, () -> {
-                    log.info("No pipelines waiting on queue for schedule on worker node");
-                    scheduledFuture.cancel(true);
+                .ifPresent(pipelineContext -> {
+                    log.info("Pipeline execution before stored on queue now re-triggered automatically for pipelineContextId: {}", pipelineContext.getPipelineContextId());
+                    this.schedule(pipelineContext);
                 }), initialDelay, period, TimeUnit.SECONDS);
     }
 }
