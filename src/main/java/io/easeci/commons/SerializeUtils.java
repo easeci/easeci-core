@@ -15,8 +15,15 @@ public class SerializeUtils {
         try {
             return MAPPER.writeValueAsBytes(object);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             return new byte[] {};
+        }
+    }
+
+    public static String prettyWrite(Object object) {
+        try {
+            return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Serialization failed");
         }
     }
 
@@ -24,7 +31,6 @@ public class SerializeUtils {
         try {
             return Optional.ofNullable(MAPPER.readValue(responseAsBytes, classType));
         } catch (IOException e) {
-            e.printStackTrace();
             return Optional.empty();
         }
     }
@@ -33,7 +39,6 @@ public class SerializeUtils {
         try {
             return Optional.ofNullable(MAPPER.readValue(responseAsBytes, typeReference));
         } catch (IOException e) {
-            e.printStackTrace();
             return Optional.empty();
         }
     }
@@ -42,7 +47,6 @@ public class SerializeUtils {
         try {
             return Optional.ofNullable(MAPPER.readValue(file, classType));
         } catch (IOException e) {
-            e.printStackTrace();
             return Optional.empty();
         }
     }

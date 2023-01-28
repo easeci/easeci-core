@@ -1,55 +1,64 @@
-version: "3.7"
-
+version: '3.7'
 services:
   easeci-master-01:
-    image: easeci-core:latest
+    image: 'easeci-core:latest'
     ports:
-      - "9000:9000"
+      - '9000:9000'
     volumes:
-      - /home/karol/easeci:/opt/app/workspace
+      - '/home/karol/easeci:/opt/app/workspace'
     networks:
       easeci_net:
         ipv4_address: 192.168.0.50
   easeci-worker-01:
-    image: easeci-worker:latest
+    image: 'easeci-worker:latest'
     ports:
-      - "9001:9001"
+      - '9001:9001'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       WORKER_NODE_LABEL: My first dockerized worker node
     networks:
       easeci_net:
         ipv4_address: 192.168.0.51
   easeci-worker-02:
-    image: easeci-worker:latest
+    image: 'easeci-worker:latest'
     ports:
-      - "9002:9001"
+      - '9002:9001'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       WORKER_NODE_LABEL: My second dockerized worker node
     networks:
       easeci_net:
         ipv4_address: 192.168.0.52
   easeci-worker-03:
-    image: easeci-worker:latest
+    image: 'easeci-worker:latest'
     ports:
-      - "9003:9001"
+      - '9003:9001'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       WORKER_NODE_LABEL: My third dockerized worker node
     networks:
       easeci_net:
         ipv4_address: 192.168.0.53
   easeci-worker-04:
-    image: easeci-worker:latest
+    image: 'easeci-worker:latest'
     ports:
-      - "9004:9001"
+      - '9004:9001'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       WORKER_NODE_LABEL: My forth dockerized worker node
     networks:
       easeci_net:
         ipv4_address: 192.168.0.54
   easeci-worker-05:
-    image: easeci-worker:latest
+    image: 'easeci-worker:latest'
     ports:
-      - "9005:9001"
+      - '9005:9001'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       WORKER_NODE_LABEL: My fifth dockerized worker node
     networks:

@@ -1,5 +1,6 @@
 package io.easeci.core.engine.scheduler;
 
+import io.easeci.commons.SerializeUtils;
 import io.easeci.core.engine.runtime.PipelineContext;
 import io.easeci.core.node.connect.*;
 import io.easeci.core.workspace.LocationUtils;
@@ -54,6 +55,7 @@ public class DefaultPipelineScheduler implements PipelineScheduler {
 
     private ScheduleResponse sendPipelineExecutionRequest(PipelineContext pipelineContext, NodeConnection nodeConnection) {
         final ScheduleRequest scheduleRequest = scheduleRequestPreparer.prepareRequest(pipelineContext);
+        log.info("ScheduleRequest: {}", SerializeUtils.prettyWrite(scheduleRequest));
         try {
             final ScheduleResponse scheduleResponse = nodeConnector.sendPipeline(nodeConnection, scheduleRequest);
             log.info("Worker node response for scheduling request: {}", scheduleResponse.toString());

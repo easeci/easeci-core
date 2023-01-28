@@ -42,3 +42,5 @@ easeci-git/
 easeci-maven/
 easeci-ssh/
 easeci-java-essentials/
+
+.env
