@@ -38,7 +38,7 @@ class ScheduleRequestPreparer {
     }
 
     String encodeValue(String value) {
-        return Arrays.toString(Base64.getEncoder().encode(value.getBytes(StandardCharsets.UTF_8)));
+        return new String(Base64.getEncoder().encode(value.getBytes(StandardCharsets.UTF_8)));
     }
 
     URL buildMasterUrl() {
