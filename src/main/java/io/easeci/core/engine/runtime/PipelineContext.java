@@ -91,7 +91,10 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
     @Override
     public PipelineContextInfo runPipeline() {
-        return null;
+        this.getLogBuffer().initLogBufferManager();
+        this.scheduled();
+        log.info("LogBuffer started, worker node is ready for processing pipeline and worker node confirmed pipeline processing");
+        return prepareContextInfo();
     }
 
     @Override
@@ -113,11 +116,13 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
             log.info("buildScript() method finished with no errors so, sending event to PipelineContextSystem. Now pipeline is ready and queued for scheduling process. " +
                      "Assembled result script has length: " + this.scriptAssembled.length());
             this.pipelineState = WAITING_FOR_SCHEDULE;
-            this.publish(prepareContextInfo());
+            PipelineContextInfo pipelineContextInfo = prepareContextInfo();
+            info("Executable script preparation ends with status: " + pipelineContextInfo.getPipelineState());
+            this.publish(pipelineContextInfo);
         });
     }
 
-    private PipelineContextInfo prepareContextInfo() {
+    public PipelineContextInfo prepareContextInfo() {
         PipelineContextInfo info = new PipelineContextInfo();
         info.setCreationDate(new Date(startTimestamp));
         info.setPipelineContextId(this.pipelineContextId);
@@ -128,13 +133,16 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
     @Override
     public void publish(PipelineContextInfo event) {
         log.info("Event from PipelineContext published to EventListener: {}", event.toString());
-        info("Executable script preparation ends with status: " + event.getPipelineState());
-        this.eventListener.receive(event);
+        this.eventListener.receive(event); // todo rename this event listener -> PipelineAction.decide()
     }
 
     @Override
     public boolean isMaximumIdleTimePassed(long clt) {
         return this.logBuffer.isMaximumIdleTimePassed(clt);
+    }
+
+    public boolean isWorking() {
+        return SCHEDULED.equals(this.pipelineState);
     }
 
     public PipelineContextState state() {
@@ -180,6 +188,11 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
 
     public PipelineContext queued() {
         this.pipelineState = QUEUED;
+        return this;
+    }
+
+    public PipelineContext scheduled() {
+        this.pipelineState = SCHEDULED;
         return this;
     }
 

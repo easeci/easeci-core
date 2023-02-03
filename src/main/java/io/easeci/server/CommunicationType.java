@@ -1,7 +1,6 @@
 package io.easeci.server;
 
 import io.easeci.core.node.connect.ClusterInformation;
-import io.easeci.core.node.connect.ClusterInformationDefault;
 
 /**
  * This enum is about communication type between servers.
@@ -14,7 +13,7 @@ public enum CommunicationType {
      * */
     DOMAIN {
         @Override
-        public String urlBase() {
+        public String urlBase(ClusterInformation clusterInformation) {
             return clusterInformation.domainName();
         }
     },
@@ -23,7 +22,7 @@ public enum CommunicationType {
      * */
     DOMAIN_WITH_PORT {
         @Override
-        public String urlBase() {
+        public String urlBase(ClusterInformation clusterInformation) {
             return clusterInformation.domainName().concat(":").concat(clusterInformation.port());
         }
     },
@@ -32,7 +31,7 @@ public enum CommunicationType {
      * */
     IP_WITH_PORT {
         @Override
-        public String urlBase() {
+        public String urlBase(ClusterInformation clusterInformation) {
             return clusterInformation.ip().concat(":").concat(clusterInformation.port());
         }
     },
@@ -41,12 +40,10 @@ public enum CommunicationType {
      * */
     IP {
         @Override
-        public String urlBase() {
+        public String urlBase(ClusterInformation clusterInformation) {
             return clusterInformation.ip();
         }
     };
-
-    private static final ClusterInformation clusterInformation = new ClusterInformationDefault();
 
     /**
      * Should return for example:
@@ -56,5 +53,5 @@ public enum CommunicationType {
      * easeci.com
      * easeci.com:8000
      * */
-    public abstract String urlBase();
+    public abstract String urlBase(ClusterInformation clusterInformation);
 }

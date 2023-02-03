@@ -4,6 +4,7 @@ import io.easeci.BaseWorkspaceContextTest;
 import io.easeci.core.workspace.LocationUtils;
 import io.easeci.core.workspace.WorkspaceInitializationException;
 import io.easeci.server.TransferProtocol;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

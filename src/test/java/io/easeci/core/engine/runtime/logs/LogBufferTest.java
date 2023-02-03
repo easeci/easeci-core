@@ -23,6 +23,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
     @DisplayName("Should correctly add item to LogBuffer")
     void addSuccessTest() {
         LogBuffer logBuffer = new LogBuffer(UUID.randomUUID(), UUID.randomUUID());
+        logBuffer.initLogBufferManager();
         logBuffer.initPublishing(simplePrintingLogConsumer());
 
         LogEntry logEntry = LogEntry.builder()
@@ -47,6 +48,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
     @DisplayName("Should correctly add few items in correct order to LogBuffer")
     void addSuccessMultipleTest() {
         LogBuffer logBuffer = new LogBuffer(UUID.randomUUID(), UUID.randomUUID());
+        logBuffer.initLogBufferManager();
         logBuffer.initPublishing(simplePrintingLogConsumer());
 
         LogEntry firstLogEntry = LogEntry.builder()
@@ -109,6 +111,7 @@ class LogBufferTest extends BaseWorkspaceContextTest {
     @DisplayName("Should correctly publishing cycle works and log should be publishing in correct order")
     void publishingCycleTest() {
         LogBuffer logBuffer = new LogBuffer(UUID.randomUUID(), UUID.randomUUID());
+        logBuffer.initLogBufferManager();
         logBuffer.initPublishing(simplePrintingLogConsumer());
 
         final int ITERATIONS = 100;

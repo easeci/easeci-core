@@ -1,4 +1,4 @@
-package io.easeci.core.engine.scheduler;
+package io.easeci.core.engine.scheduler.queue;
 
 import io.easeci.core.engine.runtime.commons.PipelineState;
 import lombok.Builder;

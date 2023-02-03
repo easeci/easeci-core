@@ -7,11 +7,13 @@ import io.easeci.core.engine.runtime.commons.PipelineRunStatus;
 import io.easeci.core.engine.runtime.commons.PipelineState;
 import io.easeci.core.engine.runtime.logs.ArchiveLogReader;
 import io.easeci.core.engine.runtime.logs.LogBuffer;
-import io.easeci.core.engine.runtime.logs.LogEntry;
 import io.easeci.core.engine.runtime.logs.LogRail;
 import io.easeci.core.engine.scheduler.DefaultPipelineScheduler;
 import io.easeci.core.engine.scheduler.PipelineScheduler;
 import io.easeci.core.engine.scheduler.ScheduleResponse;
+import io.easeci.core.engine.scheduler.queue.NoSynchronizedPipelineExecutionQueue;
+import io.easeci.core.engine.scheduler.queue.PipelineExecutionQueue;
+import io.easeci.core.engine.scheduler.queue.SimplePipelineExecutionQueue;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;
 import io.easeci.core.node.connect.ClusterConnectionHub;
@@ -22,7 +24,6 @@ import io.easeci.core.workspace.vars.GlobalVariablesFinder;
 import io.easeci.core.workspace.vars.GlobalVariablesManager;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static io.easeci.core.engine.runtime.commons.PipelineRunStatus.PIPELINE_NOT_FOUND;
+import static io.easeci.core.engine.runtime.commons.PipelineState.READY_FOR_SCHEDULE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -53,6 +55,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
     private ScheduledExecutorService contextLivenessCheckScheduler;
     private PipelineScheduler pipelineScheduler;
     private PipelineContextReadinessValidator pipelineContextReadinessValidator;
+    private SimplePipelineExecutionQueue simplePipelineExecutionQueue;
 
     public static PipelineContextSystem getInstance() {
         if (isNull(system)) {
@@ -89,6 +92,7 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         this.pipelineContextLivenessCheckInterval = this.retrieveLivenessCheckInterval();
         this.contextLivenessCheckScheduler = Executors.newScheduledThreadPool(1);
         this.schedulePipelineContextLivenessCheck();
+        this.simplePipelineExecutionQueue = new SimplePipelineExecutionQueue(new NoSynchronizedPipelineExecutionQueue());
     }
 
     private PipelineContextSystem(PipelineContextFactory factory) {
@@ -143,12 +147,6 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
 
         this.pipelineContextHistory.saveHistoricalLogEntity(pipelineContextId, pipelineId);
         LogBuffer logBuffer = new LogBuffer(pipelineId, pipelineContextId); // log buffer created but not started to buffering logs
-//        logBuffer.publish(LogEntry.builder()
-//                .author("easeci-core-master")
-//                .header("[INFO]")
-//                .timestamp(Instant.now().getEpochSecond())
-//                .text("Started to run pipeline with pipelineId: " + pipelineId)
-//                .build());
 
         PipelineContext pipelineContext;
         try {
@@ -194,29 +192,18 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
 
     @Override
     public void receive(ContextInfo event) {
-        log.info("Event from PipelineContext received: {}", event.toString());
-
         if (PipelineState.SCHEDULED.equals(event.getPipelineState())) {
             log.info("Scheduler stated pipeline with pipelineContextId: {}, it has been assigned to worker node to execute the pipeline", event.getPipelineContextId());
-            // here make some action - scheduler assigned worker node
-            // czyli tutaj ten pipeline został już przypisany na worker node i już powinien tam sobie działać
         }
-        if (PipelineState.WAITING_FOR_SCHEDULE.equals(event.getPipelineState())) {
+        else if (PipelineState.WAITING_FOR_SCHEDULE.equals(event.getPipelineState())) {
             log.info("Pipeline with pipelineContextId: {}, is now marked as ready for scheduling", event.getPipelineContextId());
             // here we know that we can start run container with building process
-            PipelineContext contextForSchedule = contextList.stream()
-                    .filter(pipelineContext -> pipelineContext.getPipelineContextId().equals(event.getPipelineContextId()))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Pipeline with pipelineContextId: " + event.getPipelineContextId() + " was not found! " +
-                            "Pipeline was not assigned for scheduling."));
+            PipelineContext contextForSchedule = findPipelineContext(event.getPipelineContextId());
             PipelineContextReadinessValidator.PipelineContextValidationResult validationResult = this.pipelineContextReadinessValidator.validate(contextForSchedule);
-            if (nonNull(validationResult) && PipelineState.READY_FOR_SCHEDULE.equals(validationResult.getPipelineState())) {
+            if (nonNull(validationResult) && READY_FOR_SCHEDULE.equals(validationResult.getPipelineState())) {
                 contextForSchedule.markAsReadyForScheduling();
                 log.info("Pushing to Scheduler instance pipelineContext with pipelineContextId: {} for scheduling process", contextForSchedule.getPipelineContextId());
-                ScheduleResponse scheduleResponse = this.pipelineScheduler.schedule(contextForSchedule);
-                if (scheduleResponse.isSuccessfullyScheduled()) {
-                    contextForSchedule.getLogBuffer().initLogBufferManager();
-                }
+                this.scheduleTry(contextForSchedule);
             } else {
                 log.info("Validation errors was returned so pipeline with pipelineContextId: {} is assigned to unexpected closed", event.getPipelineContextId());
                 validationResult.getErrorMessages()
@@ -226,6 +213,10 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
                                 });
                 contextForSchedule.closeContext();
             }
+        }
+        else if (PipelineState.QUEUED.equals(event.getPipelineState())) {
+            PipelineContext contextForSchedule = findPipelineContext(event.getPipelineContextId());
+            this.scheduleTry(contextForSchedule);
         }
         else if (PipelineState.ABORTED_PREPARATION_ERROR.equals(event.getPipelineState())) {
             log.info("Pipeline with pipelineContextId: {}, is aborted now by domain error", event.getPipelineContextId());
@@ -257,12 +248,38 @@ public class PipelineContextSystem implements PipelineRunEntryPoint, EventListen
         }
     }
 
+    private PipelineContext findPipelineContext(UUID pipelineContextId) {
+        return contextList.stream()
+                .filter(pipelineContext -> pipelineContext.getPipelineContextId().equals(pipelineContextId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Pipeline with pipelineContextId: " + pipelineContextId + " was not found! " +
+                        "Pipeline was not assigned for scheduling."));
+    }
+
+    private void scheduleTry(PipelineContext contextForSchedule) {
+        ScheduleResponse scheduleResponse = this.pipelineScheduler.schedule(contextForSchedule);
+        if (scheduleResponse.isSuccessfullyScheduled()) {
+            contextForSchedule.runPipeline();
+            this.receive(contextForSchedule.prepareContextInfo());
+        } else {
+            log.info("Worker node returned isSuccessfullyScheduled=false so pipeline must be put on waiting queue, pipelineContextId: {}", contextForSchedule.getPipelineContextId());
+            simplePipelineExecutionQueue.putPipelineOnQueue(contextForSchedule);
+        }
+    }
+
     @Override
     public void closeExpiredContexts() {
         this.contextList.forEach(pipelineContext -> {
-            boolean contextExpired = pipelineContext.isMaximumIdleTimePassed(this.maxPipelineContextLivenessTime);
-            if (contextExpired) {
-                pipelineContext.closeContext();
+            if (pipelineContext.isWorking()) {
+                try {
+                    boolean contextExpired = pipelineContext.isMaximumIdleTimePassed(this.maxPipelineContextLivenessTime);
+                    if (contextExpired) {
+                        pipelineContext.closeContext();
+                    }
+                } catch (Exception e) {
+                    log.error("Exception: ", e);
+                    pipelineContext.closeContext();
+                }
             }
         });
     }

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ class NodeConnectionInMemoryStorage {
             log.info("File for store cluster settings just exists here: {}", clusterSettingsFileLocation);
             nodeConnections = clusterConnectionIO.load(clusterSettingsFileLocation);
         } else {
-            log.info("File for store cluster settings not exists here: {}, try to initialize", clusterSettingsFileLocation);
+            log.info("File for store cluster settings not exists here: {}, trying to initialize", clusterSettingsFileLocation);
             this.nodeConnections = clusterConnectionIO.initialize(clusterSettingsFileLocation);
         }
     }
@@ -138,5 +139,15 @@ class NodeConnectionInMemoryStorage {
             }
         }
         return isRemoved;
+    }
+
+    public void flushClusterConnections() {
+        log.info("All cluster connection are removed");
+        this.nodeConnections = new ArrayList<>();
+        try {
+            this.clusterConnectionIO.save(clusterSettingsFileLocation, nodeConnections);
+        } catch (IOException e) {
+            log.error("Error occurred while flushing cluster file", e);
+        }
     }
 }
