@@ -141,12 +141,20 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
 
     @Override
     public boolean isMaximumIdleTimePassed(long clt) {
+        if (isNull(this.logBufferFileManager)) {
+            log.info("logBufferFileManager because is null");
+            return false;
+        }
         return this.logBufferFileManager.isMaximumIdleTimePassed(clt);
     }
 
     public void closeLogging() {
-        this.logBufferFileManager.executorService.shutdown();
-        this.logBufferFileManager.closeFile();
+        if (isNull(this.logBufferFileManager)) {
+            log.info("Cannot close logBufferFileManager because is null");
+        } else {
+            this.logBufferFileManager.executorService.shutdown();
+            this.logBufferFileManager.closeFile();
+        }
     }
 
     public enum Options {
@@ -200,10 +208,8 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
                     this.lastLogFileSave = LocalDateTime.now();
                 } catch (IOException e) {
                     log.error("Cannot write logs to file: " + this.logFilePath.toString());
-                    e.printStackTrace();
+                    log.error("Error: ", e);
                 }
-            } else {
-                log.info("There is no logs left in context: " + this.pipelineContextId);
             }
         }
 
@@ -222,9 +228,15 @@ public class LogBuffer implements LogRail, PipelineContextLivenessProbe {
                                                      .concat(this.pipelineContextId.toString());
             Path readyFilePath = Paths.get(logDirPath.toString().concat(filePrefix));
             try {
-                Files.createFile(readyFilePath);
+                // todo tutaj występuje jakaś kolizja, dostaję
+//                java.nio.file.FileAlreadyExistsException: /home/karol/easeci-backup/log/context/pipeline-run-cc4fec7a-1b5f-4bc2-8213-9b08ae794514_f22dcf81-a686-4f37-a4c7-0c16219309b5
+                if (Files.exists(readyFilePath)) {
+                    log.info("File already exists: {}", readyFilePath);
+                } else {
+                    Files.createFile(readyFilePath);
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("IOException occurred: ", e);
             }
             return readyFilePath;
         }

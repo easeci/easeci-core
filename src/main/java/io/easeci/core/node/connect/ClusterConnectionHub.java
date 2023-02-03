@@ -63,6 +63,10 @@ public class ClusterConnectionHub implements ClusterNodesProvider {
                 .collect(Collectors.toList()));
     }
 
+    public void flushClusterConnections() {
+        nodeConnectionInMemoryStorage.flushClusterConnections();
+    }
+
     protected synchronized void tryAddNodeConnection(NodeConnection nodeConnection) throws NodeConnectionException {
         nodeConnectionInMemoryStorage.add(nodeConnection);
         CompletableFuture.runAsync(() -> requestNodeForConnectionState(nodeConnection));

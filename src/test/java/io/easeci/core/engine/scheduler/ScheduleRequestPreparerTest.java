@@ -1,6 +1,7 @@
 package io.easeci.core.engine.scheduler;
 
 import io.easeci.core.node.connect.ClusterInformation;
+import io.easeci.server.CommunicationType;
 import io.easeci.server.TransferProtocol;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ class ScheduleRequestPreparerTest {
         Mockito.when(clusterInfo.transferProtocol()).thenReturn(TransferProtocol.HTTPS);
         Mockito.when(clusterInfo.domainName()).thenReturn("master-01.easeci.pl");
         Mockito.when(clusterInfo.apiVersionPrefix()).thenReturn("api/v1");
+        Mockito.when(clusterInfo.communicationType()).thenReturn(CommunicationType.DOMAIN);
 
         var scheduleRequestPreparer = new ScheduleRequestPreparer(clusterInfo);
 
@@ -34,6 +36,7 @@ class ScheduleRequestPreparerTest {
         Mockito.when(clusterInfo.transferProtocol()).thenReturn(TransferProtocol.HTTPS);
         Mockito.when(clusterInfo.domainName()).thenReturn("//master-01.easeci.pl///");
         Mockito.when(clusterInfo.apiVersionPrefix()).thenReturn("/api/v1//");
+        Mockito.when(clusterInfo.communicationType()).thenReturn(CommunicationType.DOMAIN);
 
         var scheduleRequestPreparer = new ScheduleRequestPreparer(clusterInfo);
 

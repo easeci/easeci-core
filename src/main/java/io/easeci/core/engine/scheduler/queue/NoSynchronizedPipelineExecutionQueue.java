@@ -1,4 +1,4 @@
-package io.easeci.core.engine.scheduler;
+package io.easeci.core.engine.scheduler.queue;
 
 import io.easeci.core.engine.runtime.PipelineContext;
 
@@ -8,13 +8,9 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-public class PipelineExecutionQueueDefault implements PipelineExecutionQueue, PipelineExecutionQueueSearcher {
+public class NoSynchronizedPipelineExecutionQueue implements PipelineExecutionQueue, PipelineExecutionQueueSearcher {
 
-    private final Queue<PipelineContext> pipelineContextQueue;
-
-    public PipelineExecutionQueueDefault() {
-        this.pipelineContextQueue = new LinkedList<>();
-    }
+    private final Queue<PipelineContext> pipelineContextQueue = new LinkedList<>();
 
     @Override
     public boolean put(PipelineContext pipelineContext) {

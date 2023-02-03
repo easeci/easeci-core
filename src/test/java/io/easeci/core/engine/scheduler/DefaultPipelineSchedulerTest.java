@@ -11,9 +11,6 @@ class DefaultPipelineSchedulerTest extends BaseWorkspaceContextTest {
     @Test
     @DisplayName("Should correctly schedule pipeline")
     void shouldCorrectlySchedulePipeline() throws WorkspaceInitializationException {
-        var hub = ClusterConnectionHub.getInstance();
-        var scheduler = new DefaultPipelineScheduler(hub);
-
 
     }
 }

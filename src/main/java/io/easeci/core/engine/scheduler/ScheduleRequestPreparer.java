@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Objects;
 
@@ -45,7 +44,7 @@ class ScheduleRequestPreparer {
         final CommunicationType communicationType = clusterInformation.communicationType();
         final String urlAsString = clusterInformation.transferProtocol().name().toLowerCase()
                 .concat("://")
-                .concat(trimSlashes(communicationType.urlBase()))
+                .concat(trimSlashes(communicationType.urlBase(clusterInformation)))
                 .concat("/")
                 .concat(trimSlashes(clusterInformation.apiVersionPrefix()))
                 .concat("/pipeline/execution");
