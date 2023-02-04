@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk-slim as build
+FROM openjdk:17-jdk-slim as build
 MAINTAINER  Karol Meksuła <meksula.karol.93@gmail.com>
 
 ARG APP_NAME=easeci
@@ -14,7 +14,7 @@ WORKDIR ${COMPILATION_DIR}
 
 RUN ./gradlew build -x test
 
-FROM openjdk:11-jdk-slim as runtime
+FROM openjdk:17-jdk-slim as runtime
 ARG APP_NAME=easeci
 ARG APP_VERSION=0.0.1-SNAPSHOT
 ARG COMPILATION_DIR=/usr/src/easeci
