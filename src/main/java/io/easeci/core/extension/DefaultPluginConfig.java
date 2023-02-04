@@ -17,11 +17,12 @@ import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.FIVE;
 import static io.easeci.core.log.ApplicationLevelLogFacade.LogLevelPrefix.THREE;
 import static io.easeci.core.log.ApplicationLevelLogFacade.logit;
 import static java.util.Objects.isNull;
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 
 class DefaultPluginConfig implements PluginConfig, PluginStrategy {
     private final Path pluginConfigYmlPath;
     private PluginsConfigFile pluginsConfigFile;
+
+    record T(String test) {}
 
     DefaultPluginConfig(Path pluginConfigYmlPath) throws PluginSystemCriticalException {
         this.pluginConfigYmlPath = pluginConfigYmlPath;
@@ -212,7 +213,7 @@ class PluginsConfigFile {
     synchronized boolean put(String interfaceName, ConfigDescription configDescription) {
         Set<ConfigDescription> configDescriptionSet = this.configDescriptions.get(interfaceName);
         if (isNull(configDescriptionSet)) {
-            this.configDescriptions.put(interfaceName, new HashSet<>(asList(configDescription)));
+            this.configDescriptions.put(interfaceName, new HashSet<>(List.of(configDescription)));
             return true;
         }
         return configDescriptionSet.add(configDescription);

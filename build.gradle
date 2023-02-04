@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -13,13 +12,13 @@ plugins {
     id 'jacoco'
     id 'com.github.dawnwords.jacoco.badge' version '0.1.0'
     id 'application'
-    id 'java'
+    id 'java-library'
 }
 apply plugin: "io.ratpack.ratpack-java"
 
 group = 'io.easeci.core'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = '17'
 
 configurations {
     compileOnly {
@@ -32,22 +31,26 @@ repositories {
 }
 
 dependencies {
-    compile project(':domain')
-    compile project(':io-lib')
+    implementation fileTree(include: ['*.jar'], dir: 'domain')
+    implementation fileTree(include: ['*.jar'], dir: 'io-lib')
+    implementation project(':domain')
+    implementation project(':io-lib')
+
+    implementation 'org.apache.groovy:groovy-all:4.0.8'
 
     implementation 'io.ratpack:ratpack-core:1.9.0'
-    compile group: 'io.ratpack', name: 'ratpack-rx', version: '1.9.0'
+    implementation group: 'io.ratpack', name: 'ratpack-rx', version: '1.9.0'
     implementation 'org.asynchttpclient:async-http-client:2.12.1'
     implementation 'org.yaml:snakeyaml:1.25'
     implementation 'com.google.guava:guava:28.1-jre'
-    compile group: 'io.vavr', name: 'vavr', version: '0.10.2'
+    implementation group: 'io.vavr', name: 'vavr', version: '0.10.2'
     implementation 'commons-io:commons-io:2.6'
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'org.javatuples:javatuples:1.2'
     implementation "io.reactivex.rxjava3:rxjava:3.0.2"
-    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.9.0.202009080501-r'
+    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.9.0.202009080501-r'
 
-    compile group: 'org.zeroturnaround', name: 'zt-exec', version: '1.12'
+    implementation group: 'org.zeroturnaround', name: 'zt-exec', version: '1.12'
 
     implementation 'org.slf4j:slf4j-log4j12:2.0.3'
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
@@ -55,8 +58,8 @@ dependencies {
     implementation 'javax.validation:validation-api:2.0.1.Final'
     implementation 'org.hibernate.validator:hibernate-validator:6.1.4.Final'
 
-    compileOnly 'org.projectlombok:lombok:1.18.12'
-    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compileOnly 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.6.2'
@@ -70,15 +73,23 @@ dependencies {
 mainClassName = 'io.easeci.EaseciCoreApplication'
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     def mainClassName = 'io.easeci.EaseciCoreApplication'
     manifest {
         attributes(
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' '),
                 'Main-Class': "${mainClassName}"
         )
     }
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+afterEvaluate {
+    tasks.getByName("jar") {
+        dependsOn(":domain:build")
+        dependsOn(":io-lib:build")
     }
 }
 

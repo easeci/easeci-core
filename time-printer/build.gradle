@@ -1,39 +1,48 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 group 'io.easeci.core'
 version '0.0.1'
 
-sourceCompatibility = '11'
+sourceCompatibility = '17'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile project(':domain')
-    compile project(':welcome-logo')
+    implementation fileTree(include: ['*.jar'], dir: 'domain')
+    implementation project(':domain')
+    implementation fileTree(include: ['*.jar'], dir: 'welcome-logo')
 
-    compileOnly 'org.projectlombok:lombok:1.18.12'
-    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compileOnly 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.12'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testCompileOnly 'org.projectlombok:lombok:1.18.26'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' '),
                 'Main-Class': "${mainClassName}",
                 'Implements': 'io.easeci.extension.Standalone',
                 'Entry-Class': 'com.meksula.TimePrinter'
         )
     }
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+afterEvaluate {
+    tasks.getByName("jar") {
+        dependsOn(":domain:build")
+        dependsOn(":io-lib:build")
     }
 }
