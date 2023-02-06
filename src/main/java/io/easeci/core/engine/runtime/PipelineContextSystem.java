@@ -12,7 +12,6 @@ import io.easeci.core.engine.scheduler.DefaultPipelineScheduler;
 import io.easeci.core.engine.scheduler.PipelineScheduler;
 import io.easeci.core.engine.scheduler.ScheduleResponse;
 import io.easeci.core.engine.scheduler.queue.NoSynchronizedPipelineExecutionQueue;
-import io.easeci.core.engine.scheduler.queue.PipelineExecutionQueue;
 import io.easeci.core.engine.scheduler.queue.SimplePipelineExecutionQueue;
 import io.easeci.core.extension.ExtensionSystem;
 import io.easeci.core.extension.PluginSystemCriticalException;

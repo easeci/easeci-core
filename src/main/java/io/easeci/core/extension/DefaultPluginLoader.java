@@ -15,21 +15,21 @@ import static java.util.Objects.nonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class DefaultPluginLoader implements PluginLoader {
     private PluginContainer pluginContainer;
-    private JarJoiner jarJoiner;
+    private ManifestReader manifestReader;
 
-    DefaultPluginLoader(PluginContainer pluginContainer, JarJoiner jarJoiner) {
+    DefaultPluginLoader(PluginContainer pluginContainer, ManifestReader manifestReader) {
         if (isNull(pluginContainer)) {
             throw new IllegalStateException("Cannot construct PluginLoader implementation with not initialized PluginContainer!");
         }
         this.pluginContainer = pluginContainer;
-        this.jarJoiner = jarJoiner;
+        this.manifestReader = manifestReader;
     }
 
     @Override
     public Set<Plugin> loadPlugins(Set<Plugin> pluginSetInput, PluginStrategy pluginStrategy) {
         Set<Plugin> pluginSetOutput = pluginSetInput.stream()
                 .filter(Plugin::isLoadable)
-                .map(jarJoiner::addToClasspath)
+                .map(manifestReader::attachManifest)
                 .peek(plugin -> instantiatePlugin(plugin, pluginStrategy))
                 .collect(Collectors.toSet());
         return new HashSet<>(Sets.difference(pluginSetInput, pluginSetOutput));
@@ -37,7 +37,7 @@ class DefaultPluginLoader implements PluginLoader {
 
     @Override
     public Instance reinstantiatePlugin(Instance instance, PluginStrategy pluginStrategy) {
-        Plugin plugin = jarJoiner.addToClasspath(instance.getPlugin());
+        Plugin plugin = manifestReader.attachManifest(instance.getPlugin());
         Object inst = this.instantiate(plugin);
         boolean isRemoved = pluginContainer.remove(plugin.getName(), plugin.getVersion());
         this.insert(plugin, inst);

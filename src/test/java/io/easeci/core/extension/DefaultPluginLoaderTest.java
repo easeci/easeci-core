@@ -30,18 +30,18 @@ class DefaultPluginLoaderTest extends BaseWorkspaceContextTest {
 //        prepare required objects
         PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigJsonDisabledPath);
         PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
-        JarJoiner jarJoinerMock = Mockito.mock(JarJoiner.class);
+        ManifestReader manifestReader = Mockito.mock(ManifestReader.class);
 
 //        prepare plugins
         Plugin fakePlugin = createFakePlugin();
         Set<Plugin> pluginSet = Set.of(fakePlugin);
 
 //        mock JarJoiner method's behavior
-        Mockito.when(jarJoinerMock.addToClasspath(any())).thenReturn(fakePlugin);
-        Mockito.when(jarJoinerMock.read(any())).thenReturn(ExtensionManifest.of("", ""));
+        Mockito.when(manifestReader.attachManifest(any())).thenReturn(fakePlugin);
+        Mockito.when(manifestReader.read(any())).thenReturn(ExtensionManifest.of("", ""));
 
 //        create SUT
-        PluginLoader pluginLoader = new DefaultPluginLoader(pluginContainer, jarJoinerMock);
+        PluginLoader pluginLoader = new DefaultPluginLoader(pluginContainer, manifestReader);
 
 //       ->  execute plugin loading
         pluginLoader.loadPlugins(pluginSet, pluginStrategy);
@@ -69,17 +69,17 @@ class DefaultPluginLoaderTest extends BaseWorkspaceContextTest {
 //        prepare required objects
         PluginStrategy pluginStrategy = new DefaultPluginConfig(pluginConfigJsonValidPath);
         PluginContainer pluginContainer = new DefaultPluginContainer(pluginStrategy);
-        JarJoiner jarJoinerMock = Mockito.mock(JarJoiner.class);
+        ManifestReader manifestReader = Mockito.mock(ManifestReader.class);
 
 //        prepare plugins, load plugin definition from plugins.yml (test/resources)
         Set<Plugin> resolvedPlugins = createCorrectFakePlugin();
 
 //        mock JarJoiner method's behavior
-        Mockito.when(jarJoinerMock.addToClasspath(any())).thenReturn(new ArrayList<>(resolvedPlugins).get(0));
-        Mockito.when(jarJoinerMock.read(any())).thenReturn(ExtensionManifest.of("", ""));
+        Mockito.when(manifestReader.attachManifest(any())).thenReturn(new ArrayList<>(resolvedPlugins).get(0));
+        Mockito.when(manifestReader.read(any())).thenReturn(ExtensionManifest.of("", ""));
 
 //        create SUT
-        PluginLoader pluginLoader = new DefaultPluginLoader(pluginContainer, jarJoinerMock);
+        PluginLoader pluginLoader = new DefaultPluginLoader(pluginContainer, manifestReader);
 
 //       ->  execute plugin loading
         Set<Plugin> rejectedPlugins = pluginLoader.loadPlugins(resolvedPlugins, pluginStrategy);
