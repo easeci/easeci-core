@@ -57,6 +57,8 @@ public class NodeConnector {
             log.error("InterruptedException was thrown while sending request to worker node: " + URL, e);
         } catch (ExecutionException e) {
             log.error("ExecutionException was thrown while sending request to worker node: " + URL, e);
+        } catch (Exception e) {
+            log.error("Exception was thrown: ", e);
         }
         return ClusterConnectionStateMonitor.createResponseFailure(CONNECTION_ERROR, connectionStateRequest);
     }

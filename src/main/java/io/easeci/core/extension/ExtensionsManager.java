@@ -45,7 +45,7 @@ class ExtensionsManager implements ExtensionControllable {
         this.pluginConfig = new DefaultPluginConfig(pluginConfigYml);
         this.pluginContainer = new DefaultPluginContainer((PluginStrategy) pluginConfig);
         this.pluginResolver = new DefaultPluginResolver();
-        this.pluginLoader = new DefaultPluginLoader(this.pluginContainer, new JarJoiner());
+        this.pluginLoader = new DefaultPluginLoader(this.pluginContainer, new ManifestReader());
         this.pluginDownloader = this.instantiatePluginDownloader();
     }
 

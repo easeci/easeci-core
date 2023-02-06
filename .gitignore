@@ -37,6 +37,7 @@ plugins/
 
 easeci-artifactory/
 easeci-bash/
+easeci-python/
 easeci-deploy/
 easeci-git/
 easeci-maven/
