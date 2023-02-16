@@ -5,16 +5,17 @@ import io.easeci.core.node.connect.ClusterInformation;
 import io.easeci.server.CommunicationType;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
 
+import static io.easeci.api.socket.log.LogHandler.getLogPublishingHttpURI;
+import static io.easeci.api.socket.log.LogHandler.getLogPublishingWsURI;
+
 @Slf4j
 class ScheduleRequestPreparer {
 
-    private ClusterInformation clusterInformation;
+    private final ClusterInformation clusterInformation;
 
     ScheduleRequestPreparer(ClusterInformation clusterInformation) {
         this.clusterInformation = Objects.requireNonNull(clusterInformation);
@@ -31,32 +32,37 @@ class ScheduleRequestPreparer {
                         clusterInformation.apiVersion(),
                         clusterInformation.apiVersionPrefix(),
                         clusterInformation.transferProtocol(),
-                        buildMasterUrl()
+                        prepareUrls()
                 )
         );
     }
 
-    String encodeValue(String value) {
+    private ScheduleRequest.Urls prepareUrls() {
+        return new ScheduleRequest.Urls(buildLogPublishingHttpURL(), buildLogPublishingWsURL());
+    }
+
+    private String encodeValue(String value) {
         return new String(Base64.getEncoder().encode(value.getBytes(StandardCharsets.UTF_8)));
     }
 
-    URL buildMasterUrl() {
+    private String buildLogPublishingHttpURL() {
         final CommunicationType communicationType = clusterInformation.communicationType();
-        final String urlAsString = clusterInformation.transferProtocol().name().toLowerCase()
+        return clusterInformation.transferProtocol().name().toLowerCase()
                 .concat("://")
                 .concat(trimSlashes(communicationType.urlBase(clusterInformation)))
                 .concat("/")
-                .concat(trimSlashes(clusterInformation.apiVersionPrefix()))
-                .concat("/pipeline/execution");
-        try {
-            return new URL(urlAsString);
-        } catch (MalformedURLException e) {
-            log.error("Cannot build URL address to Master Node. Worker node will must to do it itself", e);
-            return null;
-        }
+                .concat(trimSlashes(getLogPublishingHttpURI()));
     }
 
-    public static String trimSlashes(String value) {
+    private String buildLogPublishingWsURL() {
+        final CommunicationType communicationType = clusterInformation.communicationType();
+        return  "ws://"
+                .concat(trimSlashes(communicationType.urlBase(clusterInformation)))
+                .concat("/")
+                .concat(trimSlashes(getLogPublishingWsURI()));
+    }
+
+    private static String trimSlashes(String value) {
         if (Objects.isNull(value) || value.isEmpty()) {
             return value;
         }

@@ -16,9 +16,14 @@ public enum NodeConnectionState {
      * */
     DEAD,
     /**
-     * Set when cannot authorize node. For instance when connection Token is wrong.
+     * Set when cannot authorize node. For instance when connection Token is wrong
      * */
-    UNAUTHORIZED;
+    UNAUTHORIZED,
+
+    /**
+     * We don't know nothing yet about connection state with worker node
+     * */
+    UNKNOWN;
 
     public static List<NodeConnectionState> errorStatuses() {
         return List.of(CONNECTION_ERROR, TIMEOUT, UNAUTHORIZED);

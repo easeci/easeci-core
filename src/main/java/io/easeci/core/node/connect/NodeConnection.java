@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static io.easeci.core.node.connect.NodeConnectionState.ESTABLISHED;
 import static io.easeci.core.node.connect.NodeProcessingState.IDLE;
+import static java.util.Objects.nonNull;
 
 @Value
 @Builder
@@ -49,7 +50,7 @@ public class NodeConnection implements Executor {
 
     public NodeConnection mapNodeConnection(ConnectionStateResponse nodeConnectionState, int connectionAttemptsCounter) {
         return NodeConnection.builder()
-                             .nodeConnectionUuid(this.nodeConnectionUuid)
+                             .nodeConnectionUuid(nonNull(nodeConnectionState.getNodeId()) ? nodeConnectionState.getNodeId() : this.nodeConnectionUuid)
                              .nodeConnectionState(nodeConnectionState.getNodeConnectionState())
                              .nodeProcessingState(nodeConnectionState.getNodeProcessingState())
                              .connectionRequestOccurred(this.connectionRequestOccurred)
@@ -57,7 +58,7 @@ public class NodeConnection implements Executor {
                              .nodeIp(this.nodeIp)
                              .nodePort(this.nodePort)
                              .domainName(this.domainName)
-                             .nodeName(this.nodeName)
+                             .nodeName(nodeConnectionState.getNodeName())
                              .transferProtocol(this.transferProtocol)
                              .connectionAttemptsCounter(connectionAttemptsCounter)
                              .build();

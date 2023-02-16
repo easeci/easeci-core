@@ -5,6 +5,8 @@ import io.easeci.commons.SerializeUtils;
 import io.easeci.core.engine.runtime.PipelineContextSystem;
 import io.easeci.core.engine.runtime.logs.LogEntry;
 import io.easeci.core.engine.runtime.logs.LogRail;
+import io.easeci.core.node.connect.ClusterInformation;
+import io.easeci.core.node.connect.ClusterInformationDefault;
 import io.easeci.server.EndpointDeclaration;
 import io.easeci.server.InternalHandlers;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -18,6 +20,11 @@ import static ratpack.http.MediaType.APPLICATION_JSON;
 @Slf4j
 public class LogHandler implements InternalHandlers {
 
+    private static final String LOG_PUBLISHING_HTTP = "/pipeline/logs/http";
+    private static final String LOG_PUBLISHING_WS = "/pipeline/logs/ws";
+
+    private static final ClusterInformation clusterInformation = new ClusterInformationDefault();
+
     @Override
     public List<EndpointDeclaration> endpoints() {
         return List.of(
@@ -28,7 +35,7 @@ public class LogHandler implements InternalHandlers {
     private EndpointDeclaration publishLogs() {
         return EndpointDeclaration.builder()
                 .httpMethod(POST)
-                .endpointUri("api/v1/ws/logs")
+                .endpointUri(clusterInformation.apiVersionPrefix() + LOG_PUBLISHING_HTTP)
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> SerializeUtils.read(typedData.getBytes(), EventRequest.class).orElseThrow())
                         .next(eventRequest -> {
@@ -48,5 +55,13 @@ public class LogHandler implements InternalHandlers {
                                               .status(HttpResponseStatus.OK.code())
                                               .send()))
                 .build();
+    }
+
+    public static String getLogPublishingHttpURI() {
+        return clusterInformation.apiVersionPrefix() + LOG_PUBLISHING_HTTP;
+    }
+
+    public static String getLogPublishingWsURI() {
+        return clusterInformation.apiVersionPrefix() + LOG_PUBLISHING_WS;
     }
 }
