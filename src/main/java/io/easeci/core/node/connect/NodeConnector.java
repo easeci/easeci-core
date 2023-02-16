@@ -114,8 +114,8 @@ public class NodeConnector {
         return Dsl.asyncHttpClient(clientBuilder);
     }
 
-    public static class NodeUrlBuilder {
-        private ClusterInformation clusterInformation;
+    public static final class NodeUrlBuilder {
+        private final ClusterInformation clusterInformation;
 
         public NodeUrlBuilder(ClusterInformation clusterInformation) {
             this.clusterInformation = clusterInformation;

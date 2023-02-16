@@ -39,6 +39,7 @@ dependencies {
     implementation 'org.apache.groovy:groovy-all:4.0.8'
 
     implementation 'io.ratpack:ratpack-core:1.9.0'
+    implementation 'io.ratpack:ratpack-session:1.10.0-milestone-10'
     implementation group: 'io.ratpack', name: 'ratpack-rx', version: '1.9.0'
     implementation 'org.asynchttpclient:async-http-client:2.12.1'
     implementation 'org.yaml:snakeyaml:1.25'

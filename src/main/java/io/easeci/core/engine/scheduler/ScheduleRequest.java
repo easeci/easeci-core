@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
 
-import java.net.URL;
 import java.util.UUID;
 
 @Value
@@ -25,6 +24,9 @@ public class ScheduleRequest {
         String masterApiVersion;
         String masterApiVersionPrefix;
         TransferProtocol transferProtocol;
-        URL logUrl;
+        Urls urls;
+    }
+
+    public record Urls(String httpLogUrl, String wsLogUrl) {
     }
 }
