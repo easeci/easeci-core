@@ -8,6 +8,7 @@ import io.easeci.core.workspace.ProjectsValidator;
 import io.easeci.core.workspace.projects.ProjectManager;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import static io.easeci.core.engine.easefile.parser.parts.Utils.findLineStarting
 import static io.easeci.core.engine.easefile.parser.parts.Utils.propertyToList;
 import static java.util.Objects.nonNull;
 
+@Slf4j
 public class MetadataProcessor implements PipelinePartProcessor<EasefileObjectModel.Metadata> {
 
     public static final String PROJECT_NOT_EXISTS_ERROR_TITLE = "Project with typed projectId not exists in EaseCI instance";
@@ -64,7 +66,7 @@ public class MetadataProcessor implements PipelinePartProcessor<EasefileObjectMo
                         .title(PARSING_LINE_ERROR_TITLE)
                         .info(e.getMessage())
                         .build());
-            e.printStackTrace();
+            log.error("Parsing exception:", e);
             return Tuple.of(Optional.of(metadata), syntaxErrors);
         }
         return Tuple.of(Optional.of(metadata), syntaxErrors);

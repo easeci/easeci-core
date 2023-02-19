@@ -77,4 +77,18 @@ class MainEasefileExtractorTest extends BaseWorkspaceContextTest {
 
         assertAll(() -> assertEquals(35, stagesPart.size()));
     }
+
+    @Test
+    @DisplayName("Should correctly extract information about environment from metadata")
+    void extractInformationAboutEnvironmentFromMetadataTest() throws PipelinePartCriticalError {
+        EasefileExtractor easefileExtractor = new MainEasefileExtractor();
+        MetadataExtractor metadataExtractor = (MetadataExtractor) easefileExtractor;
+
+        String content = readFinalCorrectEasefile();
+        easefileExtractor.split(content);
+
+        List<Line> lines = metadataExtractor.fetchCrudeMetadata();
+
+        assertTrue(() -> lines.stream().anyMatch(line -> line.getContent().contains("environment")));
+    }
 }

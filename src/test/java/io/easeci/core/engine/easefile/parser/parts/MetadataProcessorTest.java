@@ -52,6 +52,7 @@ public class MetadataProcessorTest extends BaseWorkspaceContextTest {
                   () -> assertEquals(0, metadata.getProjectId()),
                   () -> assertEquals("java maven", metadata.getTag()),
                   () -> assertEquals("EaseCI Production", metadata.getName()),
+                  () -> assertEquals("easeci-java-17", metadata.getEnvironment()),
                   () -> assertEquals("Java project based on Maven, continuous deployment process", metadata.getDescription()),
                   () -> assertNotNull(metadata.getPipelineId()),
                   () -> assertNotNull(metadata.getLastReparseDate())

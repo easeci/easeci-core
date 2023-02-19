@@ -1,9 +1,7 @@
 package io.easeci.core.engine.scheduler;
 
 import io.easeci.server.TransferProtocol;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Value;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -14,6 +12,7 @@ public class ScheduleRequest {
     UUID pipelineContextId;
     String scriptEncoded;
     Metadata metadata;
+    Environment environment;
 
     @Getter
     @AllArgsConstructor(staticName = "of")
@@ -28,5 +27,8 @@ public class ScheduleRequest {
     }
 
     public record Urls(String httpLogUrl, String wsLogUrl) {
+    }
+
+    public record Environment(String name) {
     }
 }

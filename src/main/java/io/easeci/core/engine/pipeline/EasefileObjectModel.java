@@ -51,6 +51,7 @@ public class EasefileObjectModel implements Serializable {
         private Path pipelineFilePath;
         private String tag;
         private String description;
+        private String environment;
 
         public Metadata fromInput(MetadataInput metadataInput) {
             Metadata metadata = new Metadata();
@@ -60,6 +61,7 @@ public class EasefileObjectModel implements Serializable {
             metadata.setDescription(metadataInput.getDescription());
             metadata.setPipelineId(UUID.randomUUID());
             metadata.setLastReparseDate(new Date());
+            metadata.setEnvironment(metadataInput.getEnvironment());
             return metadata;
         }
 
@@ -85,6 +87,7 @@ public class EasefileObjectModel implements Serializable {
         private String name;
         private String tag;
         private String description;
+        private String environment;
     }
 
     @Override

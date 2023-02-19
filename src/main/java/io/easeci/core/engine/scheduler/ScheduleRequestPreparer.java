@@ -33,7 +33,8 @@ class ScheduleRequestPreparer {
                         clusterInformation.apiVersionPrefix(),
                         clusterInformation.transferProtocol(),
                         prepareUrls()
-                )
+                ),
+                new ScheduleRequest.Environment(pipelineContext.getEnvironment())
         );
     }
 

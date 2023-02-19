@@ -11,7 +11,7 @@ import java.util.List;
 @Slf4j
 public class WebSocketHandlers implements InternalHandlers {
 
-    private Commands commands;
+    private final Commands commands;
 
     public WebSocketHandlers() {
         this.commands = new Commands();
