@@ -35,7 +35,7 @@ public class LogHandler implements InternalHandlers {
     private EndpointDeclaration publishLogs() {
         return EndpointDeclaration.builder()
                 .httpMethod(POST)
-                .endpointUri(clusterInformation.apiVersionPrefix() + LOG_PUBLISHING_HTTP)
+                .endpointUri(getLogPublishingHttpURI().substring(1))
                 .handler(ctx -> ctx.getRequest().getBody()
                         .map(typedData -> SerializeUtils.read(typedData.getBytes(), EventRequest.class).orElseThrow())
                         .next(eventRequest -> {

@@ -196,6 +196,10 @@ public class PipelineContext implements PipelineRunnable, PipelineScriptBuilder,
         return this;
     }
 
+    public String getEnvironment() {
+        return eom.getMetadata().getEnvironment();
+    }
+
     private class ScriptBuildHelper {
 
         // resolve variables declared in Easefile

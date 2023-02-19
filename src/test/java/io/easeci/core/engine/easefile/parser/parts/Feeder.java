@@ -137,6 +137,7 @@ public class Feeder {
                         "    projectId: 0\n" +
                         "    tag: 'java maven'\n" +
                         "    name: 'EaseCI Production'\n" +
+                        "    environment: 'easeci-java-17'\n" +
                         "    description: 'Java project based on Maven, continuous deployment process'");
     }
 
